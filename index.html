@@ -15,20 +15,33 @@
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     background:var(--page); color:#fff;
   }
-  .wrap{padding:24px 24px 60px;min-height:100vh;}
+  .app-shell{display:flex;min-height:100vh;}
+  .main-content{flex:1;min-width:0;padding:24px 24px 60px;}
+  .sidebar{
+    width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
+    padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
+    height:100vh;overflow-y:auto;
+  }
+  .sidebar-brand{font-size:14.5px;font-weight:800;color:#fff;padding:0 6px;}
+  .sidebar .top-tabs{flex-direction:column;flex:1;margin-bottom:0;}
+  .sidebar .tab-btn{text-align:left;border:none;}
+  .sidebar .whoami{margin-top:auto;}
+  .mobile-topbar{display:none;}
+  .sidebar-close-btn{display:none;}
+  .sidebar-backdrop{display:none;}
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
   header h1{font-size:26px;margin:0;font-weight:800;}
   header .sub{color:#8b8fa3;font-size:12.5px;margin-top:3px;}
   .btn{
     background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 16px;
-    font-size:13.5px;font-weight:700;cursor:pointer;
+    font-size:14px;font-weight:700;cursor:pointer;
   }
   .btn:hover{background:#2f6fe0;}
   .btn-ghost{background:#242833;color:#fff;border:1px solid var(--border);}
   .btn-ghost:hover{background:#2c3140;}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
   .toolbar input, .toolbar select{
-    padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:#1b1e26;color:#fff;
+    padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:#1b1e26;color:#fff;
   }
   .toolbar input::placeholder{color:#6b7080;}
 
@@ -38,7 +51,7 @@
     max-height:82vh;display:flex;flex-direction:column;box-shadow:var(--shadow);
   }
   .backlog-panel h2{color:#1f2430;font-size:14px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;}
-  .backlog-panel .count{background:#e2e4ea;color:#4b5563;font-size:11.5px;padding:2px 9px;border-radius:20px;font-weight:700;}
+  .backlog-panel .count{background:#e2e4ea;color:#4b5563;font-size:12px;padding:2px 9px;border-radius:20px;font-weight:700;}
   .backlog-body{overflow-y:auto;flex:1;padding-right:2px;}
   .backlog-body::-webkit-scrollbar{width:6px;}
   .backlog-body::-webkit-scrollbar-thumb{background:#d1d4db;border-radius:6px;}
@@ -46,12 +59,13 @@
   .add-mini:hover{background:#e9eaef;}
 
   .board{display:flex;gap:14px;overflow-x:auto;flex:1;padding-bottom:14px;height:calc(100vh - 260px);min-height:340px;}
-  .col{flex:0 0 218px;display:flex;flex-direction:column;height:100%;}
+  .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;height:100%;}
   .col-head{
-    border-radius:10px;padding:9px 13px;font-size:13px;font-weight:800;margin-bottom:10px;
-    display:flex;justify-content:space-between;align-items:center;flex:none;
+    border-radius:10px;padding:9px 13px;font-size:14px;font-weight:800;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;flex:none;gap:8px;min-width:0;
   }
-  .col-head .count{font-size:11px;font-weight:700;opacity:.75;}
+  .col-head .col-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .col-head .count{font-size:12px;font-weight:700;opacity:.75;}
   .col-body{min-height:40px;flex:1;overflow-y:auto;padding-right:2px;}
   .col-body::-webkit-scrollbar{width:6px;}
   .col-body::-webkit-scrollbar-thumb{background:#2a2e39;border-radius:6px;}
@@ -66,104 +80,125 @@
   .period-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
   .period-btn:hover:not(.active){background:#242833;color:#fff;}
   .hist-group-row td{background:#242833;font-weight:800;color:#c3c6d1;}
-  .hist-toggle{background:none;border:none;color:#8b8fa3;cursor:pointer;font-size:11px;padding:2px 4px;}
+  .hist-toggle{background:none;border:none;color:#8b8fa3;cursor:pointer;font-size:12px;padding:2px 4px;}
   .hist-toggle:hover{color:#fff;}
   .hist-detail-row td{background:#12141a;padding:10px 16px;}
   .hist-subtasks{display:flex;flex-direction:column;gap:5px;}
-  .hist-subtask-row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#c3c6d1;}
+  .hist-subtask-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#c3c6d1;}
   .hist-sub-text.done{color:#6b7280;text-decoration:line-through;}
-  .hist-sub-date{color:#8b8fa3;font-size:10.5px;}
-  .hist-sub-desc{color:#8b8fa3;font-size:10.5px;font-style:italic;}
-  .hist-no-sub{color:#6b7280;font-size:11px;}
+  .hist-sub-date{color:#8b8fa3;font-size:12px;}
+  .hist-sub-desc{color:#8b8fa3;font-size:12px;font-style:italic;}
+  .hist-no-sub{color:#6b7280;font-size:12px;}
 
   .card{
-    background:var(--card);color:var(--text);border-radius:11px;padding:12px 12px 10px;
+    background:var(--card);color:var(--text);border-radius:11px;padding:26px 12px 10px;
     margin-bottom:10px;box-shadow:var(--shadow);position:relative;cursor:grab;border:1px solid transparent;
   }
   .card.dragging{opacity:.35;}
   .card:hover .card-actions{opacity:1;}
   .flag{
-    position:absolute;top:-6px;right:10px;font-size:10px;font-weight:800;color:#fff;
-    padding:3px 9px 4px;border-radius:0 0 7px 7px;letter-spacing:.2px;
+    position:absolute;top:0;right:0;font-size:12px;font-weight:800;color:#fff;
+    padding:5px 11px;border-radius:0 11px 0 8px;letter-spacing:.2px;
   }
   .client-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-  .client-dot{width:16px;height:16px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex:none;}
-  .client-name{font-size:10.5px;color:var(--muted);font-weight:700;}
-  .card-title{font-size:13px;font-weight:700;line-height:1.4;margin-bottom:8px;}
-  .meta-row{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:6px;}
+  .client-dot{width:16px;height:16px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex:none;}
+  .client-name{font-size:12px;color:var(--muted);font-weight:700;}
+  .card-title{font-size:14px;font-weight:700;line-height:1.4;margin-bottom:8px;}
+  .meta-row{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:6px;}
   .meta-row b{color:#374151;font-weight:700;}
   .subtask-list{list-style:none;margin:0 0 8px;padding:0;}
   .subtask-row{display:flex;align-items:flex-start;gap:6px;padding:3px 0;cursor:pointer;position:relative;}
   .subtask-row input[type=checkbox]{margin-top:2px;flex:none;cursor:pointer;}
   .subtask-main{flex:1;min-width:0;}
   .subtask-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
-  .subtask-text{font-size:11.5px;color:#374151;line-height:1.5;}
+  .subtask-text{font-size:12px;color:#374151;line-height:1.5;}
   .subtask-text.done{color:#9ca3af;text-decoration:line-through;}
-  .subtask-date{font-size:9.5px;color:#9ca3af;white-space:nowrap;flex:none;}
+  .subtask-date{font-size:12px;color:#9ca3af;white-space:nowrap;flex:none;}
   .subtask-desc{
     display:none;position:absolute;left:0;right:0;top:100%;margin-top:3px;
-    font-size:10.5px;color:#e5e7eb;line-height:1.5;background:#1f2430;border-radius:8px;
+    font-size:12px;color:#e5e7eb;line-height:1.5;background:#1f2430;border-radius:8px;
     padding:7px 9px;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:200;pointer-events:none;
   }
   .subtask-row:hover .subtask-desc, .subtask-row.pinned .subtask-desc{display:block;}
-  .subtask-more{font-size:10px;color:#9ca3af;padding-left:2px;}
+  .subtask-more{font-size:12px;color:#9ca3af;padding-left:2px;}
   .foot-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
   .avatars{display:flex;}
   .avatar{
-    width:20px;height:20px;border-radius:50%;color:#fff;font-size:9px;font-weight:800;
+    width:20px;height:20px;border-radius:50%;color:#fff;font-size:12px;font-weight:800;
     display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-6px;
   }
   .avatar:first-child{margin-left:0;}
   .link-row{
-    display:flex;align-items:center;gap:5px;font-size:10px;color:#3b82f6;margin-top:8px;
+    display:flex;align-items:center;gap:5px;font-size:12px;color:#3b82f6;margin-top:8px;
     background:#eef2fb;padding:5px 8px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
   .card-actions{
     position:absolute;top:8px;left:8px;display:flex;gap:4px;opacity:0;transition:.15s;
   }
   .card-actions button{
-    border:none;background:#f3f4f7;border-radius:5px;width:20px;height:20px;font-size:10px;cursor:pointer;color:#4b5563;
+    border:none;background:#f3f4f7;border-radius:5px;width:20px;height:20px;font-size:12px;cursor:pointer;color:#4b5563;
   }
   .card-actions button:hover{background:#e5e7eb;}
-  .empty-hint{font-size:11.5px;color:#6b7080;text-align:center;padding:16px 6px;border:1px dashed #2a2e39;border-radius:10px;}
+  .empty-hint{font-size:12px;color:#6b7080;text-align:center;padding:16px 6px;border:1px dashed #2a2e39;border-radius:10px;}
 
   /* modal */
-  .modal-bg{display:none;position:fixed;inset:0;background:rgba(10,11,15,.55);align-items:center;justify-content:center;z-index:60;}
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(10,11,15,.55);align-items:center;justify-content:center;z-index:500;}
   .modal-bg.open{display:flex;}
   .modal{background:#fff;color:#1f2430;border-radius:14px;padding:22px;width:460px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);}
   .modal h3{margin:0 0 14px;font-size:16px;}
   .field{margin-bottom:11px;}
   .field label{display:block;font-size:12px;color:#6b7280;margin-bottom:4px;font-weight:700;}
   .field input, .field select, .field textarea{
-    width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;
+    width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;
   }
   .field textarea{resize:vertical;min-height:56px;}
   .field-row{display:flex;gap:10px;}
   .field-row .field{flex:1;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
-  .hint{font-size:10.5px;color:#9ca3af;margin-top:3px;}
+  .hint{font-size:12px;color:#9ca3af;margin-top:3px;}
 
   @media (max-width:900px){
     .layout{flex-direction:column;}
     .backlog-panel{width:100%;flex:none;max-height:280px;}
     .wfh-grid{grid-template-columns:1fr;}
+
+    /* 좁은 화면에서는 사이드바를 접어두고, 햄버거 버튼으로 열면 화면 위로 펼쳐짐 */
+    .app-shell{flex-direction:column;}
+    .mobile-topbar{
+      display:flex;align-items:center;gap:12px;padding:12px 16px;
+      background:var(--panel);border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:120;
+    }
+    .mobile-topbar .hamburger-btn{
+      background:transparent;border:1px solid var(--border);color:#fff;border-radius:8px;
+      padding:7px 11px;font-size:16px;cursor:pointer;line-height:1;
+    }
+    .mobile-topbar .mobile-topbar-title{font-size:14px;font-weight:800;color:#fff;}
+    .sidebar{
+      position:fixed;top:0;left:0;width:240px;max-width:82vw;flex:none;height:100vh;
+      transform:translateX(-100%);transition:transform .25s ease;z-index:200;
+      box-shadow:4px 0 18px rgba(0,0,0,0.4);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-brand{display:block;}
+    .sidebar .top-tabs{flex-direction:column;flex:1;margin:0;}
+    .sidebar .whoami{margin-top:auto;flex:none;}
+    .sidebar-close-btn{
+      display:block;position:absolute;top:14px;right:12px;background:transparent;border:none;
+      color:#8b8fa3;font-size:18px;cursor:pointer;padding:4px 8px;
+    }
+    .sidebar-backdrop{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;
+    }
+    .sidebar-backdrop.open{display:block;}
   }
 
   /* ===== 모바일 대응 ===== */
   @media (max-width:640px){
-    .wrap{padding:14px 12px 40px;}
+    .main-content{padding:14px 12px 40px;}
     header{margin-bottom:14px;}
     header h1{font-size:20px;}
-    header .sub{font-size:11.5px;}
-
-    .top-bar-row{flex-direction:column;align-items:stretch;gap:8px;margin-bottom:14px;}
-    .top-tabs{
-      flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-      padding-bottom:4px;margin:0 -12px;padding-left:12px;padding-right:12px;
-    }
-    .top-tabs::-webkit-scrollbar{display:none;}
-    .tab-btn{flex:none;padding:8px 13px;font-size:12px;white-space:nowrap;}
-    .whoami{align-self:flex-start;}
+    header .sub{font-size:12px;}
 
     .board-month-row h1{font-size:20px;}
     .board-stats{gap:8px;}
@@ -177,7 +212,7 @@
       height:62vh;min-height:280px;
       scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
     }
-    .col{flex:0 0 78vw;scroll-snap-align:start;}
+    .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:start;}
 
     .modal{width:94vw;padding:16px;}
     .field-row{flex-direction:column;gap:0;}
@@ -186,15 +221,15 @@
     .subtask-edit-row input[type=date]{flex:1 1 auto;}
 
     .wfh-table-wrap{padding:10px;}
-    .wfh-table{font-size:11px;}
+    .wfh-table{font-size:12px;}
     .wfh-table th, .wfh-table td{padding:7px 6px;}
 
     .cal-grid{gap:3px;}
-    .cal-cell{min-height:64px;padding:4px;}
-    .cal-date{font-size:9.5px;}
-    .cal-office{font-size:8px;}
-    .cal-entry-name{font-size:8px;}
-    .cal-entry-tag{font-size:6.5px;padding:1px 4px;}
+    .cal-cell{min-height:86px;padding:4px;}
+    .cal-date{font-size:13px;}
+    .cal-office{font-size:12px;}
+    .cal-entry-name{font-size:12px;}
+    .cal-entry-tag{font-size:12px;padding:2px 5px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
@@ -202,7 +237,7 @@
     .people-grid{gap:10px;}
     .people-card{width:calc(50% - 5px);padding:12px;}
 
-    .time-stepper span{font-size:14px;}
+    .time-stepper input{font-size:14px;}
     .wfh-actions{flex-direction:column;}
 
     /* 터치 화면에는 hover가 없어서 카드 수정/삭제 버튼이 항상 보이게 함 */
@@ -213,19 +248,20 @@
   .top-tabs{display:flex;gap:6px;margin-bottom:18px;}
   .tab-btn{
     background:transparent;border:1px solid var(--border);color:#8b8fa3;padding:8px 16px;
-    border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;
+    border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;
   }
   .tab-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
   .tab-btn:hover:not(.active){background:#1f2330;color:#fff;}
 
   /* wfh view */
-  .wfh-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:flex-start;}
+  .wfh-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-bottom:18px;}
   .wfh-panel{background:#1b1e26;border:1px solid var(--border);border-radius:14px;padding:18px;}
   .wfh-panel h3{margin:0 0 12px;font-size:14.5px;}
+  .wfh-records-btn{width:100%;margin-bottom:18px;text-align:center;}
   .wfh-field{margin-bottom:11px;}
   .wfh-field label{display:block;font-size:12px;color:#8b8fa3;margin-bottom:4px;font-weight:700;}
   .wfh-field input, .wfh-field select, .wfh-field textarea{
-    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;
+    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;
     background:#12141a;color:#fff;font-family:inherit;
   }
   .wfh-field textarea{resize:vertical;min-height:56px;}
@@ -238,8 +274,8 @@
   .wfh-cal-nav button{background:#242833;border:1px solid var(--border);color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
   .wfh-cal-nav button:hover{background:#2c3140;}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-  .cal-weekday{font-size:10.5px;color:#8b8fa3;text-align:center;padding:4px 0;font-weight:700;}
-  .cal-cell{min-height:88px;border-radius:8px;background:#12141a;padding:5px;cursor:pointer;border:1px solid transparent;}
+  .cal-weekday{font-size:12px;color:#8b8fa3;text-align:center;padding:4px 0;font-weight:700;}
+  .cal-cell{min-height:112px;border-radius:8px;background:#12141a;padding:6px;cursor:pointer;border:1px solid transparent;}
   .cal-cell:hover{border-color:#3b82f6;}
   .cal-cell.empty{background:transparent;cursor:default;}
   .cal-cell.today{border-color:#3b82f6;background:#161b2c;}
@@ -247,10 +283,10 @@
   .wfh-cal-select-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
   .wfh-quota{background:#12141a;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:#c3c6d1;margin-bottom:12px;}
   .wfh-quota b{color:#fff;}
-  .cal-office{font-size:9px;color:#8b8fa3;margin-bottom:3px;}
+  .cal-office{font-size:12px;color:#8b8fa3;margin-bottom:3px;}
   .cal-office.low{color:#f87171;font-weight:700;}
   .wfh-type-tabs{display:flex;gap:6px;}
-  .type-btn{background:#1b1e26;border:1px solid var(--border);color:#8b8fa3;padding:6px 12px;border-radius:7px;font-size:11.5px;font-weight:700;cursor:pointer;}
+  .type-btn{background:#1b1e26;border:1px solid var(--border);color:#8b8fa3;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;}
   .type-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
   .type-btn[data-type="annual"].active{background:#ef4444;border-color:#ef4444;}
   .type-btn[data-type="half"].active{background:#f59e0b;border-color:#f59e0b;}
@@ -258,42 +294,44 @@
   .time-stepper{display:flex;align-items:center;gap:10px;background:#12141a;border:1px solid var(--border);border-radius:8px;padding:8px 12px;}
   .time-stepper button{background:#242833;border:1px solid var(--border);color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:12px;}
   .time-stepper button:hover{background:#2c3140;}
-  .time-stepper span{flex:1;text-align:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:.5px;}
+  .time-stepper input{flex:1;text-align:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:.5px;background:transparent;border:none;padding:0;width:0;min-width:0;}
+  .time-stepper input:focus{outline:none;color:#93c5fd;}
   .wfh-check-label{display:flex;align-items:center;gap:5px;font-size:12px;color:#c3c6d1;}
-  .cal-date{font-size:10.5px;color:#c3c6d1;margin-bottom:3px;}
+  .cal-date{font-size:14px;font-weight:700;color:#c3c6d1;margin-bottom:4px;}
   .cal-entries{display:flex;flex-direction:column;gap:2px;}
   .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:#1c1f28;border-radius:4px;padding:2px 4px;}
-  .cal-entry-name{font-size:9px;font-weight:600;color:#e5e7eb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .cal-entry-tag{font-size:7.5px;font-weight:800;color:#fff;padding:1px 5px;border-radius:20px;flex:none;white-space:nowrap;}
-  .cal-more{font-size:9px;color:#8b8fa3;padding-left:2px;}
-  .status-pill{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;}
+  .cal-entry-name{font-size:12px;font-weight:600;color:#e5e7eb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-entry-tag{font-size:12px;font-weight:800;color:#fff;padding:2px 7px;border-radius:20px;flex:none;white-space:nowrap;}
+  .cal-more{font-size:12px;color:#8b8fa3;padding-left:2px;}
+  .status-pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;}
   .status-pill.in{background:#1e3a2e;color:#4ade80;}
   .status-pill.out{background:#3a2230;color:#f87171;}
   .status-pill.none{background:#2a2e39;color:#8b8fa3;}
   .cal-cell.dim{opacity:.4;}
   .cal-cell.dim:hover{opacity:.65;}
 
-  .top-bar-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
-  .whoami{display:flex;align-items:center;gap:8px;background:#1b1e26;border:1px solid var(--border);border-radius:20px;padding:5px 14px 5px 5px;cursor:pointer;}
+  .whoami{display:flex;align-items:center;gap:8px;background:#12141a;border:1px solid var(--border);border-radius:20px;padding:5px 14px 5px 5px;cursor:pointer;}
   .whoami:hover{border-color:#3b82f6;}
   .whoami .avatar-photo{width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none;}
-  .whoami .avatar-fallback{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex:none;}
+  .whoami .avatar-fallback{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex:none;}
   .whoami .who-text{display:flex;flex-direction:column;line-height:1.25;}
   .whoami .who-name{font-size:12.5px;font-weight:700;color:#fff;}
-  .whoami .who-switch{font-size:10px;color:#8b8fa3;}
+  .whoami .who-switch{font-size:12px;color:#8b8fa3;}
 
   .people-grid{display:flex;flex-wrap:wrap;gap:14px;}
-  .people-card{background:#1b1e26;border:1px solid var(--border);border-radius:14px;padding:16px;width:160px;text-align:center;cursor:pointer;transition:.15s;}
+  #whoAmIGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  #whoAmIGrid .people-card{width:auto;padding:12px;}
+  .people-card{background:#f4f5f7;border:1px solid #d4d6dc;border-radius:14px;padding:16px;width:160px;text-align:center;cursor:pointer;transition:.15s;}
   .people-card:hover{border-color:#3b82f6;}
   .people-card.current{border-color:#4ade80;box-shadow:0 0 0 1px #4ade80 inset;}
   .people-card .avatar-photo{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:block;object-fit:cover;}
   .people-card .avatar-fallback{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
-  .people-card .name-ko{font-weight:800;font-size:14px;color:#fff;}
-  .people-card .name-en{font-size:11px;color:#8b8fa3;margin-top:2px;}
+  .people-card .name-en{font-weight:800;font-size:14px;color:#1f2430;}
+  .people-card .name-ko{font-size:12px;color:#6b7280;margin-top:2px;}
   .people-card .people-actions{display:flex;gap:6px;margin-top:10px;}
-  .people-card .people-actions button{flex:1;font-size:11px;padding:5px;border-radius:6px;border:1px solid var(--border);background:#242833;color:#fff;cursor:pointer;}
+  .people-card .people-actions button{flex:1;font-size:12px;padding:5px;border-radius:6px;border:1px solid var(--border);background:#242833;color:#fff;cursor:pointer;}
   .people-card .people-actions .p-del{color:#f87171;}
-  .people-card .current-tag{font-size:9.5px;color:#4ade80;font-weight:800;margin-top:6px;}
+  .people-card .current-tag{font-size:12px;color:#4ade80;font-weight:800;margin-top:6px;}
 
   .photo-preview{width:72px;height:72px;border-radius:50%;margin:0 auto;background:#f3f4f7;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#9ca3af;overflow:hidden;}
   .photo-preview img{width:100%;height:100%;object-fit:cover;}
@@ -302,11 +340,11 @@
   .roster{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
   .roster-card{background:#1b1e26;border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:150px;}
   .roster-card .name{font-weight:800;font-size:13.5px;margin-bottom:6px;}
-  .roster-card .times{font-size:11px;color:#8b8fa3;display:flex;gap:8px;margin-top:6px;}
-  .roster-card .summary{font-size:11px;color:#c3c6d1;margin-top:6px;line-height:1.5;}
+  .roster-card .times{font-size:12px;color:#8b8fa3;display:flex;gap:8px;margin-top:6px;}
+  .roster-card .summary{font-size:12px;color:#c3c6d1;margin-top:6px;line-height:1.5;}
   .wfh-table-wrap{background:#1b1e26;border:1px solid var(--border);border-radius:14px;padding:14px 16px;overflow-x:auto;}
-  .wfh-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  .wfh-table th{text-align:left;color:#8b8fa3;font-weight:700;font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .wfh-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .wfh-table th{text-align:left;color:#8b8fa3;font-weight:700;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
   .wfh-table td{padding:9px 10px;border-bottom:1px solid #23262f;vertical-align:top;}
   .wfh-table tr:hover td{background:#1c1f28;}
   .summary-cell{max-width:220px;color:#c3c6d1;}
@@ -318,11 +356,11 @@
   .subtask-edit-row input[type=text]{flex:2;}
   .subtask-edit-row input[type=date]{flex:1;min-width:110px;}
   .subtask-edit-row input[type=checkbox]{flex:none;}
-  .subtask-edit-row .se-remove{flex:none;border:none;background:#fee2e2;color:#b91c1c;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:11px;}
+  .subtask-edit-row .se-remove{flex:none;border:none;background:#fee2e2;color:#b91c1c;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:12px;}
 
   /* toast */
   #toastContainer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
-  .toast{background:#242833;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.4);border:1px solid var(--border);opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;}
+  .toast{background:#242833;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);border:1px solid var(--border);opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;}
   .toast.show{opacity:1;transform:translateY(0);}
   .toast.warn{border-color:#f59e0b;color:#fbbf24;}
 
@@ -336,7 +374,7 @@
   .stat-chip.active{background:#18233b;border-color:#3b82f6;box-shadow:0 0 0 1px #3b82f6 inset;}
   .stat-chip.overdue.active{border-color:#ef4444;box-shadow:0 0 0 1px #ef4444 inset;background:#2a1717;}
   .stat-chip b{font-size:19px;color:#fff;font-weight:800;}
-  .stat-chip span{font-size:11.5px;color:#8b8fa3;}
+  .stat-chip span{font-size:12px;color:#8b8fa3;}
   .stat-chip.overdue b{color:#f87171;}
 
   /* priority accent */
@@ -344,8 +382,15 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top-bar-row">
+<div class="app-shell">
+  <div class="mobile-topbar">
+    <button class="hamburger-btn" id="sidebarToggleBtn" aria-label="메뉴 열기">☰</button>
+    <div class="mobile-topbar-title">📋 업무 대시보드</div>
+  </div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="sidebar" id="sidebar">
+    <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="메뉴 닫기">✕</button>
+    <div class="sidebar-brand">📋 업무 대시보드</div>
     <div class="top-tabs">
       <button class="tab-btn active" data-tab="board">📋 업무 보드</button>
       <button class="tab-btn" data-tab="register">📝 업무 등록</button>
@@ -357,6 +402,7 @@
     <div id="whoAmI" class="whoami"></div>
   </div>
 
+  <div class="main-content">
   <div id="boardView">
   <header>
     <div>
@@ -453,20 +499,20 @@
       </div>
     </header>
 
-    <div class="wfh-cal">
-      <div class="wfh-cal-head">
-        <h3 id="wfhCalLabel">2026년 8월</h3>
-        <div class="wfh-cal-nav">
-          <button id="wfhCalPrev" title="이전 달">‹</button>
-          <button id="wfhCalNext" title="다음 달">›</button>
-        </div>
-      </div>
-      <div class="wfh-quota" id="wfhQuotaInfo"></div>
-      <div class="cal-grid" id="wfhCalGrid"></div>
-      <div class="wfh-cal-select-bar" id="wfhSelectBar"></div>
-    </div>
-
     <div class="wfh-grid">
+      <div class="wfh-cal" style="margin-bottom:0;">
+        <div class="wfh-cal-head">
+          <h3 id="wfhCalLabel">2026년 8월</h3>
+          <div class="wfh-cal-nav">
+            <button id="wfhCalPrev" title="이전 달">‹</button>
+            <button id="wfhCalNext" title="다음 달">›</button>
+          </div>
+        </div>
+        <div class="wfh-quota" id="wfhQuotaInfo"></div>
+        <div class="cal-grid" id="wfhCalGrid"></div>
+        <div class="wfh-cal-select-bar" id="wfhSelectBar"></div>
+      </div>
+
       <div class="wfh-panel">
         <h3>출퇴근 체크 &amp; 업무보고</h3>
         <div class="wfh-field">
@@ -487,9 +533,10 @@
           <label id="wfhTimeLabel">체크인 시간</label>
           <div class="time-stepper">
             <button type="button" id="wfhTimeDown">▼</button>
-            <span id="wfhTimeDisplay">09:00</span>
+            <input type="text" id="wfhTimeDisplay" inputmode="numeric" placeholder="09:00" maxlength="5">
             <button type="button" id="wfhTimeUp">▲</button>
           </div>
+          <div class="hint">시간을 직접 입력하거나(예: 0930) 화살표로 조절할 수 있어요</div>
         </div>
         <div class="wfh-field">
           <label id="wfhNoteLabel">오늘 할 일 (출근 시)</label>
@@ -501,20 +548,27 @@
         </div>
         <button class="btn-ghost btn" id="wfhSaveNoteBtn" style="width:100%;margin-top:8px;">메모만 저장 (시간 변경 없이)</button>
       </div>
+    </div>
 
-      <div>
-        <h3 style="font-size:14px;margin:0 0 10px;color:#c3c6d1;">기록 목록</h3>
-        <div class="wfh-toolbar" id="wfhFilterBar"></div>
-        <div class="wfh-table-wrap">
-          <table class="wfh-table">
-            <thead>
-              <tr><th>날짜</th><th>이름</th><th>유형</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>업무 요약</th><th></th></tr>
-            </thead>
-            <tbody id="wfhTableBody"></tbody>
-          </table>
-        </div>
-        <div class="hint" style="margin-top:8px;">행을 클릭하면 왼쪽 패널에 해당 날짜가 불러와져요</div>
+    <button class="btn-ghost btn wfh-records-btn" id="wfhOpenRecordsBtn">📋 전체 업무기록 보기 <span class="hint" style="color:inherit;">· 달력에서 날짜를 클릭해도 볼 수 있어요</span></button>
+  </div>
+
+  <div class="modal-bg" id="wfhRecordsModalBg">
+    <div class="modal" style="width:820px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="margin:0;">기록 목록</h3>
+        <button class="btn-ghost btn" id="wfhRecordsCloseBtn" style="padding:6px 12px;">닫기</button>
       </div>
+      <div class="wfh-toolbar" id="wfhFilterBar"></div>
+      <div class="wfh-table-wrap">
+        <table class="wfh-table">
+          <thead>
+            <tr><th>날짜</th><th>이름</th><th>유형</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>업무 요약</th><th></th></tr>
+          </thead>
+          <tbody id="wfhTableBody"></tbody>
+        </table>
+      </div>
+      <div class="hint" style="margin-top:8px;">행을 클릭하면 패널에 해당 날짜가 불러와져요</div>
     </div>
   </div>
 
@@ -534,6 +588,7 @@
         <tbody id="reqTableBody"></tbody>
       </table>
     </div>
+  </div>
   </div>
 </div>
 
@@ -573,6 +628,7 @@
       <label>영문 이름</label>
       <input type="text" id="personNameEn" placeholder="예: Nayeon">
     </div>
+    <div id="personNameErrorMsg" style="display:none;color:#dc2626;font-size:12px;margin:-4px 0 10px;font-weight:700;">한글 또는 영문 이름 중 하나는 꼭 입력해주세요.</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="personCancelBtn">취소</button>
       <button class="btn" id="personSaveBtn">저장</button>
@@ -581,7 +637,7 @@
 </div>
 
 <div class="modal-bg" id="whoAmIBg">
-  <div class="modal" style="width:540px;">
+  <div class="modal" style="width:580px;">
     <h3>누구세요? 본인의 프로필을 선택해주세요</h3>
     <div class="people-grid" id="whoAmIGrid"></div>
     <div class="hint" id="whoAmIEmptyHint" style="display:none;">아직 등록된 인원이 없어요. 아래에서 먼저 본인을 등록해주세요.</div>
@@ -601,12 +657,10 @@
         <label>영문 이름</label>
         <input type="text" id="whoAmINameEn" placeholder="예: Nayeon">
       </div>
+      <div id="whoAmINameErrorMsg" style="display:none;color:#dc2626;font-size:12px;margin:-4px 0 10px;font-weight:700;">한글 또는 영문 이름 중 하나는 꼭 입력해주세요.</div>
       <div class="modal-actions">
         <button class="btn" id="whoAmIRegisterBtn" style="width:100%;">등록하고 시작하기</button>
       </div>
-    </div>
-    <div class="modal-actions" id="whoAmICloseRow" style="display:none;">
-      <button class="btn-ghost btn" id="whoAmICloseBtn">닫기</button>
     </div>
   </div>
 </div>
@@ -889,13 +943,37 @@ function loadCurrentUserId(){ return localStorage.getItem(CURRENT_USER_KEY) || '
 function saveCurrentUserId(id){ localStorage.setItem(CURRENT_USER_KEY, id || ''); }
 let currentUserId = loadCurrentUserId();
 
+// 재택근무 기록 연결용 식별키: 기존 데이터와의 호환을 위해 한글 이름을 우선 사용하고,
+// 한글 이름 없이(영문만) 등록된 사람은 영문 이름을 키로 사용
+function personKey(p){
+  if(!p) return '';
+  return (p.nameKo && p.nameKo.trim()) || (p.nameEn && p.nameEn.trim()) || '';
+}
+// 화면에 보여줄 이름: 영문 이름을 우선 표시 (영문 이름이 메인)
+function displayNameOf(p){
+  if(!p) return '';
+  return (p.nameEn && p.nameEn.trim()) || (p.nameKo && p.nameKo.trim()) || '';
+}
+// 저장된 키(person 문자열)로 로스터에서 찾아 영문 이름 우선으로 표시
+function displayName(key){
+  if(!key) return '';
+  const p = roster.find(p=>personKey(p) === key);
+  return p ? displayNameOf(p) : key;
+}
 function getCurrentUser(){ return roster.find(p=>p.id === currentUserId) || null; }
-function getCurrentUserName(){ const u = getCurrentUser(); return u ? u.nameKo : ''; }
+function getCurrentUserName(){ return personKey(getCurrentUser()); }
 function newPersonId(){ return 'p' + Date.now() + Math.random().toString(36).slice(2,7); }
 
 function personAvatarHtml(p){
-  if(p.photo) return `<img class="avatar-photo" src="${p.photo}" alt="${escapeHtml(p.nameKo)}">`;
-  return `<div class="avatar-fallback" style="background:${hashColor(p.nameKo||p.id)}">${escapeHtml(initials(p.nameKo))}</div>`;
+  const label = displayNameOf(p);
+  if(p.photo) return `<img class="avatar-photo" src="${p.photo}" alt="${escapeHtml(label)}">`;
+  return `<div class="avatar-fallback" style="background:${hashColor(label||p.id)}">${escapeHtml(initials(label))}</div>`;
+}
+// 영문 이름을 메인으로, 한글 이름은 보조로 (둘 다 있을 때만 두 줄 표시)
+function nameLinesHtml(p){
+  const primary = (p.nameEn && p.nameEn.trim()) ? p.nameEn.trim() : (p.nameKo||'').trim();
+  const secondary = (p.nameEn && p.nameEn.trim() && p.nameKo && p.nameKo.trim()) ? p.nameKo.trim() : '';
+  return `<div class="name-en">${escapeHtml(primary)}</div>${secondary ? `<div class="name-ko">${escapeHtml(secondary)}</div>` : ''}`;
 }
 
 function renderWhoAmI(){
@@ -905,7 +983,7 @@ function renderWhoAmI(){
   if(!u){
     el.innerHTML = `<span class="who-text"><span class="who-name">로그인 안 함</span><span class="who-switch">클릭해서 본인 선택</span></span>`;
   } else {
-    el.innerHTML = `${personAvatarHtml(u)}<span class="who-text"><span class="who-name">${escapeHtml(u.nameKo)}</span><span class="who-switch">전환하기</span></span>`;
+    el.innerHTML = `${personAvatarHtml(u)}<span class="who-text"><span class="who-name">${escapeHtml(displayNameOf(u))}</span><span class="who-switch">전환하기</span></span>`;
   }
   el.onclick = openWhoAmI;
 }
@@ -920,8 +998,7 @@ function renderPeopleGrid(){
   grid.innerHTML = roster.map(p=>`
     <div class="people-card ${p.id===currentUserId?'current':''}" data-id="${p.id}">
       ${personAvatarHtml(p)}
-      <div class="name-ko">${escapeHtml(p.nameKo)}</div>
-      <div class="name-en">${escapeHtml(p.nameEn||'')}</div>
+      ${nameLinesHtml(p)}
       ${p.id===currentUserId ? '<div class="current-tag">✓ 현재 로그인됨</div>' : ''}
       <div class="people-actions">
         <button class="p-edit" data-id="${p.id}">수정</button>
@@ -958,7 +1035,7 @@ function openPersonModal(id){
     document.getElementById('personNameKo').value = p.nameKo;
     document.getElementById('personNameEn').value = p.nameEn||'';
     personPhotoData = p.photo || '';
-    preview.innerHTML = personPhotoData ? `<img src="${personPhotoData}">` : escapeHtml(initials(p.nameKo));
+    preview.innerHTML = personPhotoData ? `<img src="${personPhotoData}">` : escapeHtml(initials(displayNameOf(p)));
   } else {
     document.getElementById('personModalTitle').textContent = '새 인원 등록';
     document.getElementById('personNameKo').value = '';
@@ -967,6 +1044,7 @@ function openPersonModal(id){
     preview.innerHTML = '?';
   }
   document.getElementById('personNameWarnHint').style.display = id ? '' : 'none';
+  document.getElementById('personNameErrorMsg').style.display = 'none';
   personModalBg.classList.add('open');
 }
 function closePersonModal(){ personModalBg.classList.remove('open'); }
@@ -981,13 +1059,20 @@ document.getElementById('personPhotoInput').addEventListener('change', (e)=>{
     document.getElementById('personPhotoPreview').innerHTML = `<img src="${personPhotoData}">`;
   }).catch(()=>{ toast('이미지를 처리하는 중 문제가 발생했어요.', 'warn'); });
 });
+['personNameKo','personNameEn'].forEach(fid=>{
+  document.getElementById(fid).addEventListener('input', ()=>{
+    document.getElementById('personNameErrorMsg').style.display = 'none';
+  });
+});
 document.getElementById('personSaveBtn').addEventListener('click', ()=>{
   const nameKo = document.getElementById('personNameKo').value.trim();
-  if(!nameKo){ toast('한글 이름을 입력해주세요.'); return; }
   const nameEn = document.getElementById('personNameEn').value.trim();
+  if(!nameKo && !nameEn){ document.getElementById('personNameErrorMsg').style.display = ''; return; }
+  document.getElementById('personNameErrorMsg').style.display = 'none';
   const id = document.getElementById('personEditId').value;
-  const dup = roster.some(p=>p.nameKo === nameKo && p.id !== id);
-  if(dup && !confirm(`이미 "${nameKo}"라는 이름이 등록되어 있어요. 같은 이름으로 계속할까요? (재택근무 기록이 이름으로 구분되어 헷갈릴 수 있어요)`)) return;
+  const newKey = personKey({nameKo, nameEn});
+  const dup = roster.some(p=>p.id !== id && personKey(p) === newKey);
+  if(dup && !confirm(`이미 같은 이름이 등록되어 있어요. 계속할까요? (재택근무 기록이 이름으로 구분되어 헷갈릴 수 있어요)`)) return;
   let p;
   if(id){
     p = roster.find(p=>p.id===id);
@@ -1017,8 +1102,7 @@ function renderWhoAmIGrid(){
     grid.innerHTML = roster.map(p=>`
       <div class="people-card" data-id="${p.id}">
         ${personAvatarHtml(p)}
-        <div class="name-ko">${escapeHtml(p.nameKo)}</div>
-        <div class="name-en">${escapeHtml(p.nameEn||'')}</div>
+        ${nameLinesHtml(p)}
       </div>
     `).join('');
     grid.querySelectorAll('.people-card').forEach(card=>{
@@ -1038,7 +1122,6 @@ function renderWhoAmIGrid(){
 function openWhoAmI(){
   renderWhoAmIGrid();
   document.getElementById('whoAmIAddForm').style.display = 'none';
-  document.getElementById('whoAmICloseRow').style.display = getCurrentUser() ? '' : 'none';
   whoAmIBg.classList.add('open');
 }
 function closeWhoAmI(){ whoAmIBg.classList.remove('open'); }
@@ -1049,6 +1132,12 @@ document.getElementById('whoAmIShowAddBtn').addEventListener('click', ()=>{
   document.getElementById('whoAmINameKo').value = '';
   document.getElementById('whoAmINameEn').value = '';
   document.getElementById('whoAmIPhotoInput').value = '';
+  document.getElementById('whoAmINameErrorMsg').style.display = 'none';
+});
+['whoAmINameKo','whoAmINameEn'].forEach(fid=>{
+  document.getElementById(fid).addEventListener('input', ()=>{
+    document.getElementById('whoAmINameErrorMsg').style.display = 'none';
+  });
 });
 document.getElementById('whoAmIPhotoInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
@@ -1060,10 +1149,12 @@ document.getElementById('whoAmIPhotoInput').addEventListener('change', (e)=>{
 });
 document.getElementById('whoAmIRegisterBtn').addEventListener('click', ()=>{
   const nameKo = document.getElementById('whoAmINameKo').value.trim();
-  if(!nameKo){ toast('한글 이름을 입력해주세요.'); return; }
-  const dup = roster.some(p=>p.nameKo === nameKo);
-  if(dup && !confirm(`이미 "${nameKo}"라는 이름이 등록되어 있어요. 혹시 그 사람인가요? 새로 등록하면 다른 사람으로 취급돼요. 그래도 계속할까요?`)) return;
   const nameEn = document.getElementById('whoAmINameEn').value.trim();
+  if(!nameKo && !nameEn){ document.getElementById('whoAmINameErrorMsg').style.display = ''; return; }
+  document.getElementById('whoAmINameErrorMsg').style.display = 'none';
+  const newKey = personKey({nameKo, nameEn});
+  const dup = roster.some(p=>personKey(p) === newKey);
+  if(dup && !confirm(`이미 같은 이름이 등록되어 있어요. 혹시 그 사람인가요? 새로 등록하면 다른 사람으로 취급돼요. 그래도 계속할까요?`)) return;
   const p = {id:newPersonId(), nameKo, nameEn, photo: whoAmIPhotoData};
   roster.push(p);
   saveRosterLocal(); fbSetItem('roster', p.id, p);
@@ -1076,7 +1167,6 @@ document.getElementById('whoAmIRegisterBtn').addEventListener('click', ()=>{
   if(document.getElementById('wfhView').style.display !== 'none') renderWfhAll();
   toast(`${nameKo}님으로 시작합니다.`);
 });
-document.getElementById('whoAmICloseBtn').addEventListener('click', closeWhoAmI);
 whoAmIBg.addEventListener('click', e=>{ if(e.target===whoAmIBg && getCurrentUser()) closeWhoAmI(); });
 
 const PRIORITY_COLOR = {urgent:'#ef4444', high:'#f59e0b', normal:'#3b82f6', low:'#9ca3af'};
@@ -1156,7 +1246,7 @@ function buildBoardSkeleton(){
   board.innerHTML = COLUMNS.map(c => `
     <div class="col" id="colwrap-${c.id}" data-status="${c.id}">
       <div class="col-head" style="background:${c.bg};color:${c.fg}">
-        <span>${c.label}</span>
+        <span class="col-label">${c.label}</span>
         <span class="count" id="cnt-${c.id}">0</span>
       </div>
       <div class="col-body col-drop" id="col-${c.id}"></div>
@@ -1485,9 +1575,23 @@ document.getElementById('boardMonthNext').addEventListener('click', ()=>{
 buildBoardSkeleton();
 render();
 
+/* ===== 모바일 사이드바 토글 ===== */
+const sidebarEl = document.getElementById('sidebar');
+const sidebarBackdropEl = document.getElementById('sidebarBackdrop');
+const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+function openSidebar(){ sidebarEl.classList.add('open'); sidebarBackdropEl.classList.add('open'); }
+function closeSidebar(){ sidebarEl.classList.remove('open'); sidebarBackdropEl.classList.remove('open'); }
+if(sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', ()=>{
+  sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+if(sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar);
+if(sidebarBackdropEl) sidebarBackdropEl.addEventListener('click', closeSidebar);
+
 /* ===== 탭 전환 ===== */
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
+    closeSidebar();
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
@@ -1704,8 +1808,9 @@ function renderCalendar(){
     const entries = people.map(p=>{
       const type = p.type || 'wfh';
       const meta = TYPE_META[type] || TYPE_META.wfh;
-      return `<div class="cal-entry" title="${escapeHtml(p.person)} · ${meta.label}">
-        <span class="cal-entry-name">${escapeHtml(p.person)}</span>
+      const shownName = displayName(p.person);
+      return `<div class="cal-entry" title="${escapeHtml(shownName)} · ${meta.label}">
+        <span class="cal-entry-name">${escapeHtml(shownName)}</span>
         <span class="cal-entry-tag" style="background:${meta.color}">${meta.short}</span>
       </div>`;
     }).join('');
@@ -1744,6 +1849,7 @@ function renderCalendar(){
         wfhDateFilterValue = d;
         renderWfhFilterBar();
         renderWfhTable();
+        openWfhRecordsModal();
       }
     });
   });
@@ -1769,14 +1875,14 @@ function updateQuotaInfo(){
   }
   const used = wfhEntries.filter(e=>e.person===person && (e.type||'wfh')==='wfh' && e.date.startsWith(monthPrefix)).length;
   const remaining = Math.max(0, allowed - used);
-  el.innerHTML = `<b>${escapeHtml(person)}</b>님의 ${mo}월 재택 가능 일수: 전체 <b>${allowed}일</b> 중 <b>${used}일</b> 사용 · <b>${remaining}일</b> 남음`;
+  el.innerHTML = `<b>${escapeHtml(displayName(person))}</b>님의 ${mo}월 재택 가능 일수: 전체 <b>${allowed}일</b> 중 <b>${used}일</b> 사용 · <b>${remaining}일</b> 남음`;
 }
 
 function renderSelectBar(){
   const bar = document.getElementById('wfhSelectBar');
   if(!selectionMode){
     bar.innerHTML = `
-      <span class="hint">날짜를 클릭하면 해당 날짜의 업무보고를 아래 표에서 볼 수 있어요</span>
+      <span class="hint">날짜를 클릭하면 해당 날짜의 업무보고를 팝업으로 볼 수 있어요</span>
       <div style="display:flex;gap:8px;">
         <button class="btn" id="wfhSelectModeBtn">재택 일정 선택하기</button>
         <button class="btn-ghost btn" id="leaveSelectModeBtn">휴가 등록하기</button>
@@ -1879,7 +1985,17 @@ function confirmSelection(){
 let wfhTimeValue = nowTime();
 let wfhTimeContext = null;
 function renderTimeStepper(){
-  document.getElementById('wfhTimeDisplay').textContent = wfhTimeValue;
+  document.getElementById('wfhTimeDisplay').value = wfhTimeValue;
+}
+// "0930", "9:30", "930" 처럼 입력해도 09:30으로 인식
+function parseTimeInput(raw){
+  const digits = raw.replace(/[^0-9]/g, '');
+  if(digits.length < 3) return null;
+  let h, mi;
+  if(digits.length <= 3){ h = Number(digits.slice(0,1)); mi = Number(digits.slice(1)); }
+  else { h = Number(digits.slice(0, digits.length-2)); mi = Number(digits.slice(-2)); }
+  if(isNaN(h) || isNaN(mi) || h > 23 || mi > 59) return null;
+  return String(h).padStart(2,'0') + ':' + String(mi).padStart(2,'0');
 }
 function adjustTime(deltaMin){
   let [h,mi] = wfhTimeValue.split(':').map(Number);
@@ -1901,7 +2017,7 @@ function updateWfhPanel(){
   const timeField = document.getElementById('wfhTimeField');
   const noteEl = document.getElementById('wfhNote');
   const reporterEl = document.getElementById('wfhReporterDisplay');
-  if(reporterEl) reporterEl.textContent = person || '상단에서 본인을 선택해주세요';
+  if(reporterEl) reporterEl.textContent = person ? displayName(person) : '상단에서 본인을 선택해주세요';
 
   if(!person){
     statusEl.innerHTML = '<span class="status-pill none">본인을 선택하세요</span>';
@@ -1990,7 +2106,7 @@ function renderWfhTable(){
     const flag = missingReport(e) ? ' style="color:#f59e0b;"' : '';
     return `<tr class="wfh-row" data-person="${escapeHtml(e.person)}" data-date="${e.date}">
       <td>${e.date}</td>
-      <td>${escapeHtml(e.person)}</td>
+      <td>${escapeHtml(displayName(e.person))}</td>
       <td>${typeCell}</td>
       <td>${e.clockIn || '-'}</td>
       <td>${e.clockOut || '-'}</td>
@@ -2031,6 +2147,13 @@ function renderWfhAll(){
   renderCalendar();
 }
 
+const wfhRecordsModalBg = document.getElementById('wfhRecordsModalBg');
+function openWfhRecordsModal(){ wfhRecordsModalBg.classList.add('open'); }
+function closeWfhRecordsModal(){ wfhRecordsModalBg.classList.remove('open'); }
+document.getElementById('wfhOpenRecordsBtn').addEventListener('click', openWfhRecordsModal);
+document.getElementById('wfhRecordsCloseBtn').addEventListener('click', closeWfhRecordsModal);
+wfhRecordsModalBg.addEventListener('click', e=>{ if(e.target===wfhRecordsModalBg) closeWfhRecordsModal(); });
+
 document.getElementById('wfhTargetDate').addEventListener('input', ()=>{ wfhTimeContext=null; updateWfhPanel(); });
 document.getElementById('wfhTargetDate').value = todayStr();
 
@@ -2048,6 +2171,17 @@ function bindHoldRepeat(btn, fn){
 }
 bindHoldRepeat(document.getElementById('wfhTimeUp'), ()=>adjustTime(1));
 bindHoldRepeat(document.getElementById('wfhTimeDown'), ()=>adjustTime(-1));
+
+const wfhTimeInput = document.getElementById('wfhTimeDisplay');
+function commitTimeInput(){
+  const parsed = parseTimeInput(wfhTimeInput.value);
+  if(parsed){ wfhTimeValue = parsed; }
+  renderTimeStepper();
+}
+wfhTimeInput.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ commitTimeInput(); wfhTimeInput.blur(); }
+});
+wfhTimeInput.addEventListener('blur', commitTimeInput);
 
 document.getElementById('wfhCalPrev').addEventListener('click', ()=>{
   calViewDate.setMonth(calViewDate.getMonth()-1);
@@ -2115,8 +2249,8 @@ function renderRequestsView(){
     <tr data-id="${r.id}">
       <td>${r.date}</td>
       <td class="req-edit-text" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 수정">${escapeHtml(r.text)}</td>
-      <td>${escapeHtml(r.author||'-')}</td>
-      <td><button class="req-status-btn" data-id="${r.id}" style="border:none;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;cursor:pointer;background:${r.done?'#1e3a2e':'#3a2f18'};color:${r.done?'#4ade80':'#facc15'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</button></td>
+      <td>${r.author ? escapeHtml(displayName(r.author)) : '-'}</td>
+      <td><button class="req-status-btn" data-id="${r.id}" style="border:none;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer;background:${r.done?'#1e3a2e':'#3a2f18'};color:${r.done?'#4ade80':'#facc15'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</button></td>
       <td><button class="wfh-del req-del" data-id="${r.id}" title="삭제">✕</button></td>
     </tr>
   `).join('');
