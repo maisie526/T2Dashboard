@@ -15,7 +15,7 @@
 <style>
   :root{
     --page:#14161c; --panel:#1b1e26; --border:#2a2e39;
-    --card:#e9eaee; --text:#1f2430; --muted:#8b8fa3;
+    --card:#20232b; --text:#e5e7eb; --muted:#8b8fa3;
     --fg:#ffffff; --bg-input:#12141a; --bg-ghost:#242833; --bg-ghost-hover:#2c3140;
     --bg-modal:#1b1e26; --fg-modal:#ffffff;
     --cal-today-bg:#161b2c; --cal-selected-bg:#173322;
@@ -23,6 +23,16 @@
     --stat-active-bg:#18233b; --stat-overdue-active-bg:#2a1717;
     --pill-in-bg:#1e3a2e; --pill-in-fg:#4ade80;
     --pill-out-bg:#3a2230; --pill-out-fg:#f87171;
+    --card-muted:#9199a8; --card-link-bg:rgba(59,130,246,0.15);
+    --card-action-bg:#343841; --card-action-fg:#d1d5db; --card-action-hover:#3f434e;
+    --col-backlog-bg:rgba(255,255,255,0.06); --col-backlog-fg:#c3c6d1;
+    --col-todo-bg:rgba(74,222,128,0.15); --col-todo-fg:#86efac;
+    --col-progress-bg:rgba(99,102,241,0.18); --col-progress-fg:#a5b4fc;
+    --col-teamreview-bg:rgba(168,85,247,0.18); --col-teamreview-fg:#d8b4fe;
+    --col-pmkreview-bg:rgba(244,63,94,0.18); --col-pmkreview-fg:#fda4af;
+    --col-onhold-bg:rgba(255,255,255,0.06); --col-onhold-fg:#c3c6d1;
+    --col-done-bg:#33474a; --col-done-fg:#ffffff;
+    --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     --shadow: 0 3px 10px rgba(0,0,0,0.28);
     color-scheme: dark;
   }
@@ -31,11 +41,21 @@
     --fg:#1f2430; --bg-input:#f3f4f6; --bg-ghost:#e8eaee; --bg-ghost-hover:#dde1e7;
     --bg-modal:#ffffff; --fg-modal:#1f2430;
     --cal-today-bg:#e7f0ff; --cal-selected-bg:#e3f7ea;
-    --card:#ffffff;
+    --card:#ffffff; --text:#1f2430;
     --card-surface:#f4f5f7; --card-surface-border:#d4d6dc;
     --stat-active-bg:#e7f0ff; --stat-overdue-active-bg:#fdecec;
     --pill-in-bg:#e3f7ea; --pill-in-fg:#15803d;
     --pill-out-bg:#fde8e8; --pill-out-fg:#b91c1c;
+    --card-muted:#9ca3af; --card-link-bg:#eef2fb;
+    --card-action-bg:#f3f4f7; --card-action-fg:#4b5563; --card-action-hover:#e5e7eb;
+    --col-backlog-bg:#e2e4ea; --col-backlog-fg:#374151;
+    --col-todo-bg:#cdeed9; --col-todo-fg:#1f6b46;
+    --col-progress-bg:#d9dcf7; --col-progress-fg:#33379e;
+    --col-teamreview-bg:#e9d6fa; --col-teamreview-fg:#6b21a8;
+    --col-pmkreview-bg:#fbd4de; --col-pmkreview-fg:#9d174d;
+    --col-onhold-bg:#e2e5ea; --col-onhold-fg:#4b5563;
+    --col-done-bg:#33474a; --col-done-fg:#ffffff;
+    --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     color-scheme: light;
   }
   *{box-sizing:border-box;}
@@ -100,6 +120,14 @@
   }
   .col-head .col-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
   .col-head .count{font-size:12px;font-weight:700;opacity:.75;}
+  .col-head-backlog{background:var(--col-backlog-bg);color:var(--col-backlog-fg);}
+  .col-head-todo{background:var(--col-todo-bg);color:var(--col-todo-fg);}
+  .col-head-progress{background:var(--col-progress-bg);color:var(--col-progress-fg);}
+  .col-head-teamreview{background:var(--col-teamreview-bg);color:var(--col-teamreview-fg);}
+  .col-head-pmkreview{background:var(--col-pmkreview-bg);color:var(--col-pmkreview-fg);}
+  .col-head-onhold{background:var(--col-onhold-bg);color:var(--col-onhold-fg);}
+  .col-head-done{background:var(--col-done-bg);color:var(--col-done-fg);}
+  .col-head-history{background:var(--col-history-bg);color:var(--col-history-fg);}
   .col-body{min-height:40px;flex:1;overflow-y:auto;padding-right:2px;}
   .col-body::-webkit-scrollbar{width:6px;}
   .col-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
@@ -135,44 +163,47 @@
     padding:5px 11px;border-radius:0 11px 0 8px;letter-spacing:.2px;
   }
   .client-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-  .client-dot{width:16px;height:16px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex:none;}
-  .client-name{font-size:12px;color:var(--muted);font-weight:700;}
+  .client-badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:800;color:#fff;}
   .card-title{font-size:14px;font-weight:700;line-height:1.4;margin-bottom:8px;}
   .meta-row{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:6px;}
-  .meta-row b{color:#374151;font-weight:700;}
+  .meta-row b{color:var(--text);font-weight:700;}
   .subtask-list{list-style:none;margin:0 0 8px;padding:0;}
   .subtask-row{display:flex;align-items:flex-start;gap:6px;padding:3px 0;cursor:pointer;position:relative;}
   .subtask-row input[type=checkbox]{margin-top:2px;flex:none;cursor:pointer;}
   .subtask-main{flex:1;min-width:0;}
   .subtask-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
-  .subtask-text{font-size:12px;color:#374151;line-height:1.5;}
-  .subtask-text.done{color:#9ca3af;text-decoration:line-through;}
-  .subtask-date{font-size:12px;color:#9ca3af;white-space:nowrap;flex:none;}
+  .subtask-text{font-size:12px;color:var(--text);line-height:1.5;}
+  .subtask-text.done{color:var(--card-muted);text-decoration:line-through;}
+  .subtask-date{font-size:12px;color:var(--card-muted);white-space:nowrap;flex:none;}
   .subtask-desc{
     display:none;position:absolute;left:0;right:0;top:100%;margin-top:3px;
     font-size:12px;color:#e5e7eb;line-height:1.5;background:#1f2430;border-radius:8px;
     padding:7px 9px;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:200;pointer-events:none;
   }
   .subtask-row:hover .subtask-desc, .subtask-row.pinned .subtask-desc{display:block;}
-  .subtask-more{font-size:12px;color:#9ca3af;padding-left:2px;}
+  .subtask-more{font-size:12px;color:var(--card-muted);padding-left:2px;}
   .foot-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
-  .avatars{display:flex;}
-  .avatar{
-    width:20px;height:20px;border-radius:50%;color:#fff;font-size:12px;font-weight:800;
-    display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-6px;
+  .assignee-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .assignee-badge{
+    display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 3px;border-radius:20px;
+    font-size:12px;font-weight:700;white-space:nowrap;
   }
-  .avatar:first-child{margin-left:0;}
+  .assignee-avatar-photo{width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none;}
+  .assignee-avatar-fallback{
+    width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
   .link-row{
     display:flex;align-items:center;gap:5px;font-size:12px;color:#3b82f6;margin-top:8px;
-    background:#eef2fb;padding:5px 8px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    background:var(--card-link-bg);padding:5px 8px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
   .card-actions{
     position:absolute;top:8px;left:8px;display:flex;gap:4px;opacity:0;transition:.15s;
   }
   .card-actions button{
-    border:none;background:#f3f4f7;border-radius:5px;width:20px;height:20px;font-size:12px;cursor:pointer;color:#4b5563;
+    border:none;background:var(--card-action-bg);border-radius:5px;width:20px;height:20px;font-size:12px;cursor:pointer;color:var(--card-action-fg);
   }
-  .card-actions button:hover{background:#e5e7eb;}
+  .card-actions button:hover{background:var(--card-action-hover);}
   .empty-hint{font-size:12px;color:var(--muted);text-align:center;padding:16px 6px;border:1px dashed var(--border);border-radius:10px;}
 
   /* modal */
@@ -381,6 +412,7 @@
   .roster-card .summary{font-size:12px;color:var(--fg);margin-top:6px;line-height:1.5;}
   .wfh-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;overflow-x:auto;}
   .wfh-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .wfh-table.hide-date-col .wfh-date-col{display:none;}
   .wfh-table th{text-align:left;color:var(--muted);font-weight:700;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
   .wfh-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
   .wfh-table tr:hover td{background:var(--bg-input);}
@@ -389,7 +421,14 @@
   .wfh-toolbar input, .wfh-toolbar select{
     padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg-input);color:var(--fg);font-family:inherit;
   }
-  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;}
+  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;margin-left:6px;}
+  .wfh-edit-btn{border:none;background:transparent;color:#3b82f6;cursor:pointer;font-size:12px;}
+  .wfh-save{border:none;background:transparent;color:#4ade80;cursor:pointer;font-size:14px;font-weight:800;}
+  .wfh-cancel{border:none;background:transparent;color:var(--card-muted);cursor:pointer;font-size:12px;margin-left:6px;}
+  .wfh-edit-row input{
+    padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;
+    background:var(--bg-input);color:var(--fg);font-family:inherit;
+  }
   input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.65);cursor:pointer;}
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 
@@ -419,8 +458,6 @@
   .stat-chip span{font-size:12px;color:var(--muted);}
   .stat-chip.overdue b{color:#f87171;}
 
-  /* priority accent */
-  .card{border-left-width:4px;border-left-style:solid;}
 </style>
 </head>
 <body>
@@ -599,19 +636,17 @@
   <div class="modal-bg" id="wfhRecordsModalBg">
     <div class="modal" style="width:820px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <h3 style="margin:0;">기록 목록</h3>
+        <h3 id="wfhRecordsTitle" style="margin:0;">기록 목록</h3>
         <button class="btn-ghost btn" id="wfhRecordsCloseBtn" style="padding:6px 12px;">닫기</button>
       </div>
-      <div class="wfh-toolbar" id="wfhFilterBar"></div>
       <div class="wfh-table-wrap">
-        <table class="wfh-table">
+        <table class="wfh-table" id="wfhRecordsTable">
           <thead>
-            <tr><th>날짜</th><th>이름</th><th>유형</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>업무 요약</th><th></th></tr>
+            <tr><th class="wfh-date-col">날짜</th><th>이름</th><th>유형</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>업무 요약</th><th></th></tr>
           </thead>
           <tbody id="wfhTableBody"></tbody>
         </table>
       </div>
-      <div class="hint" style="margin-top:8px;">행을 클릭하면 패널에 해당 날짜가 불러와져요</div>
     </div>
   </div>
 
@@ -916,6 +951,18 @@ function hashColor(str){
   return PALETTE[Math.abs(h) % PALETTE.length];
 }
 function initials(name){ return (name||'?').trim().slice(0,2); }
+// 카드 안의 작은 배지(고객사 점, 참여자 아바타)는 공간이 좁아 2글자가 줄바꿈되며 깨지므로 1글자만 사용
+function smallInitial(name){ return (name||'?').trim().slice(0,1); }
+// 카드에 표시할 담당자 뱃지: 로스터에 등록된 사진/영문이름을 우선 사용, 없으면 저장된 이름 그대로
+function participantBadgeHtml(name){
+  const person = roster.find(rp=>personKey(rp)===name);
+  const label = person ? displayNameOf(person) : name;
+  const bg = hashColor(name);
+  const avatar = (person && person.photo)
+    ? `<img class="assignee-avatar-photo" src="${person.photo}" alt="${escapeHtml(label)}">`
+    : `<span class="assignee-avatar-fallback" style="background:${bg}">${escapeHtml(smallInitial(label))}</span>`;
+  return `<span class="assignee-badge" style="background:${bg}22;color:${bg};" title="${escapeHtml(label)}">${avatar}<span>${escapeHtml(label)}</span></span>`;
+}
 function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1212,7 +1259,6 @@ document.getElementById('whoAmIRegisterBtn').addEventListener('click', ()=>{
 });
 whoAmIBg.addEventListener('click', e=>{ if(e.target===whoAmIBg && getCurrentUser()) closeWhoAmI(); });
 
-const PRIORITY_COLOR = {urgent:'#ef4444', high:'#f59e0b', normal:'#3b82f6', low:'#9ca3af'};
 
 function getFlag(t){
   const overdue = t.end && t.status!=='done' && t.status!=='history' && t.end < todayStr();
@@ -1288,7 +1334,7 @@ function buildBoardSkeleton(){
   const board = document.getElementById('board');
   board.innerHTML = COLUMNS.map(c => `
     <div class="col" id="colwrap-${c.id}" data-status="${c.id}">
-      <div class="col-head" style="background:${c.bg};color:${c.fg}">
+      <div class="col-head col-head-${c.id}">
         <span class="col-label">${c.label}</span>
         <span class="count" id="cnt-${c.id}">0</span>
       </div>
@@ -1332,24 +1378,19 @@ function cardHtml(t){
   const subDone = subtasks.filter(s=>s.done).length;
   const dateStr = (t.start || t.end) ? `${fmtShort(t.start)} ~ ${fmtShort(t.end)} (${subDone}/${subtasks.length})` : '';
   const shown = subtasks.slice(0,4);
-  const priColor = PRIORITY_COLOR[t.priority] || 'transparent';
   return `
-  <div class="card" draggable="true" data-id="${t.id}" style="border-left-color:${priColor}" title="우선순위: ${({urgent:'긴급',high:'중요',normal:'보통',low:'낮음'})[t.priority]||''}">
+  <div class="card" draggable="true" data-id="${t.id}">
     <span class="flag" style="background:${flag.color}">${flag.label}</span>
     <div class="card-actions">
       <button class="edit" data-id="${t.id}" title="수정">✎</button>
       <button class="del" data-id="${t.id}" title="삭제">✕</button>
     </div>
-    ${t.client ? `<div class="client-row"><span class="client-dot" style="background:${hashColor(t.client)}">${initials(t.client)}</span><span class="client-name">${escapeHtml(t.client)}</span></div>` : ''}
+    ${t.client ? `<div class="client-row"><span class="client-badge" style="background:${hashColor(t.client)}">${escapeHtml(t.client)}</span></div>` : ''}
     <div class="card-title">${escapeHtml(t.title)}</div>
-    ${dateStr ? `<div class="meta-row"><span>담당 <b>${escapeHtml(t.assignee||'-')}</b></span><span>${dateStr}</span></div>` : (t.assignee ? `<div class="meta-row"><span>담당 <b>${escapeHtml(t.assignee)}</b></span></div>` : '')}
+    ${dateStr ? `<div class="meta-row"><span>${dateStr}</span></div>` : ''}
     ${shown.length ? `<ul class="subtask-list" draggable="false">${shown.map((s,i)=>subtaskRowHtml(s,i,t.id)).join('')}</ul>` : ''}
     ${subtasks.length > 4 ? `<div class="subtask-more">+${subtasks.length-4}개 더보기 (수정에서 확인)</div>` : ''}
-    <div class="foot-row">
-      <div class="avatars">
-        ${(t.participants||[]).slice(0,4).map(p=>`<span class="avatar" style="background:${hashColor(p)}" title="${escapeHtml(p)}">${initials(p)}</span>`).join('')}
-      </div>
-    </div>
+    ${(t.participants||[]).length ? `<div class="foot-row"><div class="assignee-row">${t.participants.slice(0,4).map(participantBadgeHtml).join('')}</div></div>` : ''}
     ${t.link ? `<div class="link-row">🔗 <span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.link)}</span></div>` : ''}
   </div>`;
 }
@@ -2121,67 +2162,124 @@ function missingReport(e){
 }
 
 let wfhDateFilterValue = '';
-let wfhMissingOnly = false;
 
 function renderWfhFilterBar(){
-  const bar = document.getElementById('wfhFilterBar');
-  const missingCount = wfhEntries.filter(missingReport).length;
-  const dateInfo = wfhDateFilterValue
-    ? `<span class="hint"><b style="color:#fff;">${wfhDateFilterValue}</b> 기록만 보는 중</span>
-       <button class="btn-ghost btn" id="wfhClearDateBtn" style="padding:6px 12px;font-size:12px;">전체 보기</button>`
-    : `<span class="hint">전체 기록이에요. 달력에서 날짜를 클릭하면 그 날짜 기록만 볼 수 있어요.</span>`;
-  bar.innerHTML = `${dateInfo}
-    <button class="btn-ghost btn" id="wfhMissingToggleBtn" style="padding:6px 12px;font-size:12px;${wfhMissingOnly ? 'background:#3a2f18;border-color:#f59e0b;color:#facc15;' : ''}">
-      ⚠️ 미작성 보고 ${missingCount}건${wfhMissingOnly ? ' · 해제' : ''}
-    </button>`;
+  const titleEl = document.getElementById('wfhRecordsTitle');
+  const table = document.getElementById('wfhRecordsTable');
   if(wfhDateFilterValue){
-    document.getElementById('wfhClearDateBtn').addEventListener('click', ()=>{
-      wfhDateFilterValue = '';
-      renderWfhFilterBar();
-      renderWfhTable();
-    });
+    titleEl.textContent = wfhDateFilterValue;
+    titleEl.style.fontSize = '22px';
+    table.classList.add('hide-date-col');
+  } else {
+    titleEl.textContent = '기록 목록';
+    titleEl.style.fontSize = '';
+    table.classList.remove('hide-date-col');
   }
-  document.getElementById('wfhMissingToggleBtn').addEventListener('click', ()=>{
-    wfhMissingOnly = !wfhMissingOnly;
-    renderWfhFilterBar();
-    renderWfhTable();
-  });
 }
 
 function getWfhFiltered(){
   return wfhEntries.filter(e=>{
     if(wfhDateFilterValue && e.date !== wfhDateFilterValue) return false;
-    if(wfhMissingOnly && !missingReport(e)) return false;
     return true;
   }).sort((a,b)=> b.date.localeCompare(a.date) || a.person.localeCompare(b.person));
+}
+
+let wfhEditingId = null;
+
+function wfhEditRowHtml(e, typeCell){
+  return `<tr class="wfh-edit-row" data-id="${e.id}">
+    <td class="wfh-date-col">${e.date}</td>
+    <td>${escapeHtml(displayName(e.person))}</td>
+    <td>${typeCell}</td>
+    <td><input type="text" class="wfh-edit-in" inputmode="numeric" value="${e.clockIn||''}" placeholder="09:00" style="width:60px;"></td>
+    <td><input type="text" class="wfh-edit-out" inputmode="numeric" value="${e.clockOut||''}" placeholder="18:00" style="width:60px;"></td>
+    <td>${workedHours(e)}</td>
+    <td class="summary-cell">
+      <input type="text" class="wfh-edit-notein" value="${escapeHtml(e.noteIn||'')}" placeholder="출근 시 할 일" style="width:100%;margin-bottom:4px;">
+      <input type="text" class="wfh-edit-noteout" value="${escapeHtml(e.noteOut||'')}" placeholder="퇴근 시 정리" style="width:100%;">
+    </td>
+    <td style="white-space:nowrap;">
+      <button class="wfh-save" data-id="${e.id}" title="저장">✓</button>
+      <button class="wfh-cancel" title="취소">✕</button>
+    </td>
+  </tr>`;
 }
 
 function renderWfhTable(){
   const rows = getWfhFiltered();
   const body = document.getElementById('wfhTableBody');
-  if(!rows.length){ body.innerHTML = '<tr><td colspan="8" class="empty-hint">기록 없음</td></tr>'; return; }
+  const colspan = wfhDateFilterValue ? 7 : 8;
+  if(!rows.length){ body.innerHTML = `<tr><td colspan="${colspan}" class="empty-hint">기록 없음</td></tr>`; return; }
   body.innerHTML = rows.map(e=>{
     const type = e.type || 'wfh';
     const meta = TYPE_META[type];
     const typeCell = type === 'wfh' ? '재택근무' : `<span style="color:${meta.color};font-weight:700;">${meta.label}</span>`;
+    if(e.id === wfhEditingId) return wfhEditRowHtml(e, typeCell);
     const summary = [e.noteIn ? '출근: '+e.noteIn : '', e.noteOut ? '퇴근: '+e.noteOut : ''].filter(Boolean).join(' / ');
     const flag = missingReport(e) ? ' style="color:#f59e0b;"' : '';
+    const isOwner = e.person === getCurrentUserName();
     return `<tr class="wfh-row" data-person="${escapeHtml(e.person)}" data-date="${e.date}">
-      <td>${e.date}</td>
+      <td class="wfh-date-col">${e.date}</td>
       <td>${escapeHtml(displayName(e.person))}</td>
       <td>${typeCell}</td>
       <td>${e.clockIn || '-'}</td>
       <td>${e.clockOut || '-'}</td>
       <td>${workedHours(e)}</td>
       <td class="summary-cell"${flag}>${type==='wfh' ? (escapeHtml(summary) || (missingReport(e) ? '미작성' : '-')) : '-'}</td>
-      <td><button class="wfh-del" data-id="${e.id}" title="삭제">✕</button></td>
+      <td style="white-space:nowrap;">${isOwner ? `<button class="wfh-edit-btn" data-id="${e.id}" title="수정">✎</button><button class="wfh-del" data-id="${e.id}" title="삭제">✕</button>` : ''}</td>
     </tr>`;
   }).join('');
+  body.querySelectorAll('.wfh-edit-btn').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      wfhEditingId = Number(btn.dataset.id);
+      renderWfhTable();
+    });
+  });
+  body.querySelectorAll('.wfh-cancel').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      wfhEditingId = null;
+      renderWfhTable();
+    });
+  });
+  body.querySelectorAll('.wfh-save').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const editId = Number(btn.dataset.id);
+      const entry = wfhEntries.find(e=>e.id === editId);
+      if(!entry || entry.person !== getCurrentUserName()){
+        toast('본인이 작성한 기록만 수정할 수 있어요.', 'warn');
+        wfhEditingId = null; renderWfhTable();
+        return;
+      }
+      const row = btn.closest('tr');
+      const inRaw = row.querySelector('.wfh-edit-in').value.trim();
+      const outRaw = row.querySelector('.wfh-edit-out').value.trim();
+      const noteIn = row.querySelector('.wfh-edit-notein').value.trim();
+      const noteOut = row.querySelector('.wfh-edit-noteout').value.trim();
+      if(inRaw){ const parsed = parseTimeInput(inRaw); if(parsed) entry.clockIn = parsed; }
+      else entry.clockIn = '';
+      if(outRaw){ const parsed = parseTimeInput(outRaw); if(parsed) entry.clockOut = parsed; }
+      else entry.clockOut = '';
+      entry.noteIn = noteIn;
+      entry.noteOut = noteOut;
+      saveWfhLocal(); fbSetItem('wfh', entry.id, entry);
+      wfhEditingId = null;
+      renderWfhAll();
+      toast('수정했어요.');
+    });
+  });
   body.querySelectorAll('.wfh-del').forEach(btn=>{
     btn.addEventListener('click', (ev)=>{
       ev.stopPropagation();
+      const delId = Number(btn.dataset.id);
+      const entry = wfhEntries.find(e=>e.id === delId);
+      if(!entry || entry.person !== getCurrentUserName()){
+        toast('본인이 작성한 기록만 삭제할 수 있어요.', 'warn');
+        return;
+      }
       if(confirm('이 기록을 삭제할까요?')){
-        const delId = Number(btn.dataset.id);
         wfhEntries = wfhEntries.filter(e=>e.id !== delId);
         saveWfhLocal(); fbDeleteItem('wfh', delId); renderWfhAll();
       }
@@ -2197,6 +2295,8 @@ function renderWfhTable(){
       document.getElementById('wfhTargetDate').value = row.dataset.date;
       wfhTimeContext = null;
       updateWfhPanel();
+      closeWfhRecordsModal();
+      toast('선택한 날짜를 패널에 불러왔어요. 수정 후 저장해주세요.');
     });
   });
 }
