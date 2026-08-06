@@ -314,9 +314,9 @@
     .sidebar{
       position:fixed;top:0;left:0;width:240px;max-width:82vw;flex:none;height:100vh;
       transform:translateX(-100%);transition:transform .25s ease;z-index:200;
-      box-shadow:4px 0 18px rgba(0,0,0,0.4);
     }
-    .sidebar.open{transform:translateX(0);}
+    /* 닫혀있을 때(-100% 이동)도 그림자 blur가 화면 왼쪽 끝에 살짝 비쳐보이는 버그가 있어서 열렸을 때만 그림자 적용 */
+    .sidebar.open{transform:translateX(0);box-shadow:4px 0 18px rgba(0,0,0,0.4);}
     .sidebar-brand{display:block;}
     .sidebar .top-tabs{flex-direction:column;flex:1;margin:0;}
     .sidebar .whoami{margin-top:auto;flex:none;}
@@ -332,7 +332,7 @@
 
   /* ===== 모바일 대응 ===== */
   @media (max-width:640px){
-    .main-content{padding:14px 12px;}
+    .main-content{padding:32px 24px;}
     header{margin-bottom:14px;}
     header h1{font-size:20px;}
     header .sub{font-size:12px;}
