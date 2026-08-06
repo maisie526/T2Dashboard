@@ -361,14 +361,14 @@
     .wfh-table{font-size:12px;}
     .wfh-table th, .wfh-table td{padding:7px 6px;}
 
-    /* 모바일에서는 주말 칸을 숨기고 월~금 5일만 표시. 텍스트/숫자는 공간에 맞춰 작아져도 됨 */
-    .cal-grid{gap:3px;grid-template-columns:repeat(5,minmax(0,1fr));}
-    .cal-grid > *:nth-child(7n+1), .cal-grid > *:nth-child(7n){display:none;}
-    .cal-cell{min-height:86px;padding:3px;}
-    .cal-date{font-size:11px;}
-    .cal-office{font-size:10px;}
-    .cal-entry-name{font-size:10px;}
-    .cal-entry-tag{font-size:10px;}
+    /* 모바일에서도 7일 전체 표시. 좁은 폭에 맞춰 텍스트/숫자는 최대한 작게 */
+    .cal-grid{gap:2px;grid-template-columns:repeat(7,minmax(0,1fr));}
+    .cal-weekday{font-size:10px;padding:2px 0;}
+    .cal-cell{min-height:74px;padding:2px;border-radius:5px;}
+    .cal-date{font-size:9px;}
+    .cal-office{font-size:8px;}
+    .cal-entry-name{font-size:8px;}
+    .cal-entry-tag{font-size:8px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
