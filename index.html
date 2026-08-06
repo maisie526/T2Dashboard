@@ -82,12 +82,15 @@
     padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;
   }
   .theme-toggle-btn:hover{background:var(--bg-ghost-hover);}
-  .app-shell{display:flex;height:100vh;}
+  /* 모바일 브라우저의 100vh는 주소창이 접혔을 때 기준의 "가짜로 더 큰" 높이라서
+     주소창이 보이는 상태에서는 화면 위/아래 끝 요소가 실제 화면 밖으로 밀려 안 보이는 문제가 있었음
+     → 100dvh(동적 뷰포트 높이)를 지원하는 브라우저에서는 실제 보이는 높이를 쓰도록 함 (100vh는 구형 브라우저 폴백) */
+  .app-shell{display:flex;height:100vh;height:100dvh;}
   .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;}
   .sidebar{
     width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
     padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
-    height:100vh;overflow-y:auto;
+    height:100vh;height:100dvh;overflow-y:auto;
   }
   .sidebar-brand{font-size:14.5px;font-weight:800;color:var(--fg);padding:0 6px;}
   .sidebar .top-tabs{flex-direction:column;flex:1;margin-bottom:0;}
@@ -125,7 +128,7 @@
   .add-mini{width:100%;margin-top:8px;padding:8px;border:1px dashed #c7cad2;border-radius:8px;background:transparent;color:#6b7280;font-size:12.5px;cursor:pointer;}
   .add-mini:hover{background:#e9eaef;}
 
-  .board{display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;padding-bottom:14px;height:calc(100vh - 260px);min-height:340px;}
+  .board{display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;padding-bottom:14px;height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:340px;}
   .board::-webkit-scrollbar{height:8px;width:8px;}
   .board::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
   .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
@@ -317,7 +320,7 @@
     }
     .mobile-topbar .mobile-topbar-title{font-size:14px;font-weight:800;color:var(--fg);}
     .sidebar{
-      position:fixed;top:0;left:0;width:240px;max-width:82vw;flex:none;height:100vh;
+      position:fixed;top:0;left:0;width:240px;max-width:82vw;flex:none;height:100vh;height:100dvh;
       transform:translateX(-100%);transition:transform .25s ease;z-index:200;
     }
     /* 닫혀있을 때(-100% 이동)도 그림자 blur가 화면 왼쪽 끝에 살짝 비쳐보이는 버그가 있어서 열렸을 때만 그림자 적용 */
@@ -372,7 +375,7 @@
     #wfhCalGrid{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr));}
     #wfhCalGrid > *:nth-child(7n+1), #wfhCalGrid > *:nth-child(7n){display:none;}
     .cal-grid .cal-weekday{font-size:10px;padding:2px 0;}
-    .cal-grid .cal-cell{min-height:74px;padding:2px;border-radius:5px;}
+    .cal-grid .cal-cell{min-height:84px;padding:2px;border-radius:5px;}
     .cal-grid .cal-date{font-size:9px;}
     .cal-grid .cal-office{font-size:8px;}
     .cal-grid .cal-office-ext{display:none;}
@@ -383,6 +386,11 @@
     .cal-grid .cal-entry{padding:1px;}
     .cal-grid .cal-dot{width:3px;height:3px;border-width:1px;}
     .cal-grid .cal-entry-dots{gap:1px;}
+    /* 좁은 화면에서 "2026년 8월"과 "이번달 업무기록 보기"가 한 줄에 같이 있으면 폭이 모자라 줄바꿈됨
+       → 세로로 쌓아서 각 줄은 줄바꿈 없이 한 줄로 보이게 함 */
+    .wfh-cal-head h3{flex-direction:column;align-items:flex-start;gap:2px;font-size:17px;}
+    .wfh-records-link{white-space:nowrap;}
+    #wfhCalLabel{white-space:nowrap;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
@@ -423,6 +431,11 @@
   .wfh-field-grow textarea{overflow:hidden;resize:none;min-height:80px;}
   .wfh-actions{display:flex;gap:8px;margin-top:12px;}
   .wfh-actions button{flex:1;}
+  /* 캘린더 위 "재택 일정 수정하기"/"휴가 등록하기" 버튼: 기존 .btn보다 낮고 글자도 살짝 작게 */
+  #wfhSelectModeBtn, #leaveSelectModeBtn{
+    height:48px;padding:0 14px;font-size:13px;
+    display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;
+  }
   .wfh-cal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;display:flex;flex-direction:column;}
   .wfh-cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;}
   .wfh-cal-head h3{margin:0;font-size:20px;display:flex;align-items:center;gap:10px;}
