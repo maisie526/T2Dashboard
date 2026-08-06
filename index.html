@@ -368,7 +368,12 @@
   .cal-date{font-size:14px;font-weight:700;color:var(--fg);margin-bottom:4px;}
   .cal-entries{display:flex;flex-direction:column;gap:2px;}
   .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:var(--bg-input);border-radius:4px;padding:2px 4px;}
-  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
+  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+  .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
+  .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:none;}
+  .cal-dot.in.done{background:var(--pill-in-fg);}
+  .cal-dot.out.done{background:var(--pill-out-fg);}
   .cal-entry-tag{font-size:12px;font-weight:800;color:#fff;padding:2px 7px;border-radius:20px;flex:none;white-space:nowrap;}
   .cal-more{font-size:12px;color:var(--muted);padding-left:2px;}
   .status-pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;}
@@ -415,20 +420,38 @@
   .wfh-table.hide-date-col .wfh-date-col{display:none;}
   .wfh-table th{text-align:left;color:var(--muted);font-weight:700;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
   .wfh-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .wfh-table tbody tr:last-child td{border-bottom:none;}
   .wfh-table tr:hover td{background:var(--bg-input);}
-  .summary-cell{max-width:220px;color:var(--fg);}
+  .wfh-name-col{white-space:nowrap;}
+  .wfh-actions-col{width:1%;white-space:nowrap;}
+  .summary-cell{max-width:320px;width:100%;color:var(--fg);white-space:pre-line;}
+  .summary-block{margin-bottom:6px;}
+  .summary-block:last-child{margin-bottom:0;}
+  .time-badge{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;margin-bottom:2px;white-space:nowrap;}
+  .time-badge.in{background:var(--pill-in-bg);color:var(--pill-in-fg);}
+  .time-badge.out{background:var(--pill-out-bg);color:var(--pill-out-fg);}
+  .wfh-table td.wfh-actions-cell{vertical-align:middle;}
+  .wfh-actions-stack{display:flex;flex-direction:row;gap:8px;align-items:center;justify-content:center;}
+  .wfh-edit-time-row{display:flex;gap:6px;margin-bottom:4px;}
+  .wfh-edit-time-row input{flex:1;min-width:0;}
   .wfh-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
   .wfh-toolbar input, .wfh-toolbar select{
     padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg-input);color:var(--fg);font-family:inherit;
   }
-  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;margin-left:6px;}
+  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;}
   .wfh-edit-btn{border:none;background:transparent;color:#3b82f6;cursor:pointer;font-size:12px;}
   .wfh-save{border:none;background:transparent;color:#4ade80;cursor:pointer;font-size:14px;font-weight:800;}
-  .wfh-cancel{border:none;background:transparent;color:var(--card-muted);cursor:pointer;font-size:12px;margin-left:6px;}
+  .wfh-cancel{border:none;background:transparent;color:var(--card-muted);cursor:pointer;font-size:12px;}
   .wfh-edit-row input{
     padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;
     background:var(--bg-input);color:var(--fg);font-family:inherit;
   }
+  .wfh-edit-row textarea{
+    width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;
+    background:var(--bg-input);color:var(--fg);font-family:inherit;resize:none;overflow:hidden;
+    line-height:1.4;display:block;margin-bottom:4px;
+  }
+  .wfh-edit-row textarea:last-child{margin-bottom:0;}
   input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.65);cursor:pointer;}
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 
@@ -642,7 +665,7 @@
       <div class="wfh-table-wrap">
         <table class="wfh-table" id="wfhRecordsTable">
           <thead>
-            <tr><th class="wfh-date-col">날짜</th><th>이름</th><th>유형</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>업무 요약</th><th></th></tr>
+            <tr><th class="wfh-date-col">날짜</th><th>이름</th><th>업무 요약</th><th class="wfh-actions-col"></th></tr>
           </thead>
           <tbody id="wfhTableBody"></tbody>
         </table>
@@ -1912,8 +1935,15 @@ function renderCalendar(){
       const type = p.type || 'wfh';
       const meta = TYPE_META[type] || TYPE_META.wfh;
       const shownName = displayName(p.person);
+      const dotsHtml = type === 'wfh' ? `<span class="cal-entry-dots" title="출근 ${p.clockIn ? p.clockIn : '전'} · 퇴근 ${p.clockOut ? p.clockOut : '전'}">
+          <span class="cal-dot in ${p.clockIn ? 'done' : ''}"></span>
+          <span class="cal-dot out ${p.clockOut ? 'done' : ''}"></span>
+        </span>` : '';
       return `<div class="cal-entry" title="${escapeHtml(shownName)} · ${meta.label}">
-        <span class="cal-entry-name">${escapeHtml(shownName)}</span>
+        <span class="cal-entry-main">
+          <span class="cal-entry-name">${escapeHtml(shownName)}</span>
+          ${dotsHtml}
+        </span>
         <span class="cal-entry-tag" style="background:${meta.color}">${meta.short}</span>
       </div>`;
     }).join('');
@@ -2186,21 +2216,28 @@ function getWfhFiltered(){
 
 let wfhEditingId = null;
 
-function wfhEditRowHtml(e, typeCell){
+function autoGrowTextarea(el){
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function wfhEditRowHtml(e){
   return `<tr class="wfh-edit-row" data-id="${e.id}">
     <td class="wfh-date-col">${e.date}</td>
-    <td>${escapeHtml(displayName(e.person))}</td>
-    <td>${typeCell}</td>
-    <td><input type="text" class="wfh-edit-in" inputmode="numeric" value="${e.clockIn||''}" placeholder="09:00" style="width:60px;"></td>
-    <td><input type="text" class="wfh-edit-out" inputmode="numeric" value="${e.clockOut||''}" placeholder="18:00" style="width:60px;"></td>
-    <td>${workedHours(e)}</td>
+    <td class="wfh-name-col">${escapeHtml(displayName(e.person))}</td>
     <td class="summary-cell">
-      <input type="text" class="wfh-edit-notein" value="${escapeHtml(e.noteIn||'')}" placeholder="출근 시 할 일" style="width:100%;margin-bottom:4px;">
-      <input type="text" class="wfh-edit-noteout" value="${escapeHtml(e.noteOut||'')}" placeholder="퇴근 시 정리" style="width:100%;">
+      <div class="wfh-edit-time-row">
+        <input type="text" class="wfh-edit-in" inputmode="numeric" value="${e.clockIn||''}" placeholder="출근 09:00">
+        <input type="text" class="wfh-edit-out" inputmode="numeric" value="${e.clockOut||''}" placeholder="퇴근 18:00">
+      </div>
+      <textarea class="wfh-edit-notein" placeholder="출근 시 할 일" rows="1">${escapeHtml(e.noteIn||'')}</textarea>
+      <textarea class="wfh-edit-noteout" placeholder="퇴근 시 정리" rows="1">${escapeHtml(e.noteOut||'')}</textarea>
     </td>
-    <td style="white-space:nowrap;">
-      <button class="wfh-save" data-id="${e.id}" title="저장">✓</button>
-      <button class="wfh-cancel" title="취소">✕</button>
+    <td class="wfh-actions-cell">
+      <div class="wfh-actions-stack">
+        <button class="wfh-save" data-id="${e.id}" title="저장">✓</button>
+        <button class="wfh-cancel" title="취소">✕</button>
+      </div>
     </td>
   </tr>`;
 }
@@ -2208,27 +2245,34 @@ function wfhEditRowHtml(e, typeCell){
 function renderWfhTable(){
   const rows = getWfhFiltered();
   const body = document.getElementById('wfhTableBody');
-  const colspan = wfhDateFilterValue ? 7 : 8;
+  const colspan = wfhDateFilterValue ? 3 : 4;
   if(!rows.length){ body.innerHTML = `<tr><td colspan="${colspan}" class="empty-hint">기록 없음</td></tr>`; return; }
   body.innerHTML = rows.map(e=>{
+    if(e.id === wfhEditingId) return wfhEditRowHtml(e);
     const type = e.type || 'wfh';
     const meta = TYPE_META[type];
-    const typeCell = type === 'wfh' ? '재택근무' : `<span style="color:${meta.color};font-weight:700;">${meta.label}</span>`;
-    if(e.id === wfhEditingId) return wfhEditRowHtml(e, typeCell);
-    const summary = [e.noteIn ? '출근: '+e.noteIn : '', e.noteOut ? '퇴근: '+e.noteOut : ''].filter(Boolean).join(' / ');
-    const flag = missingReport(e) ? ' style="color:#f59e0b;"' : '';
     const isOwner = e.person === getCurrentUserName();
+    let summaryHtml;
+    if(type !== 'wfh'){
+      summaryHtml = `<span class="time-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>`;
+    } else {
+      const blocks = [];
+      if(e.clockIn) blocks.push(`<div class="summary-block"><span class="time-badge in">출근 ${e.clockIn}</span>${e.noteIn ? `<div>${escapeHtml(e.noteIn)}</div>` : ''}</div>`);
+      if(e.clockOut) blocks.push(`<div class="summary-block"><span class="time-badge out">퇴근 ${e.clockOut}</span>${e.noteOut ? `<div>${escapeHtml(e.noteOut)}</div>` : ''}</div>`);
+      summaryHtml = blocks.length ? blocks.join('') : (missingReport(e) ? '미작성' : '-');
+    }
+    const flag = missingReport(e) ? ' style="color:#f59e0b;"' : '';
     return `<tr class="wfh-row" data-person="${escapeHtml(e.person)}" data-date="${e.date}">
       <td class="wfh-date-col">${e.date}</td>
-      <td>${escapeHtml(displayName(e.person))}</td>
-      <td>${typeCell}</td>
-      <td>${e.clockIn || '-'}</td>
-      <td>${e.clockOut || '-'}</td>
-      <td>${workedHours(e)}</td>
-      <td class="summary-cell"${flag}>${type==='wfh' ? (escapeHtml(summary) || (missingReport(e) ? '미작성' : '-')) : '-'}</td>
-      <td style="white-space:nowrap;">${isOwner ? `<button class="wfh-edit-btn" data-id="${e.id}" title="수정">✎</button><button class="wfh-del" data-id="${e.id}" title="삭제">✕</button>` : ''}</td>
+      <td class="wfh-name-col">${escapeHtml(displayName(e.person))}</td>
+      <td class="summary-cell"${flag}>${summaryHtml}</td>
+      <td class="wfh-actions-cell">${isOwner ? `<div class="wfh-actions-stack"><button class="wfh-edit-btn" data-id="${e.id}" title="수정">✎</button><button class="wfh-del" data-id="${e.id}" title="삭제">✕</button></div>` : ''}</td>
     </tr>`;
   }).join('');
+  body.querySelectorAll('.wfh-edit-row textarea').forEach(ta=>{
+    autoGrowTextarea(ta);
+    ta.addEventListener('input', ()=>autoGrowTextarea(ta));
+  });
   body.querySelectorAll('.wfh-edit-btn').forEach(btn=>{
     btn.addEventListener('click', (ev)=>{
       ev.stopPropagation();
@@ -2283,20 +2327,6 @@ function renderWfhTable(){
         wfhEntries = wfhEntries.filter(e=>e.id !== delId);
         saveWfhLocal(); fbDeleteItem('wfh', delId); renderWfhAll();
       }
-    });
-  });
-  body.querySelectorAll('.wfh-row').forEach(row=>{
-    row.addEventListener('click', ()=>{
-      if(!getCurrentUser()){ toast('먼저 상단에서 본인을 선택해주세요.'); openWhoAmI(); return; }
-      if(row.dataset.person !== getCurrentUserName()){
-        toast('본인 기록만 패널에서 불러올 수 있어요.', 'warn');
-        return;
-      }
-      document.getElementById('wfhTargetDate').value = row.dataset.date;
-      wfhTimeContext = null;
-      updateWfhPanel();
-      closeWfhRecordsModal();
-      toast('선택한 날짜를 패널에 불러왔어요. 수정 후 저장해주세요.');
     });
   });
 }
