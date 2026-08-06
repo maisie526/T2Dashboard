@@ -83,7 +83,7 @@
   }
   .theme-toggle-btn:hover{background:var(--bg-ghost-hover);}
   .app-shell{display:flex;height:100vh;}
-  .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;padding:24px;}
+  .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;}
   .sidebar{
     width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
     padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
@@ -415,7 +415,7 @@
   .wfh-cal-nav{display:flex;gap:6px;}
   .wfh-cal-nav button{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
   .wfh-cal-nav button:hover{background:var(--bg-ghost-hover);}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;overflow-y:auto;align-content:start;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow-y:auto;overflow-x:hidden;align-content:start;scrollbar-gutter:stable;}
   .cal-grid::-webkit-scrollbar{width:8px;}
   .cal-weekday{font-size:12px;color:var(--muted);text-align:center;padding:4px 0;font-weight:700;position:sticky;top:0;background:var(--panel);z-index:2;}
   .cal-cell{min-height:112px;border-radius:8px;background:var(--bg-input);padding:6px;cursor:pointer;border:1px solid transparent;}
@@ -452,7 +452,7 @@
   .wfh-check-label{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--fg);}
   .cal-date{font-size:13px;font-weight:500;color:var(--fg);margin-bottom:4px;}
   .cal-entries{display:flex;flex-direction:column;gap:2px;}
-  .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:var(--bg-input);border-radius:4px;padding:2px 4px;}
+  .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:var(--bg-input);border-radius:4px;padding:2px 4px;overflow:hidden;}
   .cal-entry.type-wfh{background:var(--type-wfh-bg);}
   .cal-entry.type-annual{background:var(--type-annual-bg);}
   .cal-entry.type-half{background:var(--type-half-bg);}
@@ -469,7 +469,7 @@
   .cal-dot{width:6px;height:6px;border-radius:50%;background:transparent;border:1.3px solid var(--muted);flex:none;}
   .cal-dot.in.done{background:var(--pill-in-fg);border-color:var(--pill-in-fg);}
   .cal-dot.out.done{background:var(--pill-out-fg);border-color:var(--pill-out-fg);}
-  .cal-entry-tag{font-size:12px;font-weight:400;flex:none;white-space:nowrap;}
+  .cal-entry-tag{font-size:12px;font-weight:400;flex:none;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
   .cal-entry.type-wfh .cal-entry-tag{color:var(--type-wfh-fg);}
   .cal-entry.type-annual .cal-entry-tag{color:var(--type-annual-fg);}
   .cal-entry.type-half .cal-entry-tag{color:var(--type-half-fg);}
@@ -2209,25 +2209,36 @@ window.addEventListener('resize', adjustBoardHeight);
 window.addEventListener('load', adjustBoardHeight);
 setTimeout(adjustBoardHeight, 0);
 
-// 재택근무 캘린더도 보드처럼 화면 높이에 맞춰서 달력 부분만 스크롤되게 함
+// 재택근무 캘린더/오른쪽 패널 모두 화면 높이에 맞춰서 각자 내부에서만 스크롤되게 함
+// (오른쪽 패널이 달력보다 길면 그만큼 메인 영역 전체가 늘어나서 페이지가 살짝 흔들리는 원인이 됐음)
 function adjustWfhCalHeight(){
   const grid = document.getElementById('wfhCalGrid');
+  const panel = document.querySelector('.wfh-panel');
   if(!grid || grid.offsetParent === null) return;
   // 화면이 좁아져서 달력/기록 패널이 세로로 쌓이는 레이아웃에서는 달력에 별도 스크롤을 주지 않고
   // 페이지 스크롤 하나로만 움직이게 함 (그래야 스크롤 두 개가 겹쳐 헷갈리지 않음)
   if(window.innerWidth <= 900){
     grid.style.height = '';
+    if(panel){ panel.style.maxHeight = ''; panel.style.overflowY = ''; }
     return;
   }
-  const rect = grid.getBoundingClientRect();
-  const panel = grid.closest('.wfh-cal');
-  const panelPadBottom = panel ? parseFloat(getComputedStyle(panel).paddingBottom) || 0 : 0;
-  const panelBorderBottom = panel ? parseFloat(getComputedStyle(panel).borderBottomWidth) || 0 : 0;
-  // 사이드 메뉴 맨 아래 테마 전환 버튼과 달력 패널 아래쪽이 같은 선에서 맞춰지도록 그 버튼의 y좌표를 기준으로 삼음
+  const calPanel = grid.closest('.wfh-cal');
+  const calPadBottom = calPanel ? parseFloat(getComputedStyle(calPanel).paddingBottom) || 0 : 0;
+  const calBorderBottom = calPanel ? parseFloat(getComputedStyle(calPanel).borderBottomWidth) || 0 : 0;
+  // 사이드 메뉴 맨 아래 테마 전환 버튼과 아래쪽이 같은 선에서 맞춰지도록 그 버튼의 y좌표를 기준으로 삼음
   const toggleBtn = document.getElementById('themeToggleBtn');
   const bottomLimit = toggleBtn ? toggleBtn.getBoundingClientRect().bottom : window.innerHeight - 20;
-  const h = bottomLimit - rect.top - panelPadBottom - panelBorderBottom;
-  grid.style.height = Math.max(280, h) + 'px';
+
+  const gridRect = grid.getBoundingClientRect();
+  const gridHeight = bottomLimit - gridRect.top - calPadBottom - calBorderBottom;
+  grid.style.height = Math.max(280, gridHeight) + 'px';
+
+  if(panel){
+    const panelRect = panel.getBoundingClientRect();
+    const panelMaxHeight = bottomLimit - panelRect.top;
+    panel.style.maxHeight = Math.max(240, panelMaxHeight) + 'px';
+    panel.style.overflowY = 'auto';
+  }
 }
 window.addEventListener('resize', adjustWfhCalHeight);
 window.addEventListener('load', adjustWfhCalHeight);
