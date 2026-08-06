@@ -81,7 +81,7 @@
   }
   .theme-toggle-btn:hover{background:var(--bg-ghost-hover);}
   .app-shell{display:flex;min-height:100vh;}
-  .main-content{flex:1;min-width:0;padding:24px 24px 60px;}
+  .main-content{flex:1;min-width:0;padding:24px;}
   .sidebar{
     width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
     padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
@@ -245,6 +245,15 @@
   .cd-subtask-date{font-size:12px;color:var(--muted);white-space:nowrap;flex:none;}
   .cd-subtask-desc{font-size:12.5px;color:var(--muted);margin-top:3px;padding-left:22px;}
   .cd-subtask-assignees{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;padding-left:22px;}
+  .req-comment-list{list-style:none;margin:0 0 12px;padding:0;}
+  .req-comment-item{padding:8px 0;border-bottom:1px solid var(--border);}
+  .req-comment-item:last-child{border-bottom:none;}
+  .req-comment-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px;}
+  .req-comment-author{font-size:12.5px;font-weight:800;color:var(--fg-modal);}
+  .req-comment-date{font-size:11px;color:var(--muted);flex:none;}
+  .req-comment-text{font-size:13px;color:var(--fg-modal);white-space:pre-line;line-height:1.5;}
+  .req-comment-form{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .req-comment-form textarea{width:100%;resize:vertical;min-height:50px;font-family:inherit;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--fg-modal);font-size:13px;}
   .cd-link{font-size:13px;color:#3b82f6;word-break:break-all;}
 
   /* modal */
@@ -321,7 +330,7 @@
 
   /* ===== 모바일 대응 ===== */
   @media (max-width:640px){
-    .main-content{padding:14px 12px 40px;}
+    .main-content{padding:14px 12px;}
     header{margin-bottom:14px;}
     header h1{font-size:20px;}
     header .sub{font-size:12px;}
@@ -775,7 +784,7 @@
     <div class="wfh-table-wrap">
       <table class="wfh-table">
         <thead>
-          <tr><th style="width:110px;">날짜</th><th>내용</th><th style="width:120px;">상태</th><th style="width:40px;"></th></tr>
+          <tr><th style="width:110px;">날짜</th><th style="width:90px;">작성자</th><th>내용</th><th style="width:120px;">상태</th><th style="width:40px;"></th></tr>
         </thead>
         <tbody id="reqTableBody"></tbody>
       </table>
@@ -799,6 +808,19 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" id="reqCancelBtn">취소</button>
       <button class="btn" id="reqSaveBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="reqDetailModalBg">
+  <div class="modal" style="width:480px;">
+    <div class="cd-header">
+      <button class="btn-ghost btn" id="reqDetailCloseBtn" style="padding:6px 12px;">닫기</button>
+    </div>
+    <div id="reqDetailBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="reqDetailDelBtn" style="color:#dc2626;">삭제</button>
+      <button class="btn" id="reqDetailEditBtn">수정하기</button>
     </div>
   </div>
 </div>
@@ -2175,7 +2197,8 @@ function adjustBoardHeight(){
   const board = document.getElementById('board');
   if(!board || board.offsetParent === null) return;
   const rect = board.getBoundingClientRect();
-  const h = window.innerHeight - rect.top - 20;
+  // main-content 아래쪽 padding(24px)만큼만 여백을 두어서 화면 아래로 불필요한 전체 스크롤이 생기지 않게 함
+  const h = window.innerHeight - rect.top - 24;
   board.style.height = Math.max(340, h) + 'px';
 }
 window.addEventListener('resize', adjustBoardHeight);
@@ -3088,26 +3111,29 @@ function renderRequestsView(){
   const body = document.getElementById('reqTableBody');
   if(!body) return;
   const sorted = [...requests].sort((a,b)=> b.date.localeCompare(a.date) || b.id - a.id);
-  if(!sorted.length){ body.innerHTML = '<tr><td colspan="4" class="empty-hint">등록된 의견이 없어요</td></tr>'; return; }
+  if(!sorted.length){ body.innerHTML = '<tr><td colspan="5" class="empty-hint">등록된 의견이 없어요</td></tr>'; return; }
   body.innerHTML = sorted.map(r=>`
     <tr data-id="${r.id}">
       <td>${r.date}</td>
-      <td class="req-edit-text" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 수정">${escapeHtml(r.text)}</td>
+      <td>${escapeHtml(r.author ? displayName(r.author) : '-')}</td>
+      <td class="req-open-detail" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 자세히 보기">${escapeHtml(r.text)}${(r.comments&&r.comments.length) ? ` <span style="color:var(--muted);font-size:12px;">💬 ${r.comments.length}</span>` : ''}</td>
       <td><button class="req-status-btn" data-id="${r.id}" style="border:none;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer;background:${r.done?'#1e3a2e':'#3a2f18'};color:${r.done?'#4ade80':'#facc15'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</button></td>
       <td><button class="wfh-del req-del" data-id="${r.id}" title="삭제">✕</button></td>
     </tr>
   `).join('');
-  body.querySelectorAll('.req-edit-text').forEach(td=>{
-    td.addEventListener('click', ()=> openReqModal(Number(td.dataset.id)));
+  body.querySelectorAll('.req-open-detail').forEach(td=>{
+    td.addEventListener('click', ()=> openReqDetail(Number(td.dataset.id)));
   });
   body.querySelectorAll('.req-status-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
       const r = requests.find(r=>r.id===Number(btn.dataset.id));
       if(r){ r.done = !r.done; saveRequestsLocal(); fbSetItem('requests', r.id, r); renderRequestsView(); }
     });
   });
   body.querySelectorAll('.req-del').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
       if(confirm('이 의견을 삭제할까요?')){
         const delId = Number(btn.dataset.id);
         requests = requests.filter(r=>r.id!==delId);
@@ -3116,6 +3142,95 @@ function renderRequestsView(){
     });
   });
 }
+
+function reqDetailBodyHtml(r){
+  const comments = r.comments || [];
+  return `
+    <div class="cd-top-row">
+      <span class="cd-status-chip" id="reqDetailStatusChip" style="cursor:pointer;background:${r.done?'#1e3a2e':'var(--bg-ghost)'};color:${r.done?'#4ade80':'var(--muted)'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</span>
+      <span class="cd-status-chip">${r.date}</span>
+    </div>
+    <div class="cd-meta-grid">
+      <div class="cd-meta-item"><span class="cd-meta-label">작성자</span>${escapeHtml(r.author ? displayName(r.author) : '알 수 없음')}</div>
+    </div>
+    <div class="cd-section">
+      <div class="cd-section-title">내용</div>
+      <div style="font-size:14px;color:var(--fg-modal);white-space:pre-line;line-height:1.6;">${escapeHtml(r.text)}</div>
+    </div>
+    <div class="cd-section">
+      <div class="cd-section-title">댓글 (${comments.length})</div>
+      ${comments.length ? `<ul class="req-comment-list">${comments.map(c=>`
+        <li class="req-comment-item">
+          <div class="req-comment-top">
+            <span class="req-comment-author">${escapeHtml(c.author ? displayName(c.author) : '알 수 없음')}</span>
+            <span class="req-comment-date">${c.createdAt||''}</span>
+          </div>
+          <div class="req-comment-text">${escapeHtml(c.text)}</div>
+        </li>`).join('')}</ul>` : `<div class="empty-hint">아직 댓글이 없어요</div>`}
+      <div class="req-comment-form">
+        <textarea id="reqCommentInput" placeholder="댓글을 남겨보세요" rows="2"></textarea>
+        <button class="btn" id="reqCommentSubmitBtn" style="align-self:flex-end;">댓글 등록</button>
+      </div>
+    </div>
+  `;
+}
+let reqDetailId = null;
+function renderReqDetailBody(r){
+  document.getElementById('reqDetailBody').innerHTML = reqDetailBodyHtml(r);
+  document.getElementById('reqDetailStatusChip').addEventListener('click', ()=>{
+    r.done = !r.done;
+    saveRequestsLocal(); fbSetItem('requests', r.id, r);
+    renderRequestsView();
+    renderReqDetailBody(r);
+  });
+  document.getElementById('reqCommentSubmitBtn').addEventListener('click', ()=>{
+    const ta = document.getElementById('reqCommentInput');
+    const text = ta.value.trim();
+    if(!text) return;
+    if(!getCurrentUser()){ toast('먼저 상단에서 본인을 선택해주세요.'); openWhoAmI(); return; }
+    const comments = r.comments || [];
+    const newComment = {
+      id: comments.length ? Math.max(...comments.map(c=>c.id))+1 : 1,
+      author: getCurrentUserName(),
+      text,
+      createdAt: todayStr(),
+    };
+    r.comments = [...comments, newComment];
+    saveRequestsLocal(); fbSetItem('requests', r.id, r);
+    renderReqDetailBody(r);
+    renderRequestsView();
+  });
+}
+function openReqDetail(id){
+  const r = requests.find(r=>r.id===id);
+  if(!r) return;
+  reqDetailId = id;
+  renderReqDetailBody(r);
+  document.getElementById('reqDetailModalBg').classList.add('open');
+}
+function closeReqDetail(){
+  document.getElementById('reqDetailModalBg').classList.remove('open');
+  reqDetailId = null;
+}
+document.getElementById('reqDetailCloseBtn').addEventListener('click', closeReqDetail);
+document.getElementById('reqDetailModalBg').addEventListener('click', e=>{
+  if(e.target.id === 'reqDetailModalBg') closeReqDetail();
+});
+document.getElementById('reqDetailEditBtn').addEventListener('click', ()=>{
+  if(reqDetailId == null) return;
+  const id = reqDetailId;
+  closeReqDetail();
+  openReqModal(id);
+});
+document.getElementById('reqDetailDelBtn').addEventListener('click', ()=>{
+  if(reqDetailId == null) return;
+  if(confirm('이 의견을 삭제할까요?')){
+    requests = requests.filter(r=>r.id !== reqDetailId);
+    saveRequestsLocal(); fbDeleteItem('requests', reqDetailId);
+    closeReqDetail();
+    renderRequestsView();
+  }
+});
 
 const reqModalBg = document.getElementById('reqModalBg');
 function openReqModal(id){
@@ -3133,7 +3248,10 @@ function openReqModal(id){
   reqModalBg.classList.add('open');
 }
 function closeReqModal(){ reqModalBg.classList.remove('open'); }
-document.getElementById('reqAddBtn').addEventListener('click', ()=>openReqModal(null));
+document.getElementById('reqAddBtn').addEventListener('click', ()=>{
+  if(!getCurrentUser()){ toast('먼저 상단에서 본인을 선택해주세요.'); openWhoAmI(); return; }
+  openReqModal(null);
+});
 document.getElementById('reqCancelBtn').addEventListener('click', closeReqModal);
 reqModalBg.addEventListener('click', e=>{ if(e.target===reqModalBg) closeReqModal(); });
 document.getElementById('reqSaveBtn').addEventListener('click', ()=>{
@@ -3146,7 +3264,7 @@ document.getElementById('reqSaveBtn').addEventListener('click', ()=>{
     r = requests.find(r=>r.id===Number(id));
     Object.assign(r, {date, text});
   } else {
-    r = {id:newReqId(), date, text, author:getCurrentUserName(), done:false};
+    r = {id:newReqId(), date, text, author:getCurrentUserName(), done:false, comments:[]};
     requests.push(r);
   }
   saveRequestsLocal(); fbSetItem('requests', r.id, r);
