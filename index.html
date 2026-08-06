@@ -36,6 +36,9 @@
     --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     --mine-highlight:#facc15;
     --badge-unassigned-bg:rgba(148,163,184,0.25); --badge-unassigned-fg:#e2e8f0; --badge-unassigned-border:rgba(148,163,184,0.55);
+    --type-wfh-bg:rgba(124,111,234,0.22); --type-wfh-fg:#c4b5fd;
+    --type-annual-bg:rgba(245,158,11,0.20); --type-annual-fg:#fcd34d;
+    --type-half-bg:rgba(251,146,60,0.20); --type-half-fg:#fdba74;
     --shadow: 0 3px 10px rgba(0,0,0,0.28);
     color-scheme: dark;
   }
@@ -61,6 +64,9 @@
     --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     --mine-highlight:#92670d;
     --badge-unassigned-bg:rgba(107,114,128,0.16); --badge-unassigned-fg:#374151; --badge-unassigned-border:rgba(107,114,128,0.45);
+    --type-wfh-bg:#e6e1fb; --type-wfh-fg:#5b3fc4;
+    --type-annual-bg:#fef1c7; --type-annual-fg:#92400e;
+    --type-half-bg:#ffe7d6; --type-half-fg:#c2410c;
     color-scheme: light;
   }
   *{box-sizing:border-box;}
@@ -347,7 +353,7 @@
     .cal-date{font-size:13px;}
     .cal-office{font-size:12px;}
     .cal-entry-name{font-size:12px;}
-    .cal-entry-tag{font-size:12px;padding:2px 5px;}
+    .cal-entry-tag{font-size:12px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
@@ -429,6 +435,9 @@
   .cal-date{font-size:13px;font-weight:500;color:var(--fg);margin-bottom:4px;}
   .cal-entries{display:flex;flex-direction:column;gap:2px;}
   .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:var(--bg-input);border-radius:4px;padding:2px 4px;}
+  .cal-entry.type-wfh{background:var(--type-wfh-bg);}
+  .cal-entry.type-annual{background:var(--type-annual-bg);}
+  .cal-entry.type-half{background:var(--type-half-bg);}
   .cal-entry.mine .cal-entry-name{font-weight:800;color:var(--mine-highlight);}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
@@ -436,7 +445,10 @@
   .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:none;}
   .cal-dot.in.done{background:var(--pill-in-fg);}
   .cal-dot.out.done{background:var(--pill-out-fg);}
-  .cal-entry-tag{font-size:12px;font-weight:800;color:#fff;padding:2px 7px;border-radius:20px;flex:none;white-space:nowrap;}
+  .cal-entry-tag{font-size:12px;font-weight:400;flex:none;white-space:nowrap;}
+  .cal-entry.type-wfh .cal-entry-tag{color:var(--type-wfh-fg);}
+  .cal-entry.type-annual .cal-entry-tag{color:var(--type-annual-fg);}
+  .cal-entry.type-half .cal-entry-tag{color:var(--type-half-fg);}
   .cal-more{font-size:12px;color:var(--muted);padding-left:2px;}
   .status-pill{display:inline-block;font-size:12px;font-weight:800;padding:3px 9px;border-radius:20px;}
   .status-pill.in{background:var(--pill-in-bg);color:var(--pill-in-fg);}
@@ -2421,12 +2433,12 @@ function renderCalendar(){
           <span class="cal-dot in ${p.clockIn ? 'done' : ''}"></span>
           <span class="cal-dot out ${p.clockOut ? 'done' : ''}"></span>
         </span>` : '';
-      return `<div class="cal-entry ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${meta.label}">
+      return `<div class="cal-entry type-${type} ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${meta.label}">
         <span class="cal-entry-main">
           <span class="cal-entry-name">${escapeHtml(shownName)}</span>
           ${dotsHtml}
         </span>
-        <span class="cal-entry-tag" style="background:${meta.color}">${meta.short}</span>
+        <span class="cal-entry-tag">${meta.short}</span>
       </div>`;
     }).join('');
 
