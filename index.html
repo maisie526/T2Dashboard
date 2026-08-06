@@ -299,6 +299,10 @@
     .layout{flex-direction:column;}
     .backlog-panel{width:100%;flex:none;max-height:280px;}
 
+    /* 이 폭 이하에서는 JS가 달력에 별도 스크롤/고정높이를 주지 않아 실제로 스크롤바가 생기지 않는데도
+       scrollbar-gutter:stable 때문에 오른쪽에 빈 여백이 남아있었음 → 모바일에서는 꺼줌 */
+    .cal-grid{scrollbar-gutter:auto;}
+
     /* 좁은 화면에서는 사이드바를 접어두고, 햄버거 버튼으로 열면 화면 위로 펼쳐짐 */
     .app-shell{flex-direction:column;}
     .mobile-topbar{
@@ -372,6 +376,7 @@
     .cal-grid .cal-office-ext{display:none;}
     .cal-grid .cal-entry-name{font-size:8px;}
     .cal-grid .cal-entry-tag{font-size:8px;}
+    .cal-grid .cal-entry{padding:1px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
