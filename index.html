@@ -402,8 +402,9 @@
   .wfh-cal-nav{display:flex;gap:6px;}
   .wfh-cal-nav button{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
   .wfh-cal-nav button:hover{background:var(--bg-ghost-hover);}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-  .cal-weekday{font-size:12px;color:var(--muted);text-align:center;padding:4px 0;font-weight:700;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;overflow-y:auto;align-content:start;}
+  .cal-grid::-webkit-scrollbar{width:8px;}
+  .cal-weekday{font-size:12px;color:var(--muted);text-align:center;padding:4px 0;font-weight:700;position:sticky;top:0;background:var(--panel);z-index:2;}
   .cal-cell{min-height:112px;border-radius:8px;background:var(--bg-input);padding:6px;cursor:pointer;border:1px solid transparent;}
   .cal-cell:hover{border-color:#3b82f6;}
   .cal-cell.empty{background:transparent;cursor:default;}
@@ -594,7 +595,6 @@
     <div class="sidebar-brand">DSG-T2</div>
     <div class="top-tabs">
       <button class="tab-btn active" data-tab="board">📋 업무 보드</button>
-      <button class="tab-btn" data-tab="register">📝 업무 등록</button>
       <button class="tab-btn" data-tab="history">🗂 업무 히스토리</button>
       <button class="tab-btn" data-tab="wfh">🏠 재택근무 업무보고</button>
       <button class="tab-btn" data-tab="people">👥 인원 관리</button>
@@ -631,23 +631,6 @@
   <div class="board" id="board"></div>
   </div>
 
-  <div id="registerView" style="display:none;">
-    <header>
-      <div>
-        <h1 style="font-size:22px;">업무 등록</h1>
-        <div class="sub">고객사 요청이 들어오면 여기서 카드를 생성하세요. 생성된 카드는 Backlog에 들어가고, 보드에서 담당 컬럼으로 옮기면 됩니다.</div>
-      </div>
-      <button class="btn" id="registerAddBtn">+ 새 업무 생성</button>
-    </header>
-    <div class="wfh-table-wrap">
-      <table class="wfh-table">
-        <thead>
-          <tr><th>제목</th><th>고객사</th><th>상태</th><th>담당자</th><th></th></tr>
-        </thead>
-        <tbody id="registerTableBody"></tbody>
-      </table>
-    </div>
-  </div>
 
   <div id="peopleView" style="display:none;">
     <header>
@@ -1698,7 +1681,7 @@ function render(){
     if(filtered.length === 0){
       emptyMsg.style.display = '';
       emptyMsg.textContent = tasks.length === 0
-        ? '아직 등록된 업무가 없어요. "업무 등록" 탭에서 첫 업무를 만들어보세요.'
+        ? '아직 등록된 업무가 없어요. 오른쪽 위 "+ 업무 등록" 버튼으로 첫 업무를 만들어보세요.'
         : '조건에 맞는 업무가 없어요. 검색어, 필터, 월 선택을 확인해주세요.';
     } else {
       emptyMsg.style.display = 'none';
@@ -1706,7 +1689,6 @@ function render(){
   }
   attachEvents();
   populateFilters();
-  renderRegisterTable();
   renderBoardStats();
   renderMonthLabel();
 }
@@ -1741,25 +1723,6 @@ function renderBoardStats(){
       statFilter = (statFilter === f) ? null : f;
       render();
     });
-  });
-}
-
-function renderRegisterTable(){
-  const body = document.getElementById('registerTableBody');
-  if(!body) return;
-  const sorted = [...tasks].sort((a,b)=> b.id - a.id);
-  if(!sorted.length){ body.innerHTML = '<tr><td colspan="5" class="empty-hint">등록된 업무 없음</td></tr>'; return; }
-  body.innerHTML = sorted.map(t=>`
-    <tr data-id="${t.id}">
-      <td>${escapeHtml(t.title)}</td>
-      <td>${escapeHtml(t.client||'-')}</td>
-      <td>${STATUS_LABELS[t.status]||t.status}</td>
-      <td>${escapeHtml(taskAssigneeList(t).map(displayName).join(', ') || '-')}</td>
-      <td><button class="wfh-del reg-edit" data-id="${t.id}" style="color:#3b82f6;" title="수정">✎ 수정</button></td>
-    </tr>
-  `).join('');
-  body.querySelectorAll('.reg-edit').forEach(btn=>{
-    btn.addEventListener('click', ()=> openModal(Number(btn.dataset.id)));
   });
 }
 
@@ -2021,7 +1984,6 @@ function openModal(id, presetStatus){
 }
 function closeModal(){ modalBg.classList.remove('open'); }
 
-document.getElementById('registerAddBtn').addEventListener('click', ()=>openModal(null,'backlog'));
 document.getElementById('boardAddBtn').addEventListener('click', ()=>openModal(null,'backlog'));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 modalBg.addEventListener('click', e=>{ if(e.target===modalBg) closeModal(); });
@@ -2126,17 +2088,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.classList.add('active');
     const tab = btn.dataset.tab;
     document.getElementById('boardView').style.display = tab==='board' ? '' : 'none';
-    document.getElementById('registerView').style.display = tab==='register' ? '' : 'none';
     document.getElementById('peopleView').style.display = tab==='people' ? '' : 'none';
     document.getElementById('historyPageView').style.display = tab==='history' ? '' : 'none';
     document.getElementById('wfhView').style.display = tab==='wfh' ? '' : 'none';
     document.getElementById('requestsView').style.display = tab==='requests' ? '' : 'none';
     if(tab==='wfh') renderWfhAll();
-    if(tab==='register') renderRegisterTable();
     if(tab==='history') renderHistoryPage();
     if(tab==='people') renderPeopleGrid();
     if(tab==='requests') renderRequestsView();
     if(tab==='board') adjustBoardHeight();
+    if(tab==='wfh') setTimeout(adjustWfhCalHeight, 0);
   });
 });
 
@@ -2152,6 +2113,17 @@ function adjustBoardHeight(){
 window.addEventListener('resize', adjustBoardHeight);
 window.addEventListener('load', adjustBoardHeight);
 setTimeout(adjustBoardHeight, 0);
+
+// 재택근무 캘린더도 보드처럼 화면 높이에 맞춰서 달력 부분만 스크롤되게 함
+function adjustWfhCalHeight(){
+  const grid = document.getElementById('wfhCalGrid');
+  if(!grid || grid.offsetParent === null) return;
+  const rect = grid.getBoundingClientRect();
+  const h = window.innerHeight - rect.top - 20;
+  grid.style.height = Math.max(280, h) + 'px';
+}
+window.addEventListener('resize', adjustWfhCalHeight);
+window.addEventListener('load', adjustWfhCalHeight);
 
 /* ===== 업무 히스토리 (전체 업무, 기간별) ===== */
 function refDate(t){ return t.end || t.start || t.createdAt || ''; }
@@ -2462,7 +2434,7 @@ function renderCalendar(){
       continue;
     }
 
-    const notInOffice = people.filter(p=>{ const t = p.type||'wfh'; return t==='wfh' || t==='annual' || t==='half'; }).length;
+    const notInOffice = people.filter(p=>{ const t = p.type||'wfh'; return t==='wfh' || t==='annual'; }).length;
     const size = roster.length;
     const officeCount = Math.max(0, size - notInOffice);
     const officePct = size > 0 ? Math.round(officeCount / size * 100) : 0;
