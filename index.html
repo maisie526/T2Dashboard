@@ -369,11 +369,8 @@
     .wfh-table{font-size:12px;}
     .wfh-table th, .wfh-table td{padding:7px 6px;}
 
-    /* 7일로는 폭이 도저히 안 나와서 모바일에서는 주말(토/일) 칸을 숨기고 월~금 5일만 표시
-       (기본 .cal-grid{grid-template-columns:repeat(7,...)} 규칙이 소스 순서상 나중에 나와서
-       동일 우선순위(클래스 1개)일 때 그 규칙이 계속 덮어써서 7칸으로 보였음 → id로 우선순위를 높여서 확실히 5칸 적용) */
-    #wfhCalGrid{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr));}
-    #wfhCalGrid > *:nth-child(7n+1), #wfhCalGrid > *:nth-child(7n){display:none;}
+    /* PC는 7칸인데 모바일만 5칸이면 요일 배치가 헷갈려서 모바일도 7칸으로 통일 (텍스트를 최대한 작게) */
+    #wfhCalGrid{gap:2px;grid-template-columns:repeat(7,minmax(0,1fr));}
     .cal-grid .cal-weekday{font-size:10px;padding:2px 0;}
     /* 불필요한 여백은 줄이되 날짜+출근율 한 줄 들어갈 정도의 최소 높이는 유지 */
     .cal-grid .cal-cell{min-height:54px;padding:2px;border-radius:5px;}
