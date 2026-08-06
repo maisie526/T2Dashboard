@@ -375,7 +375,8 @@
     #wfhCalGrid{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr));}
     #wfhCalGrid > *:nth-child(7n+1), #wfhCalGrid > *:nth-child(7n){display:none;}
     .cal-grid .cal-weekday{font-size:10px;padding:2px 0;}
-    .cal-grid .cal-cell{min-height:84px;padding:2px;border-radius:5px;}
+    /* 불필요한 여백은 줄이되 날짜+출근율 한 줄 들어갈 정도의 최소 높이는 유지 */
+    .cal-grid .cal-cell{min-height:54px;padding:2px;border-radius:5px;}
     .cal-grid .cal-date{font-size:9px;}
     .cal-grid .cal-office{font-size:8px;}
     .cal-grid .cal-office-ext{display:none;}
