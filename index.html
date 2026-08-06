@@ -70,9 +70,11 @@
     color-scheme: light;
   }
   *{box-sizing:border-box;}
+  html, body{height:100%;}
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     background:var(--page); color:var(--fg); transition:background .2s,color .2s;
+    overflow:hidden;
   }
   .theme-toggle-btn{
     display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
@@ -80,8 +82,8 @@
     padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;
   }
   .theme-toggle-btn:hover{background:var(--bg-ghost-hover);}
-  .app-shell{display:flex;min-height:100vh;}
-  .main-content{flex:1;min-width:0;padding:24px;}
+  .app-shell{display:flex;height:100vh;}
+  .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;padding:24px;}
   .sidebar{
     width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
     padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
@@ -620,7 +622,7 @@
     <button class="theme-toggle-btn" id="themeToggleBtn">☀️ 라이트 모드로 보기</button>
   </div>
 
-  <div class="main-content">
+  <div class="main-content" id="mainContent">
   <div id="boardView">
   <header>
     <div>
@@ -2176,6 +2178,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     closeSidebar();
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    const mainContentEl = document.getElementById('mainContent');
+    if(mainContentEl) mainContentEl.scrollTop = 0;
     const tab = btn.dataset.tab;
     document.getElementById('boardView').style.display = tab==='board' ? '' : 'none';
     document.getElementById('peopleView').style.display = tab==='people' ? '' : 'none';
