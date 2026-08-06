@@ -299,9 +299,9 @@
     .layout{flex-direction:column;}
     .backlog-panel{width:100%;flex:none;max-height:280px;}
 
-    /* 이 폭 이하에서는 JS가 달력에 별도 스크롤/고정높이를 주지 않아 실제로 스크롤바가 생기지 않는데도
-       scrollbar-gutter:stable 때문에 오른쪽에 빈 여백이 남아있었음 → 모바일에서는 꺼줌 */
-    .cal-grid{scrollbar-gutter:auto;}
+    /* 이 폭 이하에서는 JS가 달력에 별도 스크롤/고정높이를 주지 않음. scrollbar-gutter:stable과
+       overflow-y:auto가 그대로 남아있으면 실제 스크롤이 없어도 오른쪽에 빈 공간이 남아서 완전히 꺼줌 */
+    .cal-grid{scrollbar-gutter:auto;overflow-y:visible;}
 
     /* 좁은 화면에서는 사이드바를 접어두고, 햄버거 버튼으로 열면 화면 위로 펼쳐짐 */
     .app-shell{flex-direction:column;}
@@ -365,17 +365,20 @@
     .wfh-table{font-size:12px;}
     .wfh-table th, .wfh-table td{padding:7px 6px;}
 
-    /* 모바일에서도 7일 전체 표시. 좁은 폭에 맞춰 텍스트/숫자는 최대한 작게
+    /* 7일로는 폭이 도저히 안 나와서 모바일에서는 주말(토/일) 칸을 숨기고 월~금 5일만 표시
        (아래쪽 본문 .cal-date 등의 기본(12~13px) 규칙이 소스 순서상 나중에 나와서
        동일 우선순위일 때 그 규칙이 덮어써버렸던 문제 → .cal-grid를 붙여 우선순위를 높임) */
-    .cal-grid{gap:2px;grid-template-columns:repeat(7,minmax(0,1fr));}
+    .cal-grid{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr));}
+    .cal-grid > *:nth-child(7n+1), .cal-grid > *:nth-child(7n){display:none;}
     .cal-grid .cal-weekday{font-size:10px;padding:2px 0;}
     .cal-grid .cal-cell{min-height:74px;padding:2px;border-radius:5px;}
     .cal-grid .cal-date{font-size:9px;}
     .cal-grid .cal-office{font-size:8px;}
     .cal-grid .cal-office-ext{display:none;}
     .cal-grid .cal-entry-name{font-size:8px;}
-    .cal-grid .cal-entry-tag{font-size:8px;}
+    /* 모바일에서는 재택/반차/연차 같은 타입 글씨 넣을 자리가 없어서 이름만 남기고
+       구분은 이미 있는 타입별 배경색(cal-entry.type-*)으로 대신함 */
+    .cal-grid .cal-entry-tag{display:none;}
     .cal-grid .cal-entry{padding:1px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
