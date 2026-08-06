@@ -141,6 +141,7 @@
      탑바 햄버거 버튼 등 무관한 요소까지 왼쪽 여백이 사라지는 부작용이 있었음 → 안전하게 원래대로 되돌림 */
   .board{
     display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;
+    overscroll-behavior:contain;
     height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:340px;
   }
   .board::-webkit-scrollbar{height:8px;width:8px;}
@@ -420,9 +421,10 @@
 
     .board{
       height:62vh;min-height:280px;
-      scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+      scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
       padding-left:24px;padding-right:24px;
       scroll-padding-left:24px;scroll-padding-right:24px;
+      overscroll-behavior:contain;
     }
     .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:center;}
     /* 첫/마지막 카드는 중앙정렬 대신 각각 좌/우 24px 여백을 유지한 채 스냅되도록
@@ -559,7 +561,7 @@
   .cal-entry.mine.type-half{background:var(--type-half-bg-mine);}
   /* 화면 크기와 상관없이 내 항목은 완전히 선명하게, 다른 사람 항목은 살짝만 옅게 (100% vs 80%) */
   .cal-entry.mine{opacity:1;}
-  .cal-entry:not(.mine){opacity:0.55;}
+  .cal-entry:not(.mine){opacity:0.8;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
