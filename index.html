@@ -75,6 +75,9 @@
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     background:var(--page); color:var(--fg); transition:background .2s,color .2s;
     overflow:hidden;
+    /* 한글은 기본적으로 글자 단위로 줄바꿈되는 경우가 많아서 "수정하기"가 "수/정하기"처럼 끊기곤 함
+       → 띄어쓰기 기준으로만 줄바꿈되도록 전체 사이트에 적용 */
+    word-break:keep-all;
   }
   .theme-toggle-btn{
     display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
