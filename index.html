@@ -427,6 +427,10 @@
   .type-btn[data-type="annual"].active{background:#ef4444;border-color:#ef4444;}
   .type-btn[data-type="half"].active{background:#f59e0b;border-color:#f59e0b;}
   .type-btn[data-type="hourly"].active{background:#8b5cf6;border-color:#8b5cf6;}
+  .hour-stepper{display:flex;align-items:center;gap:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:7px;padding:4px 8px;}
+  .hour-step-btn{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:22px;height:22px;cursor:pointer;font-size:13px;line-height:1;}
+  .hour-step-btn:hover{background:var(--bg-ghost-hover);}
+  .hour-step-value{font-size:12px;font-weight:700;color:var(--fg);min-width:38px;text-align:center;}
   .time-stepper{display:flex;align-items:center;gap:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:8px 12px;}
   .time-stepper button{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:12px;}
   .time-stepper button:hover{background:var(--bg-ghost-hover);}
@@ -442,9 +446,10 @@
   /* 다크모드에서는 밝은 색이 더 눈에 띄어서 '내 항목'을 원색 그대로 두고 나머지를 어둡게 눌러줌 */
   .cal-entry:not(.mine){box-shadow:inset 0 0 0 999px rgba(0,0,0,0.35);}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
-  /* 라이트모드에서는 반대로 진한 색이 더 눈에 띄어서 원래대로 '내 항목'만 어둡게 눌러줌 */
-  html[data-theme="light"] .cal-entry:not(.mine){box-shadow:none;}
-  html[data-theme="light"] .cal-entry.mine{box-shadow:inset 0 0 0 999px rgba(0,0,0,0.12);}
+  /* 라이트모드도 다크모드와 같은 방식: 검은 오버레이 대신 투명도를 낮춰서 다른 사람 항목을 옅게 만듦
+     (검은 오버레이를 쓰면 파스텔 배경이 탁한 갈색톤이 되고 글씨 대비도 떨어져서 투명도 방식으로 변경) */
+  html[data-theme="light"] .cal-entry:not(.mine){box-shadow:none;opacity:0.6;}
+  html[data-theme="light"] .cal-entry.mine{box-shadow:none;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
@@ -595,10 +600,10 @@
     <div class="sidebar-brand">DSG-T2</div>
     <div class="top-tabs">
       <button class="tab-btn active" data-tab="board">📋 업무 보드</button>
-      <button class="tab-btn" data-tab="history">🗂 업무 히스토리</button>
       <button class="tab-btn" data-tab="wfh">🏠 재택근무 업무보고</button>
+      <button class="tab-btn" data-tab="history">🗂 업무 히스토리</button>
       <button class="tab-btn" data-tab="people">👥 인원 관리</button>
-      <button class="tab-btn" data-tab="requests">💬 요청/문의</button>
+      <button class="tab-btn" data-tab="requests">💬 의견함</button>
     </div>
     <div id="whoAmI" class="whoami"></div>
     <button class="theme-toggle-btn" id="themeToggleBtn">☀️ 라이트 모드로 보기</button>
@@ -760,10 +765,10 @@
   <div id="requestsView" style="display:none;">
     <header>
       <div>
-        <h1 style="font-size:22px;">요청 / 문의</h1>
-        <div class="sub">대시보드에 필요한 기능이나 문의사항을 남겨주세요. 적용 여부는 상태 버튼을 눌러 바꿀 수 있어요.</div>
+        <h1 style="font-size:22px;">의견함</h1>
+        <div class="sub">대시보드를 쓰면서 불편한 점, 필요한 기능, 버그를 자유롭게 남겨주세요. 적용 여부는 상태 버튼을 눌러 바꿀 수 있어요.</div>
       </div>
-      <button class="btn" id="reqAddBtn">+ 새 요청 등록</button>
+      <button class="btn" id="reqAddBtn">+ 새 의견 등록</button>
     </header>
     <div class="wfh-table-wrap">
       <table class="wfh-table">
@@ -779,7 +784,7 @@
 
 <div class="modal-bg" id="reqModalBg">
   <div class="modal" style="width:420px;">
-    <h3 id="reqModalTitle">새 요청 / 문의 등록</h3>
+    <h3 id="reqModalTitle">새 의견 등록</h3>
     <input type="hidden" id="reqEditId">
     <div class="field">
       <label>날짜</label>
@@ -2118,6 +2123,12 @@ setTimeout(adjustBoardHeight, 0);
 function adjustWfhCalHeight(){
   const grid = document.getElementById('wfhCalGrid');
   if(!grid || grid.offsetParent === null) return;
+  // 화면이 좁아져서 달력/기록 패널이 세로로 쌓이는 레이아웃에서는 달력에 별도 스크롤을 주지 않고
+  // 페이지 스크롤 하나로만 움직이게 함 (그래야 스크롤 두 개가 겹쳐 헷갈리지 않음)
+  if(window.innerWidth <= 900){
+    grid.style.height = '';
+    return;
+  }
   const rect = grid.getBoundingClientRect();
   const h = window.innerHeight - rect.top - 20;
   grid.style.height = Math.max(280, h) + 'px';
@@ -2284,6 +2295,8 @@ function getPersonWfhScheduleDates(person){
   return new Set(wfhEntries.filter(e=>e.person===person && (e.type||'wfh')==='wfh').map(e=>e.date));
 }
 let leaveType = 'annual'; // 'annual' | 'half' | 'hourly'
+let halfPeriod = 'am'; // 'am' | 'pm' - 반차일 때 오전/오후
+let hourlyHours = 1; // 시간차일 때 시간 수 (1시간 단위)
 
 const TYPE_META = {
   wfh:    {label:'재택근무', short:'재택', color:'#7c6fea'},
@@ -2291,6 +2304,19 @@ const TYPE_META = {
   half:   {label:'반차', short:'반차', color:'#fb923c'},
   hourly: {label:'시간차', short:'시간차', color:'#ec4899'},
 };
+// 반차는 오전/오후, 시간차는 시간 수까지 표시해줘야 해서 meta.label/short 그대로 쓰지 않고 이 헬퍼를 거침
+function entryShortLabel(p){
+  const type = p.type || 'wfh';
+  if(type === 'half') return p.halfPeriod === 'pm' ? '오후반차' : '오전반차';
+  if(type === 'hourly') return `시간차 ${p.hours || 1}h`;
+  return (TYPE_META[type] || TYPE_META.wfh).short;
+}
+function entryFullLabel(p){
+  const type = p.type || 'wfh';
+  if(type === 'half') return `반차 (${p.halfPeriod === 'pm' ? '오후' : '오전'})`;
+  if(type === 'hourly') return `시간차 (${p.hours || 1}시간)`;
+  return (TYPE_META[type] || TYPE_META.wfh).label;
+}
 
 // 대한민국 공휴일 (2025~2027). 설날·추석 등 음력 명절은 매년 날짜가 바뀌므로
 // 새해가 되면 이 표에 다음 연도 데이터를 추가해줘야 해요.
@@ -2410,12 +2436,12 @@ function renderCalendar(){
           <span class="cal-dot in ${p.clockIn ? 'done' : ''}"></span>
           <span class="cal-dot out ${p.clockOut ? 'done' : ''}"></span>
         </span>` : '';
-      return `<div class="cal-entry type-${type} ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${meta.label}">
+      return `<div class="cal-entry type-${type} ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${entryFullLabel(p)}">
         <span class="cal-entry-main">
           <span class="cal-entry-name">${escapeHtml(shownName)}</span>
           ${dotsHtml}
         </span>
-        <span class="cal-entry-tag">${meta.short}</span>
+        <span class="cal-entry-tag">${entryShortLabel(p)}</span>
       </div>`;
     }).join('');
 
@@ -2529,7 +2555,18 @@ function renderSelectBar(){
       <button class="type-btn ${leaveType==='annual'?'active':''}" data-type="annual">연차</button>
       <button class="type-btn ${leaveType==='half'?'active':''}" data-type="half">반차</button>
       <button class="type-btn ${leaveType==='hourly'?'active':''}" data-type="hourly">시간차</button>
-    </div>` : '';
+    </div>
+    ${leaveType==='half' ? `
+    <div class="wfh-type-tabs">
+      <button class="type-btn ${halfPeriod==='am'?'active':''}" data-period="am">오전</button>
+      <button class="type-btn ${halfPeriod==='pm'?'active':''}" data-period="pm">오후</button>
+    </div>` : ''}
+    ${leaveType==='hourly' ? `
+    <div class="hour-stepper">
+      <button type="button" class="hour-step-btn" data-delta="-1">−</button>
+      <span class="hour-step-value">${hourlyHours}시간</span>
+      <button type="button" class="hour-step-btn" data-delta="1">+</button>
+    </div>` : ''}` : '';
   const confirmLabel = selectionMode === 'leave' ? '휴가 확정하기' : '재택 일정 확정하기';
 
   bar.innerHTML = `
@@ -2541,8 +2578,17 @@ function renderSelectBar(){
       <button class="btn" id="wfhConfirmSelBtn" style="padding:7px 14px;font-size:12px;">${confirmLabel}</button>
     </div>`;
 
-  bar.querySelectorAll('.type-btn').forEach(btn=>{
+  bar.querySelectorAll('.type-btn[data-type]').forEach(btn=>{
     btn.addEventListener('click', ()=>{ leaveType = btn.dataset.type; renderSelectBar(); });
+  });
+  bar.querySelectorAll('.type-btn[data-period]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ halfPeriod = btn.dataset.period; renderSelectBar(); });
+  });
+  bar.querySelectorAll('.hour-step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      hourlyHours = Math.min(8, Math.max(1, hourlyHours + Number(btn.dataset.delta)));
+      renderSelectBar();
+    });
   });
   document.getElementById('wfhCancelSelBtn').addEventListener('click', ()=>{
     selectionMode = false;
@@ -2621,6 +2667,8 @@ function confirmSelection(){
   selectedCalDates.forEach(d=>{
     const e = upsertEntry(person, d);
     e.type = kind;
+    if(kind === 'half') e.halfPeriod = halfPeriod; else delete e.halfPeriod;
+    if(kind === 'hourly') e.hours = hourlyHours; else delete e.hours;
     fbSetItem('wfh', e.id, e);
   });
   selectedCalDates.clear();
@@ -2782,7 +2830,7 @@ function renderWfhTable(){
     const isOwner = e.person === getCurrentUserName() || isOrphanedPerson(e.person);
     let summaryHtml;
     if(type !== 'wfh'){
-      summaryHtml = `<span class="time-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>`;
+      summaryHtml = `<span class="time-badge" style="background:${meta.color}22;color:${meta.color};">${entryFullLabel(e)}</span>`;
     } else {
       const blocks = [];
       if(e.clockIn) blocks.push(`<div class="summary-block"><span class="time-badge in">출근 ${e.clockIn}</span>${e.noteIn ? `<div>${escapeHtml(e.noteIn)}</div>` : ''}</div>`);
@@ -2954,7 +3002,7 @@ document.getElementById('wfhSaveNoteBtn').addEventListener('click', ()=>{
   renderWfhAll();
 });
 
-/* ===== 요청 / 문의 ===== */
+/* ===== 의견함 ===== */
 const REQ_KEY = 'requestsLog_v1';
 function loadRequests(){
   try{
@@ -2971,7 +3019,7 @@ function renderRequestsView(){
   const body = document.getElementById('reqTableBody');
   if(!body) return;
   const sorted = [...requests].sort((a,b)=> b.date.localeCompare(a.date) || b.id - a.id);
-  if(!sorted.length){ body.innerHTML = '<tr><td colspan="4" class="empty-hint">등록된 요청이 없어요</td></tr>'; return; }
+  if(!sorted.length){ body.innerHTML = '<tr><td colspan="4" class="empty-hint">등록된 의견이 없어요</td></tr>'; return; }
   body.innerHTML = sorted.map(r=>`
     <tr data-id="${r.id}">
       <td>${r.date}</td>
@@ -2991,7 +3039,7 @@ function renderRequestsView(){
   });
   body.querySelectorAll('.req-del').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      if(confirm('이 요청을 삭제할까요?')){
+      if(confirm('이 의견을 삭제할까요?')){
         const delId = Number(btn.dataset.id);
         requests = requests.filter(r=>r.id!==delId);
         saveRequestsLocal(); fbDeleteItem('requests', delId); renderRequestsView();
@@ -3005,11 +3053,11 @@ function openReqModal(id){
   document.getElementById('reqEditId').value = id || '';
   if(id){
     const r = requests.find(r=>r.id===id);
-    document.getElementById('reqModalTitle').textContent = '요청 / 문의 수정';
+    document.getElementById('reqModalTitle').textContent = '의견 수정';
     document.getElementById('reqDate').value = r.date;
     document.getElementById('reqText').value = r.text;
   } else {
-    document.getElementById('reqModalTitle').textContent = '새 요청 / 문의 등록';
+    document.getElementById('reqModalTitle').textContent = '새 의견 등록';
     document.getElementById('reqDate').value = todayStr();
     document.getElementById('reqText').value = '';
   }
