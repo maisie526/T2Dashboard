@@ -419,9 +419,14 @@
     .board{
       height:62vh;min-height:280px;
       scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+      padding-left:24px;padding-right:24px;
+      scroll-padding-left:24px;scroll-padding-right:24px;
     }
-    .board::before, .board::after{content:'';flex:none;width:10px;scroll-snap-align:none;}
-    .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:start;}
+    .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:center;}
+    /* 첫/마지막 카드는 중앙정렬 대신 각각 좌/우 24px 여백을 유지한 채 스냅되도록
+       start/end 정렬 사용 (board의 scroll-padding-left/right 24px과 맞물려 정확히 24px에서 스냅됨) */
+    .col:first-child{scroll-snap-align:start;}
+    .col:last-child{scroll-snap-align:end;}
 
     .modal{width:94vw;padding:16px;}
     .field-row{flex-direction:column;gap:0;}
