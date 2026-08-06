@@ -63,7 +63,7 @@
     --col-done-bg:#33474a; --col-done-fg:#ffffff;
     --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     --mine-highlight:#92670d;
-    --badge-unassigned-bg:rgba(107,114,128,0.16); --badge-unassigned-fg:#374151; --badge-unassigned-border:rgba(107,114,128,0.45);
+    --badge-unassigned-bg:rgba(107,114,128,0.16); --badge-unassigned-fg:#374151; --badge-unassigned-border:transparent;
     --type-wfh-bg:#e6e1fb; --type-wfh-fg:#5b3fc4;
     --type-annual-bg:#fef1c7; --type-annual-fg:#92400e;
     --type-half-bg:#ffe7d6; --type-half-fg:#c2410c;
@@ -166,9 +166,10 @@
 
   .card{
     background:var(--card);color:var(--text);border-radius:11px;padding:12px;
-    margin-bottom:10px;box-shadow:var(--shadow);position:relative;cursor:grab;border:1px solid transparent;
+    margin-bottom:10px;position:relative;cursor:grab;border:1px solid var(--border);
   }
   .card.dragging{opacity:.35;}
+  .drop-indicator{height:2px;background:#3b82f6;border-radius:2px;margin:0 0 8px;flex:none;}
   .card:hover .card-actions{opacity:1;}
   .progress-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .progress-bar-track{flex:1;height:6px;border-radius:3px;background:var(--bg-ghost);overflow:hidden;}
@@ -237,7 +238,8 @@
   .cd-subtask-list{list-style:none;margin:0;padding:0;}
   .cd-subtask-item{padding:7px 0;border-bottom:1px solid var(--border);}
   .cd-subtask-item:last-child{border-bottom:none;}
-  .cd-subtask-top{display:flex;align-items:baseline;gap:8px;}
+  .cd-subtask-top{display:flex;align-items:center;gap:8px;}
+  .cd-subtask-top input[type=checkbox]{flex:none;cursor:pointer;margin:0;}
   .cd-subtask-text{font-size:13.5px;color:var(--fg-modal);flex:1;min-width:0;}
   .cd-subtask-text.done{color:var(--muted);text-decoration:line-through;}
   .cd-subtask-date{font-size:12px;color:var(--muted);white-space:nowrap;flex:none;}
@@ -1623,10 +1625,10 @@ function cardDetailBodyHtml(t){
     ${(t.participants||[]).length ? `<div class="cd-section"><div class="cd-section-title">담당자</div><div class="assignee-row">${t.participants.map(participantBadgeHtml).join('')}</div></div>` : ''}
     <div class="cd-section">
       <div class="cd-section-title">세부 작업 (${subDone}/${subtasks.length})</div>
-      ${subtasks.length ? `<ul class="cd-subtask-list">${subtasks.map(s=>`
+      ${subtasks.length ? `<ul class="cd-subtask-list">${subtasks.map((s,i)=>`
         <li class="cd-subtask-item">
           <div class="cd-subtask-top">
-            <span>${s.done ? '✅' : '⬜'}</span>
+            <input type="checkbox" class="cd-subtask-check" data-idx="${i}" ${s.done?'checked':''}>
             <span class="cd-subtask-text ${s.done?'done':''}">${escapeHtml(s.text)}</span>
             ${s.date ? `<span class="cd-subtask-date">${fmtShort(s.date)}</span>` : ''}
           </div>
@@ -1637,11 +1639,27 @@ function cardDetailBodyHtml(t){
     ${t.link ? `<div class="cd-section"><div class="cd-section-title">관련 링크</div><a href="${escapeHtml(t.link)}" target="_blank" rel="noopener" class="cd-link">${escapeHtml(t.link)}</a></div>` : ''}
   `;
 }
+function renderCardDetailBody(t){
+  document.getElementById('cardDetailBody').innerHTML = cardDetailBodyHtml(t);
+  document.querySelectorAll('.cd-subtask-check').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      if(cardDetailId == null) return;
+      const task = tasks.find(tt=>tt.id===cardDetailId);
+      const idx = Number(cb.dataset.idx);
+      if(task && task.subtasks && task.subtasks[idx]){
+        task.subtasks[idx].done = cb.checked;
+        saveTasksLocal(); fbSetItem('tasks', task.id, task);
+        render();
+        renderCardDetailBody(task);
+      }
+    });
+  });
+}
 function openCardDetail(id){
   const t = tasks.find(t=>t.id===id);
   if(!t) return;
   cardDetailId = id;
-  document.getElementById('cardDetailBody').innerHTML = cardDetailBodyHtml(t);
+  renderCardDetailBody(t);
   document.getElementById('cardDetailModalBg').classList.add('open');
 }
 function closeCardDetail(){
@@ -1668,13 +1686,25 @@ document.getElementById('cardDetailDelBtn').addEventListener('click', ()=>{
   }
 });
 
+// 드래그로 카드를 옮긴 컬럼은 t.order 값으로 순서를 기억하고, 아직 한 번도 드래그하지 않은 컬럼은
+// 기존처럼 마감일 순으로 정렬함 (드래그 안 한 컬럼의 정렬이 갑자기 바뀌지 않도록)
+function sortColumnTasks(items){
+  const hasOrder = items.some(t=>typeof t.order === 'number');
+  if(!hasOrder) return [...items].sort((a,b)=>(a.end||'9999').localeCompare(b.end||'9999'));
+  return [...items].sort((a,b)=>{
+    const ao = typeof a.order === 'number' ? a.order : Infinity;
+    const bo = typeof b.order === 'number' ? b.order : Infinity;
+    if(ao !== bo) return ao - bo;
+    return (a.end||'9999').localeCompare(b.end||'9999');
+  });
+}
+
 function render(){
   const filtered = getFiltered();
   ALL_STATUSES.forEach(status=>{
     const body = document.getElementById('col-'+status);
     if(!body) return;
-    const items = filtered.filter(t=>t.status===status)
-      .sort((a,b)=>(a.end||'9999').localeCompare(b.end||'9999'));
+    const items = sortColumnTasks(filtered.filter(t=>t.status===status));
     const cntEl = document.getElementById('cnt-'+status);
     if(cntEl) cntEl.textContent = items.length;
     const wrap = document.getElementById('colwrap-'+status);
@@ -1776,18 +1806,51 @@ function attachEvents(){
   });
 }
 
+// 드래그 중 마우스 y좌표를 기준으로 카드가 들어갈 위치를 찾아서 그 사이에 삽입선을 보여줌
+function getDragAfterElement(container, y){
+  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  return cards.reduce((closest, child)=>{
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height/2;
+    if(offset < 0 && offset > closest.offset) return {offset, element: child};
+    return closest;
+  }, {offset: -Infinity, element: null}).element;
+}
+function clearDropIndicator(){
+  document.querySelectorAll('.drop-indicator').forEach(el=>el.remove());
+}
 document.addEventListener('dragover', e=>{
-  if(e.target.closest('.col-drop')) e.preventDefault();
+  const dropZone = e.target.closest('.col-drop');
+  if(!dropZone){ clearDropIndicator(); return; }
+  e.preventDefault();
+  const afterEl = getDragAfterElement(dropZone, e.clientY);
+  let indicator = document.querySelector('.drop-indicator');
+  if(!indicator){ indicator = document.createElement('div'); indicator.className = 'drop-indicator'; }
+  if(afterEl == null) dropZone.appendChild(indicator);
+  else dropZone.insertBefore(indicator, afterEl);
 });
 document.addEventListener('drop', e=>{
   const dropZone = e.target.closest('.col-drop');
+  clearDropIndicator();
   if(!dropZone || draggedId==null) return;
   const status = dropZone.id.replace('col-','');
   const t = tasks.find(t=>t.id===draggedId);
-  if(t){ t.status = status; saveTasksLocal(); fbSetItem('tasks', t.id, t); render(); }
+  if(!t){ draggedId = null; return; }
+  // 삽입선이 표시됐던 위치를 그대로 카드 순서(order)로 굳혀서 저장 - 그래야 새로고침해도 순서가 유지됨
+  const afterEl = getDragAfterElement(dropZone, e.clientY);
+  const idsInOrder = [...dropZone.querySelectorAll('.card')].map(el=>Number(el.dataset.id)).filter(id=>id !== draggedId);
+  const insertIdx = afterEl ? idsInOrder.indexOf(Number(afterEl.dataset.id)) : idsInOrder.length;
+  idsInOrder.splice(insertIdx === -1 ? idsInOrder.length : insertIdx, 0, draggedId);
+  t.status = status;
+  idsInOrder.forEach((id, idx)=>{
+    const task = tasks.find(tt=>tt.id===id);
+    if(task){ task.order = idx; fbSetItem('tasks', task.id, task); }
+  });
+  saveTasksLocal();
+  render();
   draggedId = null;
 });
-document.querySelectorAll('.col-drop').forEach(z=>z.addEventListener('dragover', e=>e.preventDefault()));
+document.addEventListener('dragend', clearDropIndicator);
 
 const modalBg = document.getElementById('modalBg');
 const subtaskEditor = document.getElementById('subtaskEditor');
@@ -2130,7 +2193,13 @@ function adjustWfhCalHeight(){
     return;
   }
   const rect = grid.getBoundingClientRect();
-  const h = window.innerHeight - rect.top - 20;
+  const panel = grid.closest('.wfh-cal');
+  const panelPadBottom = panel ? parseFloat(getComputedStyle(panel).paddingBottom) || 0 : 0;
+  const panelBorderBottom = panel ? parseFloat(getComputedStyle(panel).borderBottomWidth) || 0 : 0;
+  // 사이드 메뉴 맨 아래 테마 전환 버튼과 달력 패널 아래쪽이 같은 선에서 맞춰지도록 그 버튼의 y좌표를 기준으로 삼음
+  const toggleBtn = document.getElementById('themeToggleBtn');
+  const bottomLimit = toggleBtn ? toggleBtn.getBoundingClientRect().bottom : window.innerHeight - 20;
+  const h = bottomLimit - rect.top - panelPadBottom - panelBorderBottom;
   grid.style.height = Math.max(280, h) + 'px';
 }
 window.addEventListener('resize', adjustWfhCalHeight);
