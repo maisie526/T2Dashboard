@@ -134,7 +134,14 @@
   /* 아래쪽에 여백(padding-bottom)을 두면 카드가 딱 맞게 끝나는 것처럼 보여서
      더 스크롤할 게 있다는 게 잘 안 느껴짐 → 여백을 없애서 카드가 실제로 화면 아래로 잘려 보이게 함
      (컬럼 제목은 top:0 sticky라서 이 변경과 무관하게 계속 겹치지 않음) */
-  .board{display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:340px;}
+  /* main-content 오른쪽 패딩(24px)만큼 보드 영역 바깥에 불필요한 여백이 남아있어서
+     그 패딩 영역까지 보드가 파고들게(bleed) 해서 화면 끝까지 꽉 채움
+     (아래쪽 여백은 JS의 adjustBoardHeight()에서 높이를 직접 지정하므로 거기서 처리) */
+  .board{
+    display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;
+    height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:340px;
+    margin-right:-24px;
+  }
   .board::-webkit-scrollbar{height:8px;width:8px;}
   .board::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
   .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
@@ -2238,8 +2245,9 @@ function adjustBoardHeight(){
   const board = document.getElementById('board');
   if(!board || board.offsetParent === null) return;
   const rect = board.getBoundingClientRect();
-  // main-content 아래쪽 padding(24px)만큼만 여백을 두어서 화면 아래로 불필요한 전체 스크롤이 생기지 않게 함
-  const h = window.innerHeight - rect.top - 24;
+  // 아래쪽 여백 없이 화면 끝까지 보드가 채워지도록 함 (실제 스크롤 컨테이너는 main-content라
+  // 전체 페이지 스크롤이 추가로 생기진 않음)
+  const h = window.innerHeight - rect.top;
   board.style.height = Math.max(340, h) + 'px';
 }
 window.addEventListener('resize', adjustBoardHeight);
