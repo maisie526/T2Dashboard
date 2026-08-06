@@ -39,6 +39,7 @@
     --type-wfh-bg:rgba(124,111,234,0.4); --type-wfh-fg:#c4b5fd;
     --type-annual-bg:rgba(245,158,11,0.38); --type-annual-fg:#fcd34d;
     --type-half-bg:rgba(251,146,60,0.38); --type-half-fg:#fdba74;
+    --type-wfh-bg-mine:rgba(139,92,246,0.7); --type-annual-bg-mine:rgba(217,119,6,0.7); --type-half-bg-mine:rgba(234,88,12,0.65);
     --shadow: 0 3px 10px rgba(0,0,0,0.28);
     color-scheme: dark;
   }
@@ -67,6 +68,7 @@
     --type-wfh-bg:#e6e1fb; --type-wfh-fg:#5b3fc4;
     --type-annual-bg:#fef1c7; --type-annual-fg:#92400e;
     --type-half-bg:#ffe7d6; --type-half-fg:#c2410c;
+    --type-wfh-bg-mine:#a78bfa; --type-annual-bg-mine:#fbbf24; --type-half-bg-mine:#fb923c;
     color-scheme: light;
   }
   *{box-sizing:border-box;}
@@ -551,9 +553,13 @@
   .cal-entry.type-wfh{background:var(--type-wfh-bg);}
   .cal-entry.type-annual{background:var(--type-annual-bg);}
   .cal-entry.type-half{background:var(--type-half-bg);}
+  /* 내 항목만 같은 색 계열에서 채도를 더 높여 눈에 띄게 (다른 사람 항목 색은 그대로 유지) */
+  .cal-entry.mine.type-wfh{background:var(--type-wfh-bg-mine);}
+  .cal-entry.mine.type-annual{background:var(--type-annual-bg-mine);}
+  .cal-entry.mine.type-half{background:var(--type-half-bg-mine);}
   /* 화면 크기와 상관없이 내 항목은 완전히 선명하게, 다른 사람 항목은 살짝만 옅게 (100% vs 80%) */
   .cal-entry.mine{opacity:1;}
-  .cal-entry:not(.mine){opacity:0.8;}
+  .cal-entry:not(.mine){opacity:0.55;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
