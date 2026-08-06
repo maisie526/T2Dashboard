@@ -112,9 +112,12 @@
   .add-mini{width:100%;margin-top:8px;padding:8px;border:1px dashed #c7cad2;border-radius:8px;background:transparent;color:#6b7280;font-size:12.5px;cursor:pointer;}
   .add-mini:hover{background:#e9eaef;}
 
-  .board{display:flex;gap:14px;overflow-x:auto;flex:1;padding-bottom:14px;height:calc(100vh - 260px);min-height:340px;}
-  .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;height:100%;}
+  .board{display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;padding-bottom:14px;height:calc(100vh - 260px);min-height:340px;}
+  .board::-webkit-scrollbar{height:8px;width:8px;}
+  .board::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+  .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
   .col-head{
+    position:sticky;top:0;z-index:3;
     border-radius:10px;padding:9px 13px;font-size:14px;font-weight:800;margin-bottom:10px;
     display:flex;justify-content:space-between;align-items:center;flex:none;gap:8px;min-width:0;
   }
@@ -128,9 +131,7 @@
   .col-head-onhold{background:var(--col-onhold-bg);color:var(--col-onhold-fg);}
   .col-head-done{background:var(--col-done-bg);color:var(--col-done-fg);}
   .col-head-history{background:var(--col-history-bg);color:var(--col-history-fg);}
-  .col-body{min-height:40px;flex:1;overflow-y:auto;padding-right:2px;}
-  .col-body::-webkit-scrollbar{width:6px;}
-  .col-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+  .col-body{min-height:40px;padding-right:2px;}
   .col-drop{padding-bottom:4px;}
   .add-col-btn{
     width:100%;margin-top:6px;padding:8px;border:1px dashed #3a3f4d;border-radius:8px;
@@ -223,6 +224,22 @@
   .field-checkbox{display:flex;align-items:center;gap:8px;}
   .field-checkbox input[type="checkbox"]{width:auto;flex:none;padding:0;}
   .field-checkbox label{margin:0;font-size:13px;color:var(--fg-modal);font-weight:600;}
+  .multiselect{position:relative;}
+  .multiselect-toggle{
+    width:100%;text-align:left;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+    font-size:14px;font-family:inherit;background:var(--bg-input);color:var(--fg-modal);cursor:pointer;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .multiselect-panel{
+    display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;max-height:220px;overflow-y:auto;
+    background:var(--bg-modal);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:80;
+    box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  }
+  .multiselect-panel.open{display:block;}
+  .multiselect-option{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--fg-modal);}
+  .multiselect-option:hover{background:var(--bg-ghost-hover);}
+  .multiselect-option input{flex:none;width:auto;}
+  .multiselect-option .former-hint{color:var(--muted);font-size:11px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
   .hint{font-size:12px;color:var(--muted);margin-top:3px;}
 
@@ -408,17 +425,22 @@
   .people-grid-former .people-card{opacity:.7;}
   #whoAmIGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
   #whoAmIGrid .people-card{width:auto;padding:12px;}
-  .people-card{background:var(--card-surface);border:1px solid var(--card-surface-border);border-radius:14px;padding:16px;width:160px;text-align:center;cursor:pointer;transition:.15s;}
-  .people-card:hover{border-color:#3b82f6;}
+  #whoAmIGrid .people-card:hover{border-color:#3b82f6;}
+  .people-card{position:relative;background:var(--card-surface);border:1px solid var(--card-surface-border);border-radius:14px;padding:16px;width:160px;text-align:center;cursor:pointer;transition:.15s;}
+  #peopleGrid .people-card{cursor:default;padding-top:22px;}
   .people-card.current{border-color:#4ade80;box-shadow:0 0 0 1px #4ade80 inset;}
   .people-card .avatar-photo{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:block;object-fit:cover;}
   .people-card .avatar-fallback{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
   .people-card .name-en{font-weight:800;font-size:14px;color:var(--fg);}
   .people-card .name-ko{font-size:12px;color:var(--muted);margin-top:2px;}
-  .people-card .people-actions{display:flex;gap:6px;margin-top:10px;}
+  .people-card .people-actions{display:flex;gap:6px;margin-top:14px;}
   .people-card .people-actions button{flex:1;font-size:12px;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--fg);cursor:pointer;}
   .people-card .people-actions .p-del{color:#f87171;}
-  .people-card .current-tag{font-size:12px;color:#4ade80;font-weight:800;margin-top:6px;}
+  .people-card .current-tag{
+    position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+    background:#22c55e;color:#fff;font-size:11px;font-weight:800;
+    padding:4px 14px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
 
   .photo-preview{width:72px;height:72px;border-radius:50%;margin:0 auto;background:#f3f4f7;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#9ca3af;overflow:hidden;}
   .photo-preview img{width:100%;height:100%;object-fit:cover;}
@@ -477,7 +499,7 @@
   .subtask-edit-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
   .subtask-edit-row input[type=text]{flex:2;}
   .subtask-edit-row input[type=date]{flex:1;min-width:110px;}
-  .subtask-edit-row input[type=checkbox]{flex:none;}
+  .subtask-edit-row input[type=checkbox]{flex:none;width:auto;}
   .subtask-edit-row .se-remove{flex:none;border:none;background:#fee2e2;color:#b91c1c;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:12px;}
 
   /* toast */
@@ -574,7 +596,7 @@
         <div class="sub">여기서 등록한 인원이 재택근무 탭의 전체 인원 수와 진입 시 본인 선택 목록에 사용돼요.</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn-ghost btn" id="peopleFindOrphansBtn" style="display:none;" title="인원 목록에는 없지만 재택근무 기록에만 이름이 남아있는 사람을 찾아 이전 직원으로 등록해요">기록에만 남은 이름 정리</button>
+        <button class="btn-ghost btn" id="peopleFindOrphansBtn" style="display:none;" title="인원 목록에는 없지만 재택근무 기록이나 업무보드 카드에만 이름이 남아있는 사람을 찾아 이전 직원으로 등록해요">기록에만 남은 이름 정리</button>
         <button class="btn" id="peopleAddBtn">+ 새 인원 등록</button>
       </div>
     </header>
@@ -703,7 +725,7 @@
     <div class="wfh-table-wrap">
       <table class="wfh-table">
         <thead>
-          <tr><th style="width:110px;">날짜</th><th>내용</th><th style="width:90px;">작성자</th><th style="width:120px;">상태</th><th style="width:40px;"></th></tr>
+          <tr><th style="width:110px;">날짜</th><th>내용</th><th style="width:120px;">상태</th><th style="width:40px;"></th></tr>
         </thead>
         <tbody id="reqTableBody"></tbody>
       </table>
@@ -827,7 +849,10 @@
     <div class="field-row">
       <div class="field">
         <label>담당자</label>
-        <input type="text" id="fAssignee" placeholder="예: 나연">
+        <div class="multiselect" id="fAssigneeSelect">
+          <button type="button" class="multiselect-toggle" id="fAssigneeToggle">담당자 선택</button>
+          <div class="multiselect-panel" id="fAssigneePanel"></div>
+        </div>
       </div>
       <div class="field-row" style="flex:2;">
         <div class="field">
@@ -844,10 +869,6 @@
       <label>세부 작업 (서브태스크)</label>
       <div id="subtaskEditor"></div>
       <button type="button" class="add-mini" id="addSubtaskBtn" style="border-color:#93c5fd;color:#2563eb;">+ 서브태스크 추가</button>
-    </div>
-    <div class="field">
-      <label>참여자 (쉼표로 구분)</label>
-      <input type="text" id="fParticipants" placeholder="예: 나연, 민준, 서연">
     </div>
     <div class="field">
       <label>관련 링크 (선택)</label>
@@ -1128,7 +1149,7 @@ function personCardHtml(p){
     <div class="people-card ${p.id===currentUserId?'current':''}" data-id="${p.id}">
       ${personAvatarHtml(p)}
       ${nameLinesHtml(p)}
-      ${p.id===currentUserId ? '<div class="current-tag">✓ 현재 로그인됨</div>' : ''}
+      ${p.id===currentUserId ? '<div class="current-tag">현재 로그인됨</div>' : ''}
       <div class="people-actions">
         <button class="p-edit" data-id="${p.id}">수정</button>
         <button class="p-del" data-id="${p.id}">삭제</button>
@@ -1141,7 +1162,8 @@ function updateOrphanButtonVisibility(){
   const btn = document.getElementById('peopleFindOrphansBtn');
   if(!btn) return;
   const known = new Set(roster.map(p=>personKey(p)));
-  const hasOrphans = wfhEntries.some(e=>e.person && !known.has(e.person));
+  const hasOrphans = wfhEntries.some(e=>e.person && !known.has(e.person))
+    || tasks.some(t=>taskAssigneeList(t).some(name=>!known.has(name)));
   btn.style.display = hasOrphans ? '' : 'none';
 }
 
@@ -1185,11 +1207,13 @@ function renderPeopleGrid(){
   });
 }
 
-// 인원 목록에서는 삭제됐지만(과거에 전직원 기능이 없어서 기록만 남은 경우) 재택근무 기록에는 이름이 남아있는 사람을
-// 찾아서 이전 직원으로 등록해줌 - 이후 인원관리에서 정상적으로 삭제(기록까지 함께 삭제)할 수 있게 됨
+// 인원 목록에서는 삭제됐지만(과거에 전직원 기능이 없어서 기록만 남은 경우) 재택근무 기록이나 업무보드 카드에는
+// 이름이 남아있는 사람을 찾아서 이전 직원으로 등록해줌 - 이후 인원관리에서 정상적으로 표시/삭제할 수 있게 됨
 function autoRegisterOrphanedAuthors(){
   const known = new Set(roster.map(p=>personKey(p)));
-  const orphanNames = [...new Set(wfhEntries.map(e=>e.person).filter(Boolean))].filter(name=>!known.has(name));
+  const fromWfh = wfhEntries.map(e=>e.person).filter(Boolean);
+  const fromTasks = tasks.flatMap(taskAssigneeList);
+  const orphanNames = [...new Set([...fromWfh, ...fromTasks])].filter(name=>!known.has(name));
   if(!orphanNames.length){
     toast('업무기록에만 남아있는 이름이 없어요.');
     return;
@@ -1279,10 +1303,12 @@ document.getElementById('personSaveBtn').addEventListener('click', ()=>{
     saveWfhLocal();
     tasks.forEach(t=>{
       let changed = false;
-      if(t.assignee === oldKey){ t.assignee = newKey; changed = true; }
       if(Array.isArray(t.participants) && t.participants.includes(oldKey)){
         t.participants = t.participants.map(pp=>pp===oldKey ? newKey : pp);
+        t.assignee = t.participants.join(', ');
         changed = true;
+      } else if(t.assignee === oldKey){
+        t.assignee = newKey; changed = true;
       }
       if(changed) fbSetItem('tasks', t.id, t);
     });
@@ -1399,12 +1425,19 @@ function getFlag(t){
   }
 }
 
+// 담당자가 다중 선택으로 바뀌면서 t.assignee는 "나연, 민준" 같은 콤마 조인 문자열이 될 수 있음 -
+// participants 배열이 있으면 그걸 우선 쓰고, 없는 옛 데이터는 assignee 문자열을 분리해서 사용
+function taskAssigneeList(t){
+  if(Array.isArray(t.participants) && t.participants.length) return t.participants;
+  return (t.assignee||'').split(',').map(s=>s.trim()).filter(Boolean);
+}
+
 function populateFilters(){
   const clientSel = document.getElementById('clientFilter');
   const asSel = document.getElementById('assigneeFilter');
   const curC = clientSel.value, curA = asSel.value;
   const clients = [...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
-  const names = [...new Set(tasks.map(t=>t.assignee).filter(Boolean))].sort();
+  const names = [...new Set(tasks.flatMap(taskAssigneeList))].sort();
   clientSel.innerHTML = '<option value="">전체 고객사</option>' + clients.map(c=>`<option value="${c}">${c}</option>`).join('');
   asSel.innerHTML = '<option value="">전체 담당자</option>' + names.map(n=>`<option value="${n}">${n}</option>`).join('');
   clientSel.value = curC; asSel.value = curA;
@@ -1441,7 +1474,7 @@ function getFiltered(){
   return tasks.filter(t=>{
     if(q && !(t.title.toLowerCase().includes(q) || (t.client||'').toLowerCase().includes(q))) return false;
     if(cl && t.client !== cl) return false;
-    if(as && t.assignee !== as) return false;
+    if(as && !taskAssigneeList(t).includes(as)) return false;
     if(!matchesStatFilter(t)) return false;
     if(!matchesBoardMonth(t)) return false;
     return true;
@@ -1587,7 +1620,7 @@ function renderRegisterTable(){
       <td>${escapeHtml(t.title)}</td>
       <td>${escapeHtml(t.client||'-')}</td>
       <td>${STATUS_LABELS[t.status]||t.status}</td>
-      <td>${escapeHtml(t.assignee||'-')}</td>
+      <td>${escapeHtml(taskAssigneeList(t).map(displayName).join(', ') || '-')}</td>
       <td><button class="wfh-del reg-edit" data-id="${t.id}" style="color:#3b82f6;" title="수정">✎ 수정</button></td>
     </tr>
   `).join('');
@@ -1682,6 +1715,45 @@ document.getElementById('addSubtaskBtn').addEventListener('click', ()=>{
   }
 });
 
+// 담당자 다중선택 드롭다운: 로스터 인원 중에서 여러 명 선택 가능 (기존 참여자 필드 역할까지 포함)
+let fAssigneeSelected = [];
+function renderAssigneePanel(){
+  const panel = document.getElementById('fAssigneePanel');
+  const sorted = [...roster].sort((a,b)=> (b.active!==false) - (a.active!==false));
+  if(!sorted.length){
+    panel.innerHTML = '<div class="empty-hint" style="padding:6px;">등록된 인원이 없어요.</div>';
+    return;
+  }
+  panel.innerHTML = sorted.map(p=>{
+    const key = personKey(p);
+    const label = displayNameOf(p);
+    const checked = fAssigneeSelected.includes(key);
+    return `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${escapeHtml(key)}" ${checked?'checked':''}><span>${escapeHtml(label)}</span>${p.active===false ? '<span class="former-hint">이전 직원</span>' : ''}</label>`;
+  }).join('');
+}
+function updateAssigneeToggleLabel(){
+  const toggle = document.getElementById('fAssigneeToggle');
+  toggle.textContent = fAssigneeSelected.length ? fAssigneeSelected.map(k=>displayName(k)).join(', ') : '담당자 선택';
+}
+document.getElementById('fAssigneeToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const panel = document.getElementById('fAssigneePanel');
+  const willOpen = !panel.classList.contains('open');
+  if(willOpen) renderAssigneePanel();
+  panel.classList.toggle('open', willOpen);
+});
+document.getElementById('fAssigneePanel').addEventListener('change', (e)=>{
+  if(!e.target.classList.contains('fa-opt')) return;
+  const val = e.target.value;
+  if(e.target.checked){ if(!fAssigneeSelected.includes(val)) fAssigneeSelected.push(val); }
+  else { fAssigneeSelected = fAssigneeSelected.filter(v=>v!==val); }
+  updateAssigneeToggleLabel();
+});
+document.addEventListener('click', (e)=>{
+  const ms = document.getElementById('fAssigneeSelect');
+  if(ms && !ms.contains(e.target)) document.getElementById('fAssigneePanel').classList.remove('open');
+});
+
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
   if(id){
@@ -1691,11 +1763,11 @@ function openModal(id, presetStatus){
     document.getElementById('fClient').value = t.client || '';
     document.getElementById('fPriority').value = t.priority;
     document.getElementById('fStatus').value = t.status;
-    document.getElementById('fAssignee').value = t.assignee || '';
+    fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : []);
+    updateAssigneeToggleLabel();
     document.getElementById('fStart').value = t.start || '';
     document.getElementById('fEnd').value = t.end || '';
     renderSubtaskEditor(t.subtasks);
-    document.getElementById('fParticipants').value = (t.participants||[]).join(', ');
     document.getElementById('fLink').value = t.link || '';
   } else {
     document.getElementById('modalTitle').textContent = '새 업무 생성';
@@ -1703,13 +1775,14 @@ function openModal(id, presetStatus){
     document.getElementById('fClient').value = '';
     document.getElementById('fPriority').value = 'normal';
     document.getElementById('fStatus').value = presetStatus || 'backlog';
-    document.getElementById('fAssignee').value = '';
+    fAssigneeSelected = [];
+    updateAssigneeToggleLabel();
     document.getElementById('fStart').value = '';
     document.getElementById('fEnd').value = '';
     renderSubtaskEditor([]);
-    document.getElementById('fParticipants').value = '';
     document.getElementById('fLink').value = '';
   }
+  document.getElementById('fAssigneePanel').classList.remove('open');
   modalBg.classList.add('open');
 }
 function closeModal(){ modalBg.classList.remove('open'); }
@@ -1727,7 +1800,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     client: document.getElementById('fClient').value.trim(),
     priority: document.getElementById('fPriority').value,
     status: document.getElementById('fStatus').value,
-    assignee: document.getElementById('fAssignee').value.trim(),
+    assignee: fAssigneeSelected.join(', '),
     start: document.getElementById('fStart').value,
     end: document.getElementById('fEnd').value,
     subtasks: [...subtaskEditor.querySelectorAll('.subtask-edit-row')].map(row=>({
@@ -1736,7 +1809,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
       desc: row.querySelector('.se-desc').value.trim(),
       done: row.querySelector('.se-done').checked,
     })).filter(s=>s.text),
-    participants: document.getElementById('fParticipants').value.split(',').map(s=>s.trim()).filter(Boolean),
+    participants: [...fAssigneeSelected],
     link: document.getElementById('fLink').value.trim(),
   };
   if(data.start && data.end && data.end < data.start){
@@ -1827,8 +1900,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(tab==='history') renderHistoryPage();
     if(tab==='people') renderPeopleGrid();
     if(tab==='requests') renderRequestsView();
+    if(tab==='board') adjustBoardHeight();
   });
 });
+
+// 보드 영역이 화면에 딱 맞게 채워지도록 남은 세로 공간을 계산해서 높이를 지정
+// (헤더/통계/툴바 높이가 상황에 따라 달라지므로 고정값 대신 실측값 사용)
+function adjustBoardHeight(){
+  const board = document.getElementById('board');
+  if(!board || board.offsetParent === null) return;
+  const rect = board.getBoundingClientRect();
+  const h = window.innerHeight - rect.top - 20;
+  board.style.height = Math.max(340, h) + 'px';
+}
+window.addEventListener('resize', adjustBoardHeight);
+window.addEventListener('load', adjustBoardHeight);
+setTimeout(adjustBoardHeight, 0);
 
 /* ===== 업무 히스토리 (전체 업무, 기간별) ===== */
 function refDate(t){ return t.end || t.start || t.createdAt || ''; }
@@ -2676,12 +2763,11 @@ function renderRequestsView(){
   const body = document.getElementById('reqTableBody');
   if(!body) return;
   const sorted = [...requests].sort((a,b)=> b.date.localeCompare(a.date) || b.id - a.id);
-  if(!sorted.length){ body.innerHTML = '<tr><td colspan="5" class="empty-hint">등록된 요청이 없어요</td></tr>'; return; }
+  if(!sorted.length){ body.innerHTML = '<tr><td colspan="4" class="empty-hint">등록된 요청이 없어요</td></tr>'; return; }
   body.innerHTML = sorted.map(r=>`
     <tr data-id="${r.id}">
       <td>${r.date}</td>
       <td class="req-edit-text" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 수정">${escapeHtml(r.text)}</td>
-      <td>${r.author ? escapeHtml(displayName(r.author)) : '-'}</td>
       <td><button class="req-status-btn" data-id="${r.id}" style="border:none;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer;background:${r.done?'#1e3a2e':'#3a2f18'};color:${r.done?'#4ade80':'#facc15'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</button></td>
       <td><button class="wfh-del req-del" data-id="${r.id}" title="삭제">✕</button></td>
     </tr>
@@ -2753,7 +2839,7 @@ if(!getCurrentUser()) openWhoAmI();
    같은 firebaseConfig를 쓰는 모든 사람이 이 4개 컬렉션을 함께 보고 씁니다.
    항목별로 문서를 나눠서, 서로 다른 카드/기록을 동시에 수정해도 덮어쓰지 않아요.
    컬렉션이 비어있으면(첫 실행) 지금 이 브라우저의 로컬 데이터를 그대로 업로드해서 시드로 삼습니다. */
-fbWatchCollection('tasks', (list)=>{ tasks = list; render(); }, ()=>tasks, true);
+fbWatchCollection('tasks', (list)=>{ tasks = list; render(); updateOrphanButtonVisibility(); }, ()=>tasks, true);
 fbWatchCollection('roster', (list)=>{
   roster = list;
   renderPeopleGrid();
