@@ -564,7 +564,10 @@
         <h1 style="font-size:22px;">인원 관리</h1>
         <div class="sub">여기서 등록한 인원이 재택근무 탭의 전체 인원 수와 진입 시 본인 선택 목록에 사용돼요.</div>
       </div>
-      <button class="btn" id="peopleAddBtn">+ 새 인원 등록</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-ghost btn" id="peopleFindOrphansBtn" title="인원 목록에는 없지만 재택근무 기록에만 이름이 남아있는 사람을 찾아 이전 직원으로 등록해요">기록에만 남은 이름 정리</button>
+        <button class="btn" id="peopleAddBtn">+ 새 인원 등록</button>
+      </div>
     </header>
     <div id="peopleGrid"></div>
   </div>
@@ -1163,6 +1166,28 @@ function renderPeopleGrid(){
     });
   });
 }
+
+// 인원 목록에서는 삭제됐지만(과거에 전직원 기능이 없어서 기록만 남은 경우) 재택근무 기록에는 이름이 남아있는 사람을
+// 찾아서 이전 직원으로 등록해줌 - 이후 인원관리에서 정상적으로 삭제(기록까지 함께 삭제)할 수 있게 됨
+function autoRegisterOrphanedAuthors(){
+  const known = new Set(roster.map(p=>personKey(p)));
+  const orphanNames = [...new Set(wfhEntries.map(e=>e.person).filter(Boolean))].filter(name=>!known.has(name));
+  if(!orphanNames.length){
+    toast('업무기록에만 남아있는 이름이 없어요.');
+    return;
+  }
+  if(!confirm(`다음 ${orphanNames.length}명을 이전 직원으로 등록할까요?\n${orphanNames.join(', ')}`)) return;
+  orphanNames.forEach(name=>{
+    const isKorean = /[가-힣]/.test(name);
+    const p = {id:newPersonId(), nameKo: isKorean ? name : '', nameEn: isKorean ? '' : name, photo:'', active:false};
+    roster.push(p);
+    fbSetItem('roster', p.id, p);
+  });
+  saveRosterLocal();
+  renderPeopleGrid(); renderWhoAmI(); renderCalendar();
+  toast(`${orphanNames.length}명을 이전 직원으로 등록했어요. 이제 인원관리에서 삭제하면 기록도 함께 정리돼요.`);
+}
+document.getElementById('peopleFindOrphansBtn').addEventListener('click', autoRegisterOrphanedAuthors);
 
 const personModalBg = document.getElementById('personModalBg');
 let personPhotoData = '';
