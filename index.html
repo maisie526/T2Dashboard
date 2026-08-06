@@ -262,7 +262,8 @@
   .multiselect-option{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--fg-modal);}
   .multiselect-option:hover{background:var(--bg-ghost-hover);}
   .multiselect-option input{flex:none;width:auto;}
-  .multiselect-option .former-hint{color:var(--muted);font-size:11px;}
+  .multiselect-section-title{font-size:11px;font-weight:800;color:var(--muted);padding:8px 8px 4px;margin-top:2px;border-top:1px solid var(--border);}
+  .multiselect-section-title:first-child{margin-top:0;border-top:none;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
   .hint{font-size:12px;color:var(--muted);margin-top:3px;}
 
@@ -324,9 +325,9 @@
 
     .modal{width:94vw;padding:16px;}
     .field-row{flex-direction:column;gap:0;}
-    .subtask-edit-row{flex-wrap:wrap;}
-    .subtask-edit-row input[type=text]{flex:1 1 100%;}
-    .subtask-edit-row input[type=date]{flex:1 1 auto;}
+    .subtask-edit-top{flex-wrap:wrap;}
+    .subtask-edit-top .se-text{flex:1 1 100%;}
+    .subtask-edit-top .se-date{flex:1 1 auto;}
 
     .wfh-table-wrap{padding:10px;}
     .wfh-table{font-size:12px;}
@@ -519,11 +520,13 @@
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 
   /* subtask editor in modal */
-  .subtask-edit-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
-  .subtask-edit-row input[type=text]{flex:2;}
-  .subtask-edit-row input[type=date]{flex:1;min-width:110px;}
-  .subtask-edit-row input[type=checkbox]{flex:none;width:auto;}
+  .subtask-edit-row{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .subtask-edit-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .subtask-edit-top{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
+  .subtask-edit-top .se-text{flex:3;min-width:0;}
+  .subtask-edit-top .se-date{flex:1;min-width:110px;}
   .subtask-edit-row .se-remove{flex:none;border:none;background:#fee2e2;color:#b91c1c;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:12px;}
+  .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;}
 
   /* toast */
   #toastContainer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
@@ -1199,7 +1202,7 @@ function updateOrphanButtonVisibility(){
   if(!btn) return;
   const known = new Set(roster.map(p=>personKey(p)));
   const hasOrphans = wfhEntries.some(e=>e.person && !known.has(e.person))
-    || tasks.some(t=>taskAssigneeList(t).some(name=>!known.has(name)));
+    || tasks.some(t=>taskAssigneeList(t).some(name=>name!==UNASSIGNED_KEY && !known.has(name)));
   btn.style.display = hasOrphans ? '' : 'none';
 }
 
@@ -1249,7 +1252,7 @@ function autoRegisterOrphanedAuthors(){
   const known = new Set(roster.map(p=>personKey(p)));
   const fromWfh = wfhEntries.map(e=>e.person).filter(Boolean);
   const fromTasks = tasks.flatMap(taskAssigneeList);
-  const orphanNames = [...new Set([...fromWfh, ...fromTasks])].filter(name=>!known.has(name));
+  const orphanNames = [...new Set([...fromWfh, ...fromTasks])].filter(name=>name!==UNASSIGNED_KEY && !known.has(name));
   if(!orphanNames.length){
     toast('업무기록에만 남아있는 이름이 없어요.');
     return;
@@ -1797,16 +1800,21 @@ const subtaskEditor = document.getElementById('subtaskEditor');
 function subtaskEditRowHtml(s){
   s = s || {text:'', date:'', desc:'', done:false};
   return `
-  <div class="subtask-edit-row">
-    <input type="checkbox" class="se-done" ${s.done ? 'checked' : ''}>
-    <input type="text" class="se-text" placeholder="작업명" value="${escapeHtml(s.text)}">
-    <input type="date" class="se-date" value="${s.date||''}">
-    <input type="text" class="se-desc" placeholder="세부 설명 (호버 시 노출)" value="${escapeHtml(s.desc)}">
-    <button type="button" class="se-remove" title="삭제">✕</button>
+  <div class="subtask-edit-row" data-done="${s.done ? 'true' : 'false'}">
+    <div class="subtask-edit-top">
+      <input type="text" class="se-text" placeholder="작업명" value="${escapeHtml(s.text)}">
+      <input type="date" class="se-date" value="${s.date||''}">
+      <button type="button" class="se-remove" title="삭제">✕</button>
+    </div>
+    <textarea class="se-desc" placeholder="세부 설명" rows="1">${escapeHtml(s.desc)}</textarea>
   </div>`;
 }
 function renderSubtaskEditor(list){
   subtaskEditor.innerHTML = (list||[]).map(subtaskEditRowHtml).join('');
+  subtaskEditor.querySelectorAll('.se-desc').forEach(ta=>{
+    autoGrowTextarea(ta);
+    ta.addEventListener('input', ()=>autoGrowTextarea(ta));
+  });
 }
 subtaskEditor.addEventListener('click', e=>{
   if(e.target.classList.contains('se-remove')){
@@ -1825,19 +1833,28 @@ document.getElementById('addSubtaskBtn').addEventListener('click', ()=>{
 
 // 담당자 다중선택 드롭다운: 로스터 인원 중에서 여러 명 선택 가능 (기존 참여자 필드 역할까지 포함)
 let fAssigneeSelected = [];
+const UNASSIGNED_KEY = '미정';
 function renderAssigneePanel(){
   const panel = document.getElementById('fAssigneePanel');
-  const sorted = [...roster].sort((a,b)=> (b.active!==false) - (a.active!==false));
-  if(!sorted.length){
-    panel.innerHTML = '<div class="empty-hint" style="padding:6px;">등록된 인원이 없어요.</div>';
-    return;
-  }
-  panel.innerHTML = sorted.map(p=>{
+  const optionHtml = p=>{
     const key = personKey(p);
     const label = displayNameOf(p);
     const checked = fAssigneeSelected.includes(key);
-    return `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${escapeHtml(key)}" ${checked?'checked':''}><span>${escapeHtml(label)}</span>${p.active===false ? '<span class="former-hint">이전 직원</span>' : ''}</label>`;
-  }).join('');
+    return `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${escapeHtml(key)}" ${checked?'checked':''}><span>${escapeHtml(label)}</span></label>`;
+  };
+  const unassignedChecked = fAssigneeSelected.includes(UNASSIGNED_KEY);
+  let html = `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${UNASSIGNED_KEY}" ${unassignedChecked?'checked':''}><span>미정</span></label>`;
+  if(!roster.length){
+    panel.innerHTML = html + '<div class="empty-hint" style="padding:6px;">등록된 인원이 없어요.</div>';
+    return;
+  }
+  const currentPeople = roster.filter(p=>p.active !== false);
+  const formerPeople = roster.filter(p=>p.active === false);
+  html += `<div class="multiselect-section-title">현재 인원</div>` + currentPeople.map(optionHtml).join('');
+  if(formerPeople.length){
+    html += `<div class="multiselect-section-title">이전 직원</div>` + formerPeople.map(optionHtml).join('');
+  }
+  panel.innerHTML = html;
 }
 function updateAssigneeToggleLabel(){
   const toggle = document.getElementById('fAssigneeToggle');
@@ -1853,8 +1870,17 @@ document.getElementById('fAssigneeToggle').addEventListener('click', (e)=>{
 document.getElementById('fAssigneePanel').addEventListener('change', (e)=>{
   if(!e.target.classList.contains('fa-opt')) return;
   const val = e.target.value;
-  if(e.target.checked){ if(!fAssigneeSelected.includes(val)) fAssigneeSelected.push(val); }
-  else { fAssigneeSelected = fAssigneeSelected.filter(v=>v!==val); }
+  if(e.target.checked){
+    if(val === UNASSIGNED_KEY){
+      fAssigneeSelected = [UNASSIGNED_KEY];
+    } else {
+      fAssigneeSelected = fAssigneeSelected.filter(v=>v!==UNASSIGNED_KEY);
+      if(!fAssigneeSelected.includes(val)) fAssigneeSelected.push(val);
+    }
+    renderAssigneePanel();
+  } else {
+    fAssigneeSelected = fAssigneeSelected.filter(v=>v!==val);
+  }
   updateAssigneeToggleLabel();
 });
 document.addEventListener('click', (e)=>{
@@ -1871,7 +1897,7 @@ function openModal(id, presetStatus){
     document.getElementById('fClient').value = t.client || '';
     document.getElementById('fPriority').value = t.priority;
     document.getElementById('fStatus').value = t.status;
-    fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : []);
+    fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : [UNASSIGNED_KEY]);
     updateAssigneeToggleLabel();
     document.getElementById('fStart').value = t.start || '';
     document.getElementById('fEnd').value = t.end || '';
@@ -1883,7 +1909,7 @@ function openModal(id, presetStatus){
     document.getElementById('fClient').value = '';
     document.getElementById('fPriority').value = 'normal';
     document.getElementById('fStatus').value = presetStatus || 'backlog';
-    fAssigneeSelected = [];
+    fAssigneeSelected = [UNASSIGNED_KEY];
     updateAssigneeToggleLabel();
     document.getElementById('fStart').value = '';
     document.getElementById('fEnd').value = '';
@@ -1892,6 +1918,10 @@ function openModal(id, presetStatus){
   }
   document.getElementById('fAssigneePanel').classList.remove('open');
   modalBg.classList.add('open');
+  // 모달이 열리기 전(display:none)엔 scrollHeight가 정확히 안 잡히므로 연 다음 다시 계산
+  setTimeout(()=>{
+    subtaskEditor.querySelectorAll('.se-desc').forEach(ta=>autoGrowTextarea(ta));
+  }, 0);
 }
 function closeModal(){ modalBg.classList.remove('open'); }
 
@@ -1915,7 +1945,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
       text: row.querySelector('.se-text').value.trim(),
       date: row.querySelector('.se-date').value,
       desc: row.querySelector('.se-desc').value.trim(),
-      done: row.querySelector('.se-done').checked,
+      done: row.dataset.done === 'true',
     })).filter(s=>s.text),
     participants: [...fAssigneeSelected],
     link: document.getElementById('fLink').value.trim(),
