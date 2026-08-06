@@ -36,9 +36,9 @@
     --col-history-bg:#1c1f26; --col-history-fg:#ffffff;
     --mine-highlight:#facc15;
     --badge-unassigned-bg:rgba(148,163,184,0.25); --badge-unassigned-fg:#e2e8f0; --badge-unassigned-border:rgba(148,163,184,0.55);
-    --type-wfh-bg:rgba(124,111,234,0.22); --type-wfh-fg:#c4b5fd;
-    --type-annual-bg:rgba(245,158,11,0.20); --type-annual-fg:#fcd34d;
-    --type-half-bg:rgba(251,146,60,0.20); --type-half-fg:#fdba74;
+    --type-wfh-bg:rgba(124,111,234,0.4); --type-wfh-fg:#c4b5fd;
+    --type-annual-bg:rgba(245,158,11,0.38); --type-annual-fg:#fcd34d;
+    --type-half-bg:rgba(251,146,60,0.38); --type-half-fg:#fdba74;
     --shadow: 0 3px 10px rgba(0,0,0,0.28);
     color-scheme: dark;
   }
@@ -381,7 +381,7 @@
        구분은 이미 있는 타입별 배경색(cal-entry.type-*)으로 대신함 */
     .cal-grid .cal-entry-tag{display:none;}
     .cal-grid .cal-entry{padding:1px;}
-    .cal-grid .cal-dot{width:2px;height:2px;border-width:1px;}
+    .cal-grid .cal-dot{width:3px;height:3px;border-width:1px;}
     .cal-grid .cal-entry-dots{gap:1px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
@@ -444,7 +444,8 @@
   .cal-date.sat{color:#3b82f6;}
   .cal-date.sun{color:#ef4444;}
   .cal-date.holiday{color:#ef4444;}
-  .cal-holiday-tag{font-size:10px;font-weight:700;color:#ef4444;white-space:nowrap;line-height:1.4;text-align:right;flex:none;}
+  /* 공휴일명은 날짜 숫자 옆이 아니라 아래 줄에 표시 */
+  .cal-holiday-tag{font-size:10px;font-weight:400;color:#ef4444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.4;margin-bottom:3px;}
   .wfh-cal-select-bar{display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;padding:10px 12px;background:var(--bg-ghost);border:1px solid var(--border);border-radius:10px;}
   .wfh-quota{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--fg);margin-bottom:12px;}
   .wfh-quota b{color:var(--fg);}
@@ -472,13 +473,10 @@
   .cal-entry.type-wfh{background:var(--type-wfh-bg);}
   .cal-entry.type-annual{background:var(--type-annual-bg);}
   .cal-entry.type-half{background:var(--type-half-bg);}
-  /* 다크모드에서는 밝은 색이 더 눈에 띄어서 '내 항목'을 원색 그대로 두고 나머지를 어둡게 눌러줌 */
-  .cal-entry:not(.mine){box-shadow:inset 0 0 0 999px rgba(0,0,0,0.35);}
+  /* 화면 크기와 상관없이 내 항목은 완전히 선명하게, 다른 사람 항목은 살짝만 옅게 (100% vs 80%) */
+  .cal-entry.mine{opacity:1;}
+  .cal-entry:not(.mine){opacity:0.8;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
-  /* 라이트모드도 다크모드와 같은 방식: 검은 오버레이 대신 투명도를 낮춰서 다른 사람 항목을 옅게 만듦
-     (검은 오버레이를 쓰면 파스텔 배경이 탁한 갈색톤이 되고 글씨 대비도 떨어져서 투명도 방식으로 변경) */
-  html[data-theme="light"] .cal-entry:not(.mine){box-shadow:none;opacity:0.6;}
-  html[data-theme="light"] .cal-entry.mine{box-shadow:none;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
@@ -2576,8 +2574,8 @@ function renderCalendar(){
       html += `<div class="cal-cell dim" data-nav="${cellDate.getFullYear()}-${cellDate.getMonth()}" title="클릭하면 ${cellDate.getFullYear()}년 ${cellDate.getMonth()+1}월로 이동">
         <div class="cal-cell-top">
           <div class="cal-date ${dateClass}">${cellDate.getDate()}</div>
-          ${holidayTagHtml}
         </div>
+        ${holidayTagHtml}
         <div class="cal-entries">${entries}</div>
       </div>`;
       continue;
@@ -2593,8 +2591,8 @@ function renderCalendar(){
     html += `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-date="${dateStr}">
       <div class="cal-cell-top">
         <div class="cal-date ${dateClass}">${cellDate.getDate()}</div>
-        ${holidayTagHtml}
       </div>
+      ${holidayTagHtml}
       <div class="cal-office ${officeClass}" title="${size}명 중 ${officeCount}명 출근">${officeLabel}</div>
       <div class="cal-entries">${entries}</div>
     </div>`;
