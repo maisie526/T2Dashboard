@@ -361,14 +361,16 @@
     .wfh-table{font-size:12px;}
     .wfh-table th, .wfh-table td{padding:7px 6px;}
 
-    /* 모바일에서도 7일 전체 표시. 좁은 폭에 맞춰 텍스트/숫자는 최대한 작게 */
+    /* 모바일에서도 7일 전체 표시. 좁은 폭에 맞춰 텍스트/숫자는 최대한 작게
+       (아래쪽 본문 .cal-date 등의 기본(12~13px) 규칙이 소스 순서상 나중에 나와서
+       동일 우선순위일 때 그 규칙이 덮어써버렸던 문제 → .cal-grid를 붙여 우선순위를 높임) */
     .cal-grid{gap:2px;grid-template-columns:repeat(7,minmax(0,1fr));}
-    .cal-weekday{font-size:10px;padding:2px 0;}
+    .cal-grid .cal-weekday{font-size:10px;padding:2px 0;}
     .cal-cell{min-height:74px;padding:2px;border-radius:5px;}
-    .cal-date{font-size:9px;}
-    .cal-office{font-size:8px;}
-    .cal-entry-name{font-size:8px;}
-    .cal-entry-tag{font-size:8px;}
+    .cal-grid .cal-date{font-size:9px;}
+    .cal-grid .cal-office{font-size:8px;}
+    .cal-grid .cal-entry-name{font-size:8px;}
+    .cal-grid .cal-entry-tag{font-size:8px;}
     .wfh-cal-select-bar{flex-direction:column;align-items:stretch;}
     .wfh-cal-select-bar > div{width:100%;}
     .wfh-cal-select-bar button{flex:1;}
