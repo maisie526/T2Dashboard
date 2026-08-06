@@ -220,6 +220,9 @@
   .field textarea{resize:vertical;min-height:56px;}
   .field-row{display:flex;gap:10px;}
   .field-row .field{flex:1;}
+  .field-checkbox{display:flex;align-items:center;gap:8px;}
+  .field-checkbox input[type="checkbox"]{width:auto;flex:none;padding:0;}
+  .field-checkbox label{margin:0;font-size:13px;color:var(--fg-modal);font-weight:600;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
   .hint{font-size:12px;color:var(--muted);margin-top:3px;}
 
@@ -320,10 +323,9 @@
   .tab-btn:hover:not(.active){background:var(--bg-ghost);color:var(--fg);}
 
   /* wfh view */
-  .wfh-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:stretch;margin-bottom:18px;}
-  .wfh-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;height:100%;}
+  .wfh-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;margin-bottom:18px;}
+  .wfh-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;}
   .wfh-panel h3{margin:0 0 12px;font-size:14.5px;}
-  .wfh-records-btn{width:100%;margin-bottom:18px;text-align:center;}
   .wfh-field{margin-bottom:11px;}
   .wfh-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700;}
   .wfh-field input, .wfh-field select, .wfh-field textarea{
@@ -331,13 +333,14 @@
     background:var(--bg-input);color:var(--fg);font-family:inherit;
   }
   .wfh-field textarea{resize:vertical;min-height:56px;}
-  .wfh-field-grow{flex:1;display:flex;flex-direction:column;min-height:56px;}
-  .wfh-field-grow textarea{flex:1;height:auto;}
+  .wfh-field-grow textarea{overflow:hidden;resize:none;min-height:80px;}
   .wfh-actions{display:flex;gap:8px;margin-top:12px;}
   .wfh-actions button{flex:1;}
-  .wfh-cal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;display:flex;flex-direction:column;justify-content:center;height:100%;}
-  .wfh-cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-  .wfh-cal-head h3{margin:0;font-size:14px;}
+  .wfh-cal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;display:flex;flex-direction:column;}
+  .wfh-cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;}
+  .wfh-cal-head h3{margin:0;font-size:20px;display:flex;align-items:center;gap:10px;}
+  .wfh-records-link{font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:2px;}
+  .wfh-records-link:hover{color:var(--fg);}
   .wfh-cal-nav{display:flex;gap:6px;}
   .wfh-cal-nav button{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
   .wfh-cal-nav button:hover{background:var(--bg-ghost-hover);}
@@ -369,7 +372,7 @@
   .cal-entries{display:flex;flex-direction:column;gap:2px;}
   .cal-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;background:var(--bg-input);border-radius:4px;padding:2px 4px;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
-  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
   .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:none;}
   .cal-dot.in.done{background:var(--pill-in-fg);}
@@ -392,6 +395,8 @@
   .whoami .who-switch{font-size:12px;color:var(--muted);}
 
   .people-grid{display:flex;flex-wrap:wrap;gap:14px;}
+  .people-section-title{font-size:13px;font-weight:800;color:var(--muted);margin:22px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
+  .people-grid-former .people-card{opacity:.7;}
   #whoAmIGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
   #whoAmIGrid .people-card{width:auto;padding:12px;}
   .people-card{background:var(--card-surface);border:1px solid var(--card-surface-border);border-radius:14px;padding:16px;width:160px;text-align:center;cursor:pointer;transition:.15s;}
@@ -422,6 +427,7 @@
   .wfh-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
   .wfh-table tbody tr:last-child td{border-bottom:none;}
   .wfh-table tr:hover td{background:var(--bg-input);}
+  #wfhRecordsTable tr:hover td{background:transparent;}
   .wfh-name-col{white-space:nowrap;}
   .wfh-actions-col{width:1%;white-space:nowrap;}
   .summary-cell{max-width:320px;width:100%;color:var(--fg);white-space:pre-line;}
@@ -438,9 +444,12 @@
   .wfh-toolbar input, .wfh-toolbar select{
     padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg-input);color:var(--fg);font-family:inherit;
   }
-  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;}
-  .wfh-edit-btn{border:none;background:transparent;color:#3b82f6;cursor:pointer;font-size:12px;}
-  .wfh-save{border:none;background:transparent;color:#4ade80;cursor:pointer;font-size:14px;font-weight:800;}
+  .wfh-del{border:none;background:transparent;color:#f87171;cursor:pointer;font-size:12px;padding:4px 6px;border-radius:6px;transition:background .12s;}
+  .wfh-edit-btn{border:none;background:transparent;color:#3b82f6;cursor:pointer;font-size:12px;padding:4px 6px;border-radius:6px;transition:background .12s;}
+  .wfh-del:hover{background:var(--bg-ghost-hover);}
+  .wfh-edit-btn:hover{background:var(--bg-ghost-hover);}
+  .wfh-save{border:none;background:transparent;color:#4ade80;cursor:pointer;font-size:14px;font-weight:800;padding:4px 6px;border-radius:6px;transition:background .12s;}
+  .wfh-save:hover{background:var(--bg-ghost-hover);}
   .wfh-cancel{border:none;background:transparent;color:var(--card-muted);cursor:pointer;font-size:12px;}
   .wfh-edit-row input{
     padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;
@@ -557,7 +566,7 @@
       </div>
       <button class="btn" id="peopleAddBtn">+ 새 인원 등록</button>
     </header>
-    <div class="people-grid" id="peopleGrid"></div>
+    <div id="peopleGrid"></div>
   </div>
 
   <div id="historyPageView" style="display:none;">
@@ -605,7 +614,7 @@
     <div class="wfh-grid">
       <div class="wfh-cal" style="margin-bottom:0;">
         <div class="wfh-cal-head">
-          <h3 id="wfhCalLabel">2026년 8월</h3>
+          <h3><span id="wfhCalLabel">2026년 8월</span><button class="wfh-records-link" id="wfhOpenRecordsBtn">이번달 업무기록 보기</button></h3>
           <div class="wfh-cal-nav">
             <button id="wfhCalPrev" title="이전 달">‹</button>
             <button id="wfhCalNext" title="다음 달">›</button>
@@ -652,8 +661,6 @@
         <button class="btn-ghost btn" id="wfhSaveNoteBtn" style="width:100%;margin-top:8px;">메모만 저장 (시간 변경 없이)</button>
       </div>
     </div>
-
-    <button class="btn-ghost btn wfh-records-btn" id="wfhOpenRecordsBtn">📋 전체 업무기록 보기 <span class="hint" style="color:inherit;">· 달력에서 날짜를 클릭해도 볼 수 있어요</span></button>
   </div>
 
   <div class="modal-bg" id="wfhRecordsModalBg">
@@ -723,13 +730,16 @@
     <div class="field">
       <label>한글 이름</label>
       <input type="text" id="personNameKo" placeholder="예: 나연">
-      <div class="hint" id="personNameWarnHint" style="display:none;">이름을 바꾸면 이전 재택근무 기록과의 연결이 끊길 수 있어요.</div>
     </div>
     <div class="field">
       <label>영문 이름</label>
       <input type="text" id="personNameEn" placeholder="예: Nayeon">
     </div>
     <div id="personNameErrorMsg" style="display:none;color:#dc2626;font-size:12px;margin:-4px 0 10px;font-weight:700;">한글 또는 영문 이름 중 하나는 꼭 입력해주세요.</div>
+    <div class="field field-checkbox">
+      <input type="checkbox" id="personActiveCheck" checked>
+      <label for="personActiveCheck">현직원</label>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="personCancelBtn">취소</button>
       <button class="btn" id="personSaveBtn">저장</button>
@@ -1101,14 +1111,8 @@ function renderWhoAmI(){
   el.onclick = openWhoAmI;
 }
 
-function renderPeopleGrid(){
-  const grid = document.getElementById('peopleGrid');
-  if(!grid) return;
-  if(!roster.length){
-    grid.innerHTML = '<div class="empty-hint">등록된 인원이 없어요. 오른쪽 위 버튼으로 첫 인원을 등록해보세요.</div>';
-    return;
-  }
-  grid.innerHTML = roster.map(p=>`
+function personCardHtml(p){
+  return `
     <div class="people-card ${p.id===currentUserId?'current':''}" data-id="${p.id}">
       ${personAvatarHtml(p)}
       ${nameLinesHtml(p)}
@@ -1118,19 +1122,43 @@ function renderPeopleGrid(){
         <button class="p-del" data-id="${p.id}">삭제</button>
       </div>
     </div>
-  `).join('');
+  `;
+}
+
+function renderPeopleGrid(){
+  const grid = document.getElementById('peopleGrid');
+  if(!grid) return;
+  if(!roster.length){
+    grid.innerHTML = '<div class="empty-hint">등록된 인원이 없어요. 오른쪽 위 버튼으로 첫 인원을 등록해보세요.</div>';
+    return;
+  }
+  const currentPeople = roster.filter(p=>p.active !== false);
+  const formerPeople = roster.filter(p=>p.active === false);
+  let html = `<div class="people-grid">${currentPeople.map(personCardHtml).join('')}</div>`;
+  if(formerPeople.length){
+    html += `<div class="people-section-title">이전 직원</div><div class="people-grid people-grid-former">${formerPeople.map(personCardHtml).join('')}</div>`;
+  }
+  grid.innerHTML = html;
   grid.querySelectorAll('.p-edit').forEach(btn=>{
     btn.addEventListener('click', (e)=>{ e.stopPropagation(); openPersonModal(btn.dataset.id); });
   });
   grid.querySelectorAll('.p-del').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
       e.stopPropagation();
-      if(confirm('이 인원을 삭제할까요? (이전 업무·재택근무 기록은 이름으로 남아있어요)')){
+      if(confirm('이 인원을 삭제하면 재택근무 업무기록도 함께 삭제돼요. 계속할까요?')){
         const delId = btn.dataset.id;
+        const person = roster.find(p=>p.id===delId);
+        const key = personKey(person);
         roster = roster.filter(p=>p.id!==delId);
         saveRosterLocal(); fbDeleteItem('roster', delId);
+        const removedWfh = wfhEntries.filter(e=>e.person === key);
+        wfhEntries = wfhEntries.filter(e=>e.person !== key);
+        saveWfhLocal();
+        removedWfh.forEach(e=>fbDeleteItem('wfh', e.id));
         if(currentUserId === delId){ currentUserId=''; saveCurrentUserId(''); }
         renderPeopleGrid(); renderWhoAmI(); renderCalendar();
+        if(document.getElementById('wfhView').style.display !== 'none') renderWfhAll();
+        toast('삭제했습니다.');
       }
     });
   });
@@ -1147,16 +1175,17 @@ function openPersonModal(id){
     document.getElementById('personModalTitle').textContent = '인원 수정';
     document.getElementById('personNameKo').value = p.nameKo;
     document.getElementById('personNameEn').value = p.nameEn||'';
+    document.getElementById('personActiveCheck').checked = p.active !== false;
     personPhotoData = p.photo || '';
     preview.innerHTML = personPhotoData ? `<img src="${personPhotoData}">` : escapeHtml(initials(displayNameOf(p)));
   } else {
     document.getElementById('personModalTitle').textContent = '새 인원 등록';
     document.getElementById('personNameKo').value = '';
     document.getElementById('personNameEn').value = '';
+    document.getElementById('personActiveCheck').checked = true;
     personPhotoData = '';
     preview.innerHTML = '?';
   }
-  document.getElementById('personNameWarnHint').style.display = id ? '' : 'none';
   document.getElementById('personNameErrorMsg').style.display = 'none';
   personModalBg.classList.add('open');
 }
@@ -1183,22 +1212,44 @@ document.getElementById('personSaveBtn').addEventListener('click', ()=>{
   if(!nameKo && !nameEn){ document.getElementById('personNameErrorMsg').style.display = ''; return; }
   document.getElementById('personNameErrorMsg').style.display = 'none';
   const id = document.getElementById('personEditId').value;
+  const isActive = document.getElementById('personActiveCheck').checked;
   const newKey = personKey({nameKo, nameEn});
   const dup = roster.some(p=>p.id !== id && personKey(p) === newKey);
   if(dup && !confirm(`이미 같은 이름이 등록되어 있어요. 계속할까요? (재택근무 기록이 이름으로 구분되어 헷갈릴 수 있어요)`)) return;
   let p;
+  let oldKey = '';
   if(id){
     p = roster.find(p=>p.id===id);
-    Object.assign(p, {nameKo, nameEn, photo: personPhotoData});
+    oldKey = personKey(p);
+    Object.assign(p, {nameKo, nameEn, photo: personPhotoData, active: isActive});
   } else {
-    p = {id:newPersonId(), nameKo, nameEn, photo:personPhotoData};
+    p = {id:newPersonId(), nameKo, nameEn, photo:personPhotoData, active:isActive};
     roster.push(p);
   }
   saveRosterLocal(); fbSetItem('roster', p.id, p);
+  if(oldKey && oldKey !== newKey){
+    // 이름이 바뀌면 기존 업무기록/카드의 이름 참조도 함께 갱신해서 연결이 끊기지 않게 함
+    wfhEntries.forEach(e=>{
+      if(e.person === oldKey){ e.person = newKey; fbSetItem('wfh', e.id, e); }
+    });
+    saveWfhLocal();
+    tasks.forEach(t=>{
+      let changed = false;
+      if(t.assignee === oldKey){ t.assignee = newKey; changed = true; }
+      if(Array.isArray(t.participants) && t.participants.includes(oldKey)){
+        t.participants = t.participants.map(pp=>pp===oldKey ? newKey : pp);
+        changed = true;
+      }
+      if(changed) fbSetItem('tasks', t.id, t);
+    });
+    saveTasksLocal();
+  }
   closePersonModal();
   renderPeopleGrid();
   renderWhoAmI();
   renderCalendar();
+  if(document.getElementById('wfhView').style.display !== 'none') renderWfhAll();
+  render();
   toast('저장되었습니다.');
 });
 
@@ -1980,6 +2031,7 @@ function renderCalendar(){
         renderSelectBar();
       } else {
         wfhDateFilterValue = d;
+        wfhMonthFilterValue = '';
         renderWfhFilterBar();
         renderWfhTable();
         openWfhRecordsModal();
@@ -2184,6 +2236,7 @@ function updateWfhPanel(){
     inBtn.style.display = 'none'; outBtn.style.display = 'none'; timeField.style.display = 'none';
     noteEl.value = entry.noteOut || '';
   }
+  autoGrowTextarea(noteEl);
 }
 
 function missingReport(e){
@@ -2192,6 +2245,7 @@ function missingReport(e){
 }
 
 let wfhDateFilterValue = '';
+let wfhMonthFilterValue = '';
 
 function renderWfhFilterBar(){
   const titleEl = document.getElementById('wfhRecordsTitle');
@@ -2200,6 +2254,11 @@ function renderWfhFilterBar(){
     titleEl.textContent = wfhDateFilterValue;
     titleEl.style.fontSize = '22px';
     table.classList.add('hide-date-col');
+  } else if(wfhMonthFilterValue){
+    const [y, mo] = wfhMonthFilterValue.split('-').map(Number);
+    titleEl.textContent = `${y}년 ${mo}월`;
+    titleEl.style.fontSize = '22px';
+    table.classList.remove('hide-date-col');
   } else {
     titleEl.textContent = '기록 목록';
     titleEl.style.fontSize = '';
@@ -2209,7 +2268,8 @@ function renderWfhFilterBar(){
 
 function getWfhFiltered(){
   return wfhEntries.filter(e=>{
-    if(wfhDateFilterValue && e.date !== wfhDateFilterValue) return false;
+    if(wfhDateFilterValue) return e.date === wfhDateFilterValue;
+    if(wfhMonthFilterValue) return e.date.startsWith(wfhMonthFilterValue);
     return true;
   }).sort((a,b)=> b.date.localeCompare(a.date) || a.person.localeCompare(b.person));
 }
@@ -2242,6 +2302,11 @@ function wfhEditRowHtml(e){
   </tr>`;
 }
 
+// 로스터에서 이미 삭제된(퇴사 등) 사람의 기록인지 확인 - 더 이상 작성자 본인이 정리할 수 없으므로 누구나 정리 가능하게 함
+function isOrphanedPerson(personKeyVal){
+  return !roster.some(rp=>personKey(rp)===personKeyVal);
+}
+
 function renderWfhTable(){
   const rows = getWfhFiltered();
   const body = document.getElementById('wfhTableBody');
@@ -2251,7 +2316,7 @@ function renderWfhTable(){
     if(e.id === wfhEditingId) return wfhEditRowHtml(e);
     const type = e.type || 'wfh';
     const meta = TYPE_META[type];
-    const isOwner = e.person === getCurrentUserName();
+    const isOwner = e.person === getCurrentUserName() || isOrphanedPerson(e.person);
     let summaryHtml;
     if(type !== 'wfh'){
       summaryHtml = `<span class="time-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>`;
@@ -2292,7 +2357,7 @@ function renderWfhTable(){
       ev.stopPropagation();
       const editId = Number(btn.dataset.id);
       const entry = wfhEntries.find(e=>e.id === editId);
-      if(!entry || entry.person !== getCurrentUserName()){
+      if(!entry || (entry.person !== getCurrentUserName() && !isOrphanedPerson(entry.person))){
         toast('본인이 작성한 기록만 수정할 수 있어요.', 'warn');
         wfhEditingId = null; renderWfhTable();
         return;
@@ -2319,7 +2384,7 @@ function renderWfhTable(){
       ev.stopPropagation();
       const delId = Number(btn.dataset.id);
       const entry = wfhEntries.find(e=>e.id === delId);
-      if(!entry || entry.person !== getCurrentUserName()){
+      if(!entry || (entry.person !== getCurrentUserName() && !isOrphanedPerson(entry.person))){
         toast('본인이 작성한 기록만 삭제할 수 있어요.', 'warn');
         return;
       }
@@ -2342,12 +2407,19 @@ function renderWfhAll(){
 const wfhRecordsModalBg = document.getElementById('wfhRecordsModalBg');
 function openWfhRecordsModal(){ wfhRecordsModalBg.classList.add('open'); }
 function closeWfhRecordsModal(){ wfhRecordsModalBg.classList.remove('open'); }
-document.getElementById('wfhOpenRecordsBtn').addEventListener('click', openWfhRecordsModal);
+document.getElementById('wfhOpenRecordsBtn').addEventListener('click', ()=>{
+  wfhDateFilterValue = '';
+  wfhMonthFilterValue = `${calViewDate.getFullYear()}-${String(calViewDate.getMonth()+1).padStart(2,'0')}`;
+  renderWfhFilterBar();
+  renderWfhTable();
+  openWfhRecordsModal();
+});
 document.getElementById('wfhRecordsCloseBtn').addEventListener('click', closeWfhRecordsModal);
 wfhRecordsModalBg.addEventListener('click', e=>{ if(e.target===wfhRecordsModalBg) closeWfhRecordsModal(); });
 
 document.getElementById('wfhTargetDate').addEventListener('input', ()=>{ wfhTimeContext=null; updateWfhPanel(); });
 document.getElementById('wfhTargetDate').value = todayStr();
+document.getElementById('wfhNote').addEventListener('input', (e)=>autoGrowTextarea(e.target));
 
 function bindHoldRepeat(btn, fn){
   let timeoutId = null, intervalId = null;
