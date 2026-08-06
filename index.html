@@ -438,13 +438,14 @@
   .cal-entry.type-wfh{background:var(--type-wfh-bg);}
   .cal-entry.type-annual{background:var(--type-annual-bg);}
   .cal-entry.type-half{background:var(--type-half-bg);}
-  .cal-entry.mine .cal-entry-name{font-weight:800;color:var(--mine-highlight);}
+  .cal-entry.mine{box-shadow:inset 0 0 0 999px rgba(0,0,0,0.28);}
+  .cal-entry.mine .cal-entry-name{font-weight:800;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
-  .cal-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex:none;}
-  .cal-dot.in.done{background:var(--pill-in-fg);}
-  .cal-dot.out.done{background:var(--pill-out-fg);}
+  .cal-dot{width:6px;height:6px;border-radius:50%;background:transparent;border:1.3px solid var(--muted);flex:none;}
+  .cal-dot.in.done{background:var(--pill-in-fg);border-color:var(--pill-in-fg);}
+  .cal-dot.out.done{background:var(--pill-out-fg);border-color:var(--pill-out-fg);}
   .cal-entry-tag{font-size:12px;font-weight:400;flex:none;white-space:nowrap;}
   .cal-entry.type-wfh .cal-entry-tag{color:var(--type-wfh-fg);}
   .cal-entry.type-annual .cal-entry-tag{color:var(--type-annual-fg);}
