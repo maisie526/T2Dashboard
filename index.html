@@ -438,15 +438,22 @@
        (adjustBoardHeight()도 모바일에서는 높이를 강제로 지정하지 않도록 JS에서 분기 처리함) */
     .board{
       height:auto;min-height:200px;
-      /* mandatory 스냅, -webkit-overflow-scrolling:touch 모두 모바일에서 카드 위 세로
-         스크롤 제스처를 board가 가로 제스처로 붙잡아버리는 부작용이 있었음(proximity로
-         낮춰도 여전히 발생). 세로 페이지 스크롤이 어디서나 되는 게 스냅 정확도보다
-         훨씬 중요해서, 스냅 관련 속성을 모두 제거하고 순수 overflow-x:auto만 남김
-         (컬럼 전환은 스냅 없이 자유 스크롤로 동작 — 덜 "딱 맞음"이지만 항상 작동함) */
+      /* 데스크톱 기본 규칙(위쪽)에 overscroll-behavior:contain이 있는데, 모바일에서
+         이게 세로축까지 그대로 적용돼서 board가 세로로 실제 스크롤할 게 없는데도
+         "경계에 도달한 상태"로 취급 → 세로 터치 스크롤 자체를 삼켜버리고 있었음(진짜 원인.
+         mandatory/proximity를 바꿔도 계속 세로가 막혔던 이유가 바로 이거였음).
+         모바일에서는 명시적으로 auto로 되돌려서 세로는 항상 페이지로 전달되게 함 */
+      overscroll-behavior:auto;
+      scroll-snap-type:x proximity;
+      scroll-padding-left:24px;scroll-padding-right:24px;
       touch-action:pan-x pan-y;
       padding-left:24px;padding-right:24px;
     }
-    .col{flex:0 0 78vw;width:78vw;min-width:0;}
+    .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:center;}
+    /* 첫/마지막 카드는 중앙정렬 대신 각각 좌/우 24px 여백을 유지한 채 스냅되도록
+       start/end 정렬 사용 (board의 scroll-padding-left/right 24px과 맞물려 정확히 24px에서 스냅됨) */
+    .col:first-child{scroll-snap-align:start;}
+    .col:last-child{scroll-snap-align:end;}
     /* 컬럼 타이틀은 board 안에 있으면 sticky든 fixed든 board의 overflow-x:auto와
        계속 얽혀서 카드와 겹치는 문제가 반복됐음 → board 안의 원래 타이틀은 숨기고,
        board 밖에 따로 둔 #colHeadRow(HTML/JS 쪽 참고)를 대신 사용함.
