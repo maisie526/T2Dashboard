@@ -115,7 +115,7 @@
   #boardAddBtn{height:48px;display:flex;align-items:center;padding:0 20px;font-size:16px;}
   .btn-ghost{background:var(--bg-ghost);color:var(--fg);border:1px solid var(--border);}
   .btn-ghost:hover{background:var(--bg-ghost-hover);}
-  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-bottom:18px;}
   .toolbar input, .toolbar select{
     padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg-input);color:var(--fg);
   }
@@ -439,15 +439,20 @@
     .board-filter-toggle-btn{
       display:flex;align-items:center;justify-content:center;
       width:40px;height:40px;flex:none;border-radius:8px;
-      border:none;background:var(--bg-input);color:var(--fg);
+      border:none;background:var(--bg-ghost);color:var(--fg);
       font-size:14px;cursor:pointer;
     }
-    /* 모바일에서는 데스크톱용(툴바 안) 버튼은 숨기고, 검색 아이콘 왼쪽의 버튼만 보이게 함 */
-    .board-view-toggle-btn-desktop{display:none;}
-    .board-view-toggle-btn-mobile{
+    /* 모바일에서는 데스크톱용(툴바 안) 버튼은 숨기고, 검색 아이콘 왼쪽의 버튼만 보이게 함.
+       .board-view-toggle-btn(공용 클래스)의 display:flex가 이 파일 뒤쪽(비-미디어쿼리 영역)에
+       또 선언돼있어서, 클래스 선택자로 숨기려 하면 명시도가 같아 소스 순서상 뒤에 있는 그
+       공용 규칙이 이겨버려 모바일에서도 데스크톱 버튼이 보이고 반대로 모바일 버튼은 숨는
+       문제가 있었음. id 선택자(명시도가 더 높음)로 바꿔서 순서와 무관하게 항상 이 규칙이
+       이기도록 함 */
+    #boardViewToggleBtnDesktop{display:none;}
+    #boardViewToggleBtnMobile{
       display:flex;align-items:center;justify-content:center;
       width:40px;height:40px;flex:none;border-radius:8px;
-      border:none;background:var(--bg-input);color:var(--fg);cursor:pointer;
+      border:none;background:var(--bg-ghost);color:var(--fg);cursor:pointer;
     }
     /* 검색/필터 패널은 화면 위에 뜨는 오버레이로 표시하고, 배경(백드롭)을 누르면 자연스럽게 닫힘.
        실제 top 위치는 버튼 아래로 JS(positionBoardToolbar)에서 계산해서 지정함 */
@@ -769,7 +774,7 @@
   .board-view-toggle-btn:hover{background:var(--bg-ghost-hover);}
   /* 데스크톱은 툴바(검색창) 안 초기화 버튼 옆에, 모바일은 헤더의 검색 아이콘 왼쪽에 두므로
      두 개를 각각 만들어서 화면 너비에 따라 하나씩만 보이게 함 */
-  .board-view-toggle-btn-mobile{display:none;}
+  #boardViewToggleBtnMobile{display:none;}
   /* 업무 캘린더뷰 — 하루짜리 칩을 매일 반복해서 찍는 대신, 한 주(row) 안에서 시작일~마감일
      구간만큼 하나의 긴 막대로 이어서 보여줌(장기 프로젝트가 하루 단위로 끊겨 보이지 않게).
      막대끼리 겹치면 자동으로 다음 줄로 내려가고(슬롯 배정), 주가 끝나면 다음 주 막대로
