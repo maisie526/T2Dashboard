@@ -253,7 +253,7 @@
     position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:1;
   }
   .card-actions button{
-    border:none;background:var(--card-action-bg);border-radius:5px;width:20px;height:20px;font-size:12px;cursor:pointer;color:var(--card-action-fg);
+    border:none;background:var(--card-action-bg);border-radius:5px;width:22px;height:22px;font-size:12px;cursor:pointer;color:var(--card-action-fg);
   }
   .card-actions button:hover{background:var(--card-action-hover);}
   .empty-hint{font-size:12px;color:var(--muted);text-align:center;padding:16px 6px;border:1px dashed var(--border);border-radius:10px;}
@@ -421,15 +421,16 @@
        같이 밀려나서 칩이 진짜 화면 끝까지 닿을 수 있음 (margin 방식과 달리 페이지 레이아웃에 영향 없음) */
     #boardStats::before, #boardStats::after{content:'';flex:none;width:16px;}
     #boardStats .stat-chip{padding:8px 12px;flex:0 0 auto;white-space:nowrap;}
-    #boardStats .stat-chip b{font-size:13px;}
+    #boardStats .stat-chip b{font-size:14px;}
     #boardStats .stat-chip span{font-size:11px;}
 
+    #boardAddBtn{height:40px;display:flex;align-items:center;padding:0 16px;}
     /* "+업무 등록" 버튼 오른쪽 빈 공간에 검색/필터 아이콘을 두고, 누르면 그 바로 아래에
        검색창+필터가 패널로 펼쳐짐 (버튼과 패널이 붙어있어서 서로 연관된 느낌이 나도록 header 바로
        다음, board-stats보다 위에 배치) */
     .board-filter-toggle-btn{
       display:flex;align-items:center;justify-content:center;
-      width:32px;height:32px;flex:none;border-radius:8px;
+      width:40px;height:40px;flex:none;border-radius:8px;
       border:1px solid var(--border);background:var(--bg-input);color:var(--fg);
       font-size:14px;cursor:pointer;
     }
