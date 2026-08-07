@@ -153,6 +153,9 @@
   .col-head-wrap{
     position:sticky;top:0;z-index:3;background:var(--page);padding-bottom:10px;
   }
+  /* 모바일 전용 컬럼 타이틀 줄(board 밖). 데스크톱에선 board 안의 sticky가 잘 동작해서
+     이건 기본적으로 숨겨두고, 모바일 미디어쿼리에서만 보이게 함 */
+  #colHeadRow{display:none;}
   .col-head{
     border-radius:10px;padding:9px 13px;font-size:14px;font-weight:800;
     display:flex;justify-content:space-between;align-items:center;flex:none;gap:8px;min-width:0;
@@ -385,7 +388,7 @@
        좌우 끝까지 파고들게(bleed) 하는 시도는 모바일에서 페이지 전체 레이아웃 너비 계산을
        틀어지게 하는 부작용이 있어서 안전하게 원래 여백대로 되돌림 */
     /* 위로 스크롤하다가 필터바가 화면 위 32px 지점에 닿으면 그 자리에 고정되고,
-       그 아래 컬럼 타이틀(.col-head-wrap)도 바로 이어서 고정됨 (JS: updateColHeadFixed) */
+       그 아래 컬럼 타이틀(#colHeadRow)도 바로 이어서 고정됨 */
     #boardStats{
       gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
       position:sticky;top:32px;z-index:6;background:var(--page);
@@ -447,13 +450,17 @@
        start/end 정렬 사용 (board의 scroll-padding-left/right 24px과 맞물려 정확히 24px에서 스냅됨) */
     .col:first-child{scroll-snap-align:start;}
     .col:last-child{scroll-snap-align:end;}
-    /* 컬럼 타이틀을 sticky로 시도했더니, board가 가로 스크롤(overflow-x:auto)이 있어서
-       스펙상 세로도 "스크롤 컨테이너"로 잡혀버려 sticky 기준점이 페이지가 아니라 board
-       자신이 되는 문제가 있었음(overflow-y:clip으로도 해결 안 됨 → JS로 완전히 우회).
-       모바일에서는 sticky를 아예 안 쓰고, JS(updateColHeadFixed)가 스크롤에 맞춰
-       position:fixed로 직접 뷰포트 기준 좌표를 계산해서 붙여줌 */
-    .col-head-wrap{position:static;}
-    .col-head-spacer{height:0;flex:none;}
+    /* 컬럼 타이틀은 board 안에 있으면 sticky든 fixed든 board의 overflow-x:auto와
+       계속 얽혀서 카드와 겹치는 문제가 반복됐음 → board 안의 원래 타이틀은 숨기고,
+       board 밖에 따로 둔 #colHeadRow(HTML/JS 쪽 참고)를 대신 사용함.
+       (.col > 를 써서 board 안의 것만 숨기고 #colHeadRow 안의 것은 그대로 둠) */
+    .col > .col-head-wrap{display:none;}
+    #colHeadRow{
+      display:flex;gap:14px;overflow:hidden;
+      position:sticky;top:32px;z-index:6;background:var(--page);
+      padding-left:24px;padding-right:24px;padding-bottom:10px;
+    }
+    #colHeadRow .col-head-wrap{flex:0 0 78vw;width:78vw;min-width:0;}
 
     .modal{width:94vw;padding:16px;}
     .field-row{flex-direction:column;gap:0;}
@@ -769,6 +776,11 @@
   </div>
 
   <div class="board-stats" id="boardStats"></div>
+
+  <!-- 모바일 전용: 컬럼 타이틀을 board 밖에 따로 두고 JS로 가로 스크롤 위치만 맞춰줌.
+       board 안에 있으면 overflow-x:auto 때문에 sticky/fixed 기준점이 꼬여서 카드와
+       겹치는 문제가 반복됐음 → board 밖으로 완전히 분리해서 그 문제 자체를 없앰 (데스크톱에선 숨김) -->
+  <div class="col-head-row" id="colHeadRow"></div>
 
   <div class="empty-hint" id="boardEmptyMsg" style="display:none;margin-bottom:14px;"></div>
   <div class="board" id="board"></div>
@@ -1700,6 +1712,28 @@ function buildBoardSkeleton(){
       <div class="col-body col-drop" id="col-${c.id}"></div>
     </div>
   `).join('');
+  buildMobileColHeadRow();
+}
+
+// 모바일 전용 컬럼 타이틀 줄. board 안의 .col-head-wrap과 내용은 동일하지만
+// board 밖에 따로 둬서 sticky가 board의 overflow-x:auto 영향을 받지 않게 함.
+// 가로 스크롤 위치는 JS로 board와 항상 맞춰줌(syncColHeadRowScroll)
+function buildMobileColHeadRow(){
+  const row = document.getElementById('colHeadRow');
+  if(!row) return;
+  row.innerHTML = COLUMNS.map(c => `
+    <div class="col-head-wrap" id="colwrap-m-${c.id}">
+      <div class="col-head col-head-${c.id}">
+        <span class="col-label">${c.label}</span>
+        <span class="count" id="cnt-m-${c.id}">0</span>
+      </div>
+    </div>
+  `).join('');
+}
+function syncColHeadRowScroll(){
+  const board = document.getElementById('board');
+  const row = document.getElementById('colHeadRow');
+  if(board && row) row.scrollLeft = board.scrollLeft;
 }
 
 function periodKey(dateStr, mode){
@@ -1860,6 +1894,11 @@ function render(){
     if(cntEl) cntEl.textContent = items.length;
     const wrap = document.getElementById('colwrap-'+status);
     if(wrap) wrap.style.display = items.length ? '' : 'none';
+    // 모바일 전용 컬럼 타이틀 줄(colHeadRow)도 동일하게 맞춰줌
+    const cntElM = document.getElementById('cnt-m-'+status);
+    if(cntElM) cntElM.textContent = items.length;
+    const wrapM = document.getElementById('colwrap-m-'+status);
+    if(wrapM) wrapM.style.display = items.length ? '' : 'none';
     body.innerHTML = items.map(cardHtml).join('');
   });
   const emptyMsg = document.getElementById('boardEmptyMsg');
@@ -2292,7 +2331,7 @@ document.getElementById('boardMonthNext').addEventListener('click', ()=>{
 
 buildBoardSkeleton();
 render();
-setTimeout(updateColHeadFixed, 0);
+setTimeout(syncColHeadRowScroll, 0);
 
 /* ===== 다크/라이트 테마 토글 ===== */
 const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -2354,7 +2393,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 function adjustBoardHeight(){
   const board = document.getElementById('board');
   if(!board || board.offsetParent === null) return;
-  updateColHeadFixed();
   if(window.innerWidth <= 640){
     // 모바일에서는 보드 높이를 화면에 맞춰 강제로 지정하지 않음 — 필터바/컬럼 타이틀이
     // 고정되고 카드는 페이지 스크롤을 따라 자연스럽게 흘러가야 하기 때문
@@ -2368,83 +2406,41 @@ function adjustBoardHeight(){
   const h = window.innerHeight - rect.top;
   board.style.height = Math.max(340, h) + 'px';
 }
-// 모바일 컬럼 타이틀 고정 방식: position:sticky로 시도했는데, board가 가로 스크롤
-// (overflow-x:auto)이 있으면 스펙상 세로도 "스크롤 컨테이너"로 취급돼서 sticky 기준점이
-// 페이지(.main-content)가 아니라 board 자신이 되어버림 → board 자체가 페이지 스크롤을
-// 따라 흘러 내려가는 만큼 타이틀도 board 기준 offset만큼 "항상" 밀려서 카드와 겹쳐 보였음
-// (overflow-y:clip으로도 해결 안 됨). sticky를 포기하고, 스크롤에 맞춰 JS가 직접
-// position:fixed 좌표(뷰포트 기준이라 이런 모호함이 없음)를 계산해서 넣는 방식으로 교체.
-// fixed는 레이아웃 흐름에서 완전히 빠지므로 그 자리에 스페이서(.col-head-spacer)를 넣어
-// 카드가 위로 붙지 않게 공간을 유지함
-function updateColHeadFixed(){
-  const cols = document.querySelectorAll('.col');
-  if(!cols.length) return;
-  if(window.innerWidth > 640){
-    cols.forEach(col=>{
-      const head = col.querySelector('.col-head-wrap');
-      const spacer = col.querySelector('.col-head-spacer');
-      if(head){ head.style.position=''; head.style.top=''; head.style.left=''; head.style.width=''; head.style.zIndex=''; }
-      if(spacer) spacer.style.height='0px';
-    });
-    return;
-  }
-  const board = document.getElementById('board');
-  const stats = document.getElementById('boardStats');
-  if(!board) return;
-  const statsHeight = stats ? stats.getBoundingClientRect().height : 0;
-  const targetTop = 32 + statsHeight;
-  const boardTop = board.getBoundingClientRect().top;
-  const shouldStick = boardTop <= targetTop;
-  cols.forEach(col=>{
-    const head = col.querySelector('.col-head-wrap');
-    if(!head) return;
-    let spacer = col.querySelector('.col-head-spacer');
-    if(!spacer){
-      spacer = document.createElement('div');
-      spacer.className = 'col-head-spacer';
-      col.insertBefore(spacer, head.nextSibling);
-    }
-    if(shouldStick){
-      if(!head.dataset.fixedHeight){
-        head.dataset.fixedHeight = String(head.getBoundingClientRect().height);
-      }
-      const rect = col.getBoundingClientRect();
-      head.style.position = 'fixed';
-      head.style.top = targetTop + 'px';
-      head.style.left = rect.left + 'px';
-      head.style.width = rect.width + 'px';
-      head.style.zIndex = '20';
-      spacer.style.height = head.dataset.fixedHeight + 'px';
-    } else {
-      head.style.position = ''; head.style.top = ''; head.style.left = ''; head.style.width = ''; head.style.zIndex = '';
-      spacer.style.height = '0px';
-    }
-  });
-}
+// 모바일 컬럼 타이틀 고정 방식: 처음엔 board 안의 .col-head-wrap을 position:sticky, 그다음
+// position:fixed(JS 계산)로 고정해보려 했는데, board가 가로 스크롤(overflow-x:auto)을 갖고
+// 있으면 스펙상 세로도 "스크롤 컨테이너"로 취급돼서 sticky 기준점이 board 자신이 되어버리고,
+// fixed로 바꿔도 iOS의 mandatory snap이 세로 스크롤 제스처 자체를 가로채는 등 계속 문제가
+// 반복됐음 → 아예 컬럼 타이틀(colHeadRow)을 board 밖으로 분리해서 이 모호함 자체를 없앰.
+// colHeadRow는 board 밖에 있어서 평범하게 sticky가 잘 동작하고, 가로 위치만 board의
+// 스크롤에 맞춰 JS로 동기화함(scrollLeft 대입 — 순수 좌표 복사라 방향 충돌이 없음)
 window.addEventListener('resize', adjustBoardHeight);
 window.addEventListener('load', adjustBoardHeight);
-window.addEventListener('resize', updateColHeadFixed);
-// 세로 스크롤(.main-content)과 가로 스크롤(board, 컬럼 스와이프) 둘 다 위치에 영향을
-// 주므로 두 스크롤 이벤트 모두에서 다시 계산함 (rAF로 살짝 스로틀링)
-let colHeadFixedRaf = null;
-function scheduleUpdateColHeadFixed(){
-  if(colHeadFixedRaf) return;
-  colHeadFixedRaf = requestAnimationFrame(()=>{ colHeadFixedRaf = null; updateColHeadFixed(); });
-}
-const mainContentElForScroll = document.getElementById('mainContent');
-if(mainContentElForScroll) mainContentElForScroll.addEventListener('scroll', scheduleUpdateColHeadFixed);
-document.addEventListener('scroll', scheduleUpdateColHeadFixed, true);
-// 스크롤 이벤트만 믿으면 드래그하는 도중(관성 스크롤 전)에는 값이 갱신 안 돼서
-// 카드가 타이틀 뒤로 지나가는 것처럼 잠깐 보일 수 있어서 touchmove에서도 갱신
-document.addEventListener('touchmove', scheduleUpdateColHeadFixed, {passive:true, capture:true});
+window.addEventListener('load', syncColHeadRowScroll);
+window.addEventListener('resize', syncColHeadRowScroll);
+(function(){
+  const boardElForSync = document.getElementById('board');
+  if(boardElForSync) boardElForSync.addEventListener('scroll', syncColHeadRowScroll, {passive:true});
+})();
 setTimeout(adjustBoardHeight, 0);
-setTimeout(updateColHeadFixed, 0);
-// 필터바(#boardStats)는 필터 클릭/업무 추가삭제 등으로 innerHTML이 자주 다시 그려지는데,
-// 그때마다 실제 높이가 살짝 달라질 수 있어서 ResizeObserver로 항상 다시 계산해줌
+setTimeout(syncColHeadRowScroll, 0);
+// #colHeadRow는 board 밖에 있는 일반 sticky라 기준점 문제가 없음. 다만 필터바(#boardStats)
+// 바로 아래에 붙게 하려면 top 값에 필터바의 실측 높이를 더해줘야 함(필터칩 줄바꿈 등으로
+// 높이가 상황에 따라 살짝 달라질 수 있어서 고정값 대신 실측)
+function updateColHeadRowTop(){
+  const row = document.getElementById('colHeadRow');
+  if(!row) return;
+  if(window.innerWidth > 640){ row.style.top = ''; return; }
+  const stats = document.getElementById('boardStats');
+  const top = stats ? (32 + stats.getBoundingClientRect().height) : 32;
+  row.style.top = top + 'px';
+}
+window.addEventListener('load', updateColHeadRowTop);
+window.addEventListener('resize', updateColHeadRowTop);
+setTimeout(updateColHeadRowTop, 0);
 if('ResizeObserver' in window){
   const boardStatsElForObserve = document.getElementById('boardStats');
   if(boardStatsElForObserve){
-    new ResizeObserver(()=>updateColHeadFixed()).observe(boardStatsElForObserve);
+    new ResizeObserver(()=>updateColHeadRowTop()).observe(boardStatsElForObserve);
   }
 }
 
