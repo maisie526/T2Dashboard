@@ -395,9 +395,15 @@
        틀어지게 하는 부작용이 있어서 안전하게 원래 여백대로 되돌림 */
     /* 위로 스크롤하다가 필터바가 화면 위 32px 지점에 닿으면 그 자리에 고정되고,
        그 아래 컬럼 타이틀(#colHeadRow)도 바로 이어서 고정됨.
-       sticky/배경은 이제 부모 #boardStickyHeader 하나에서만 처리함(아래 참고) */
+       sticky/배경은 이제 부모 #boardStickyHeader 하나에서만 처리함(아래 참고).
+       처음엔 top:32px로 띄워놨었는데, 그러면 "탑바 ~ 이 요소가 고정되는 지점" 사이
+       32px 구간은 이 요소의 박스 밖이라 배경이 안 칠해져 있고, sticky는 그 아래 스크롤되는
+       내용(카드)을 가려주지 않아서 카드가 그 틈으로 스크롤해 지나가며 비쳐 보였음.
+       → top은 0으로 붙이고, 대신 그만큼을 padding-top으로 박스 안쪽에 넣어서 배경이
+       탑바 바로 밑부터 통짜로 깔리게 함(보이는 위치는 기존과 동일, 틈만 없앰) */
     #boardStickyHeader{
-      position:sticky;top:32px;z-index:6;background:var(--page);
+      position:sticky;top:0;z-index:6;background:var(--page);
+      padding-top:32px;
     }
     #boardStats{
       gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
