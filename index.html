@@ -389,7 +389,7 @@
     /* 보드탭은 위에서 padding을 없앴으니 헤더/빈 상태 문구에만 개별적으로 좌우 여백을 줌
        (.empty-hint는 표 안, 모달 안 등 다른 곳에서도 두루 쓰이는 클래스라 id로 범위를 좁혀서 적용) */
     #boardView{padding-top:32px;}
-    #boardView header{padding-left:24px;padding-right:24px;}
+    #boardView header{padding-left:24px;padding-right:24px;margin-bottom:0;}
     #boardEmptyMsg{margin-left:24px;margin-right:24px;}
     /* 보드 탭 외의 다른 탭들은 원래처럼 좌우 24px 여백 + 위쪽 32px 여백을 유지 */
     #peopleView, #wfhView, #requestsView, #historyPageView{padding-left:24px;padding-right:24px;padding-top:32px;}
@@ -410,7 +410,7 @@
        탑바 바로 밑부터 통짜로 깔리게 함(보이는 위치는 기존과 동일, 틈만 없앰) */
     #boardStickyHeader{
       position:sticky;top:0;z-index:6;background:var(--page);
-      padding-top:32px;
+      padding-top:24px;
     }
     #boardStats{
       gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
