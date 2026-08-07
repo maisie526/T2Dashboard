@@ -212,7 +212,7 @@
   .client-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
   .client-badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:800;color:#fff;}
   .card-title{font-size:14px;font-weight:700;line-height:1.4;margin-bottom:8px;}
-  .meta-row{font-size:13px;color:var(--fg);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;background:var(--bg-ghost);border-radius:6px;}
+  .meta-row{font-size:13px;color:var(--fg);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;}
   .meta-row b{color:var(--text);font-weight:700;}
   .subtask-list{list-style:none;margin:0 0 8px;padding:0;}
   .subtask-row{display:flex;align-items:flex-start;gap:6px;padding:3px 0;cursor:pointer;position:relative;}
@@ -1173,6 +1173,7 @@
       <input type="text" id="fLink" placeholder="예: https://www.figma.com/design/...">
     </div>
     <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalDelBtn" style="color:#dc2626;display:none;margin-right:auto;">삭제</button>
       <button class="btn btn-ghost" id="cancelBtn">취소</button>
       <button class="btn" id="saveBtn">저장</button>
     </div>
@@ -1879,7 +1880,6 @@ function cardHtml(t){
   <div class="card" draggable="${window.innerWidth > 640 ? 'true' : 'false'}" data-id="${t.id}">
     <div class="card-actions">
       <button class="edit" data-id="${t.id}" title="수정">✎</button>
-      <button class="del" data-id="${t.id}" title="삭제">✕</button>
     </div>
     ${t.client ? `<div class="client-row"><span class="client-badge" style="background:${hashColor(t.client)}">${escapeHtml(t.client)}</span></div>` : ''}
     <div class="card-title">${escapeHtml(t.title)}</div>
@@ -2173,22 +2173,12 @@ function attachEvents(){
     });
     card.addEventListener('dragend', ()=>card.classList.remove('dragging'));
     card.addEventListener('click', (e)=>{
-      if(e.target.closest('.edit, .del, .subtask-row, .subtask-check, .link-row')) return;
+      if(e.target.closest('.edit, .subtask-row, .subtask-check, .link-row')) return;
       openCardDetail(Number(card.dataset.id));
     });
   });
   document.querySelectorAll('.edit').forEach(btn=>{
     btn.addEventListener('click', (e)=>{ e.stopPropagation(); openModal(Number(btn.dataset.id)); });
-  });
-  document.querySelectorAll('.del').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if(confirm('이 카드를 삭제할까요?')){
-        const id = Number(btn.dataset.id);
-        tasks = tasks.filter(t=>t.id !== id);
-        saveTasksLocal(); fbDeleteItem('tasks', id); render();
-      }
-    });
   });
   document.querySelectorAll('.subtask-check').forEach(cb=>{
     cb.addEventListener('click', e=> e.stopPropagation());
@@ -2496,6 +2486,7 @@ document.addEventListener('click', (e)=>{
 
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
+  document.getElementById('modalDelBtn').style.display = id ? '' : 'none';
   if(id){
     const t = tasks.find(t=>t.id===id);
     document.getElementById('modalTitle').textContent = '업무 수정';
@@ -2535,6 +2526,16 @@ function closeModal(){ modalBg.classList.remove('open'); }
 document.getElementById('boardAddBtn').addEventListener('click', ()=>openModal(null,'backlog'));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 modalBg.addEventListener('click', e=>{ if(e.target===modalBg) closeModal(); });
+document.getElementById('modalDelBtn').addEventListener('click', ()=>{
+  const id = Number(document.getElementById('editId').value);
+  if(!id) return;
+  if(confirm('이 카드를 삭제할까요?')){
+    tasks = tasks.filter(t=>t.id !== id);
+    saveTasksLocal(); fbDeleteItem('tasks', id);
+    closeModal();
+    render();
+  }
+});
 
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   const title = document.getElementById('fTitle').value.trim();
