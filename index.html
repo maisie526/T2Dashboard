@@ -91,7 +91,7 @@
      주소창이 보이는 상태에서는 화면 위/아래 끝 요소가 실제 화면 밖으로 밀려 안 보이는 문제가 있었음
      → 100dvh(동적 뷰포트 높이)를 지원하는 브라우저에서는 실제 보이는 높이를 쓰도록 함 (100vh는 구형 브라우저 폴백) */
   .app-shell{display:flex;height:100vh;height:100dvh;}
-  .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;}
+  .main-content{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding:64px 48px;}
   .sidebar{
     width:216px;flex:0 0 216px;background:var(--panel);border-right:1px solid var(--border);
     padding:20px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;
@@ -1063,7 +1063,11 @@
     <div class="field-row">
       <div class="field">
         <label>고객사</label>
-        <input type="text" id="fClient" placeholder="예: A사">
+        <div class="multiselect" id="fClientSelect">
+          <button type="button" class="multiselect-toggle" id="fClientToggle">선택 안 함</button>
+          <div class="multiselect-panel" id="fClientPanel"></div>
+        </div>
+        <input type="hidden" id="fClient">
       </div>
       <div class="field">
         <label>우선순위</label>
@@ -1264,6 +1268,22 @@ function saveTasksLocal(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(task
 
 let tasks = loadTasks();
 let draggedId = null;
+
+// 고객사 등록 목록 — 처음 실행 시엔 이미 등록된 업무들에서 쓰인 고객사명을 자동으로 시드해서
+// 기존 데이터가 갑자기 목록에서 빠져 보이는 일이 없게 함. 이후엔 모달 안 드롭다운에서
+// 바로 새 고객사를 등록/삭제할 수 있음(팀원 전체가 공유하도록 roster/tasks와 같은 방식으로
+// Firestore 'clients' 컬렉션에도 동기화)
+const CLIENTS_KEY = 'workDashboard_clients_v1';
+function loadClientsList(){
+  try{
+    const raw = localStorage.getItem(CLIENTS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const used = [...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
+  return used.map((name,i)=>({id:'c'+i, name}));
+}
+function saveClientsListLocal(){ localStorage.setItem(CLIENTS_KEY, JSON.stringify(clientsList)); }
+let clientsList = loadClientsList();
 
 const PALETTE = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4','#6366f1'];
 function hashColor(str){
@@ -2236,13 +2256,88 @@ document.addEventListener('click', (e)=>{
   if(ms && !ms.contains(e.target)) document.getElementById('fAssigneePanel').classList.remove('open');
 });
 
+// 고객사 드롭다운 — 등록된 고객사 중에서 고르거나, 패널 맨 아래 입력창으로 새 고객사를
+// 그 자리에서 바로 등록할 수 있음(담당자 멀티셀렉트와 같은 UI 패턴을 그대로 사용)
+function clientPanelHtml(){
+  const current = document.getElementById('fClient').value;
+  const rows = clientsList.map(c=>`
+    <div class="multiselect-option client-opt-name" data-name="${escapeHtml(c.name)}" style="justify-content:space-between;${c.name===current?'font-weight:700;':''}">
+      <span>${escapeHtml(c.name)}${c.name===current?' ✓':''}</span>
+      <button type="button" class="client-opt-del" data-id="${c.id}" title="삭제" style="border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;flex:none;">✕</button>
+    </div>
+  `).join('');
+  return `
+    <div class="multiselect-option client-opt-name" data-name="" style="${current?'':'font-weight:700;'}">선택 안 함</div>
+    ${rows}
+    <div style="display:flex;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+      <input type="text" id="clientNewInput" placeholder="새 고객사명 입력" style="flex:1;min-width:0;padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input);color:var(--fg-modal);font-size:13px;">
+      <button type="button" id="clientNewAddBtn" style="border:none;background:#3b82f6;color:#fff;border-radius:6px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer;flex:none;">추가</button>
+    </div>
+  `;
+}
+function setClientValue(name){
+  document.getElementById('fClient').value = name || '';
+  document.getElementById('fClientToggle').textContent = name || '선택 안 함';
+}
+function addNewClientFromModal(){
+  const input = document.getElementById('clientNewInput');
+  if(!input) return;
+  const name = (input.value || '').trim();
+  if(!name) return;
+  let c = clientsList.find(c=>c.name===name);
+  if(!c){
+    c = {id:'c'+Date.now(), name};
+    clientsList.push(c);
+    saveClientsListLocal(); fbSetItem('clients', c.id, c);
+  }
+  setClientValue(name);
+  document.getElementById('fClientPanel').classList.remove('open');
+}
+document.getElementById('fClientToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const panel = document.getElementById('fClientPanel');
+  const willOpen = !panel.classList.contains('open');
+  if(willOpen) panel.innerHTML = clientPanelHtml();
+  panel.classList.toggle('open', willOpen);
+});
+document.getElementById('fClientPanel').addEventListener('click', (e)=>{
+  const delBtn = e.target.closest('.client-opt-del');
+  if(delBtn){
+    e.stopPropagation();
+    const id = delBtn.dataset.id;
+    const removed = clientsList.find(c=>c.id===id);
+    clientsList = clientsList.filter(c=>c.id!==id);
+    saveClientsListLocal(); fbDeleteItem('clients', id);
+    if(removed && document.getElementById('fClient').value === removed.name) setClientValue('');
+    document.getElementById('fClientPanel').innerHTML = clientPanelHtml();
+    return;
+  }
+  const nameEl = e.target.closest('.client-opt-name');
+  if(nameEl){
+    setClientValue(nameEl.dataset.name);
+    document.getElementById('fClientPanel').classList.remove('open');
+    return;
+  }
+  if(e.target.id === 'clientNewAddBtn') addNewClientFromModal();
+});
+document.getElementById('fClientPanel').addEventListener('keydown', (e)=>{
+  if(e.target.id === 'clientNewInput' && e.key === 'Enter'){
+    e.preventDefault();
+    addNewClientFromModal();
+  }
+});
+document.addEventListener('click', (e)=>{
+  const cs = document.getElementById('fClientSelect');
+  if(cs && !cs.contains(e.target)) document.getElementById('fClientPanel').classList.remove('open');
+});
+
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
   if(id){
     const t = tasks.find(t=>t.id===id);
     document.getElementById('modalTitle').textContent = '업무 수정';
     document.getElementById('fTitle').value = t.title;
-    document.getElementById('fClient').value = t.client || '';
+    setClientValue(t.client || '');
     document.getElementById('fPriority').value = t.priority;
     document.getElementById('fStatus').value = t.status;
     fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : [UNASSIGNED_KEY]);
@@ -2254,7 +2349,7 @@ function openModal(id, presetStatus){
   } else {
     document.getElementById('modalTitle').textContent = '새 업무 생성';
     document.getElementById('fTitle').value = '';
-    document.getElementById('fClient').value = '';
+    setClientValue('');
     document.getElementById('fPriority').value = 'normal';
     document.getElementById('fStatus').value = presetStatus || 'backlog';
     fAssigneeSelected = [UNASSIGNED_KEY];
@@ -2265,6 +2360,7 @@ function openModal(id, presetStatus){
     document.getElementById('fLink').value = '';
   }
   document.getElementById('fAssigneePanel').classList.remove('open');
+  document.getElementById('fClientPanel').classList.remove('open');
   modalBg.classList.add('open');
   // 모달이 열리기 전(display:none)엔 scrollHeight가 정확히 안 잡히므로 연 다음 다시 계산
   setTimeout(()=>{
@@ -3564,6 +3660,7 @@ fbWatchCollection('roster', (list)=>{
 }, ()=>roster, false);
 fbWatchCollection('wfh', (list)=>{ wfhEntries = list; renderWfhAll(); updateOrphanButtonVisibility(); }, ()=>wfhEntries, true);
 fbWatchCollection('requests', (list)=>{ requests = list; renderRequestsView(); }, ()=>requests, true);
+fbWatchCollection('clients', (list)=>{ clientsList = list; }, ()=>clientsList, false);
 
 </script>
 </body>
