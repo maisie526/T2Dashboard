@@ -262,8 +262,9 @@
   /* 업무 카드 상세보기 팝업 */
   .cd-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
   .cd-tags-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .cd-close-btn{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-ghost);color:var(--fg-modal);cursor:pointer;}
+  .cd-close-btn{display:flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--fg-modal);cursor:pointer;}
   .cd-close-btn:hover{background:var(--bg-ghost-hover);}
+  #cardDetailModalBg .modal{padding:24px;}
   .cd-top-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
   .cd-status-chip{font-size:12px;font-weight:700;color:var(--muted);background:var(--bg-ghost);padding:4px 11px;border-radius:20px;}
   .cd-title{font-size:19px;font-weight:800;margin:2px 0 14px;color:var(--fg-modal);line-height:1.4;}
@@ -1182,7 +1183,7 @@
   <div class="modal" style="width:560px;">
     <div class="cd-header">
       <div class="cd-tags-row" id="cdTagsRow"></div>
-      <button type="button" class="cd-close-btn" id="cardDetailCloseBtn" aria-label="닫기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      <button type="button" class="cd-close-btn" id="cardDetailCloseBtn" aria-label="닫기"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div id="cardDetailBody"></div>
     <div class="modal-actions">
