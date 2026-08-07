@@ -417,12 +417,11 @@
        → top은 0으로 붙이고, 대신 그만큼을 padding-top으로 박스 안쪽에 넣어서 배경이
        탑바 바로 밑부터 통짜로 깔리게 함(보이는 위치는 기존과 동일, 틈만 없앰) */
     #boardStickyHeader{
-      position:sticky;top:0;z-index:6;background:var(--page);
+      display:block;position:sticky;top:0;z-index:6;background:var(--page);
       padding-top:24px;
     }
     #boardStats{
       gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-      padding-top:6px;padding-bottom:8px;
     }
     /* main-content 좌우 패딩을 없앴으니, 쉬는 상태(스크롤 안 한 상태)에서도 헤더와 맞춰 24px 여백이
        보이도록 양 끝에 빈 스페이서를 넣음 (gap이 8px라서 스페이서는 24-8=16px). 스크롤하면 스페이서가
@@ -796,7 +795,11 @@
   /* 라인(border-left) 강조 대신, 업무 카드 고객사 뱃지처럼 배경색을 꽉 채운 형태로 표시 */
   .board-cal-bar{color:#fff;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;line-height:18px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .board-cal-bar:hover{filter:brightness(1.1);}
-  .board-stats{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .board-stats{display:flex;gap:10px;flex-wrap:wrap;}
+  /* PC: 필터 칩(board-stats, 왼쪽)과 검색/필터 툴바(toolbar, 오른쪽)를 한 줄에 나란히 놓고
+     세로 중심(가로줄 기준)을 맞춤. 모바일에서는 미디어쿼리에서 다시 block으로 되돌림 */
+  #boardStickyHeader{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  #boardStickyHeader .toolbar{margin-bottom:0;}
   .stat-chip{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 16px;display:flex;align-items:baseline;gap:8px;cursor:pointer;transition:.15s;}
   .stat-chip:hover{border-color:#4b5568;}
   .stat-chip.active{background:var(--stat-active-bg);border-color:#3b82f6;box-shadow:0 0 0 1px #3b82f6 inset;}
@@ -846,24 +849,26 @@
     </button>
   </header>
 
-  <div class="board-toolbar-backdrop" id="boardToolbarBackdrop"></div>
-  <div class="toolbar" id="boardToolbar">
-    <input type="text" id="searchInput" placeholder="업무/고객사 검색...">
-    <select id="clientFilter"><option value="">전체 고객사</option></select>
-    <select id="assigneeFilter"><option value="">전체 담당자</option></select>
-    <button class="btn-ghost btn" id="resetBtn">초기화</button>
-    <button type="button" class="board-view-toggle-btn board-view-toggle-btn-desktop" id="boardViewToggleBtnDesktop" title="캘린더뷰로 보기" aria-label="보기 전환"></button>
-  </div>
-
   <!-- 필터바(boardStats)와 컬럼 타이틀(colHeadRow)을 하나의 sticky 컨테이너로 묶음.
        예전엔 각각 따로 sticky를 걸고 colHeadRow의 top을 "32 + boardStats 실측 높이"로
        JS에서 계산해서 맞췄는데, 실기기에서 폰트 렌더링/줄바꿈 차이 등으로 실측 타이밍이
        어긋나면 boardStats와 colHeadRow 사이에 배경이 안 칠해진 틈이 생겨서 그 틈으로
        스크롤되는 카드가 비쳐 보이는 문제가 있었음. 이제는 두 요소를 한 부모 안에 넣고
        부모 하나만 sticky(top:32px)로 고정해서, 부모 배경(var(--page))이 항상 통짜로
-       그 사이를 덮도록 함 → 틈이 생길 수가 없는 구조로 바꿈 -->
+       그 사이를 덮도록 함 → 틈이 생길 수가 없는 구조로 바꿈.
+       PC에서는 boardStats(필터 칩, 왼쪽)와 toolbar(검색/필터, 오른쪽)를 같은 한 줄에
+       나란히 놓고 가로 중심을 맞추기 위해 toolbar를 이 부모 안으로 옮겨 넣음(모바일에서는
+       toolbar가 position:fixed 오버레이 패널이라 이 안에 있어도 레이아웃에 영향 없음) -->
   <div class="board-sticky-header" id="boardStickyHeader">
     <div class="board-stats" id="boardStats"></div>
+    <div class="board-toolbar-backdrop" id="boardToolbarBackdrop"></div>
+    <div class="toolbar" id="boardToolbar">
+      <input type="text" id="searchInput" placeholder="업무/고객사 검색...">
+      <select id="clientFilter"><option value="">전체 고객사</option></select>
+      <select id="assigneeFilter"><option value="">전체 담당자</option></select>
+      <button class="btn-ghost btn" id="resetBtn">초기화</button>
+      <button type="button" class="board-view-toggle-btn board-view-toggle-btn-desktop" id="boardViewToggleBtnDesktop" title="캘린더뷰로 보기" aria-label="보기 전환"></button>
+    </div>
     <div class="col-head-row" id="colHeadRow"></div>
   </div>
 
