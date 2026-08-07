@@ -195,6 +195,10 @@
   .card{
     background:var(--card);color:var(--text);border-radius:11px;padding:12px;
     margin-bottom:10px;position:relative;cursor:grab;border:1px solid var(--border);
+    /* 모바일에서 draggable=true(데스크톱 드래그 정렬용)가 터치 스크롤 제스처와 충돌해서
+       카드 위에서 세로 스크롤이 안 먹는 경우가 있어 세로 팬은 항상 허용해줌
+       (실제 draggable 속성 자체도 모바일에서는 false로 렌더링함 — cardHtml 참고) */
+    touch-action:pan-y;
   }
   .card.dragging{opacity:.35;}
   .drop-indicator{height:2px;background:#3b82f6;border-radius:2px;margin:0 0 8px;flex:none;}
@@ -1762,7 +1766,7 @@ function cardHtml(t){
   const dateStr = (t.start || t.end) ? `${fmtShort(t.start)} ~ ${fmtShort(t.end)} (${subDone}/${subtasks.length})` : '';
   const shown = subtasks.slice(0,4);
   return `
-  <div class="card" draggable="true" data-id="${t.id}">
+  <div class="card" draggable="${window.innerWidth > 640 ? 'true' : 'false'}" data-id="${t.id}">
     <div class="card-actions">
       <button class="edit" data-id="${t.id}" title="수정">✎</button>
       <button class="del" data-id="${t.id}" title="삭제">✕</button>
