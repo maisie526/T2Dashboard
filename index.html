@@ -384,8 +384,12 @@
        → #boardStats id로 우선순위를 높여서 확실히 적용)
        좌우 끝까지 파고들게(bleed) 하는 시도는 모바일에서 페이지 전체 레이아웃 너비 계산을
        틀어지게 하는 부작용이 있어서 안전하게 원래 여백대로 되돌림 */
+    /* 위로 스크롤하다가 필터바가 화면 위 32px 지점에 닿으면 그 자리에 고정되고,
+       그 아래 컬럼 타이틀(.col-head-wrap)도 바로 이어서 고정됨 (JS: adjustColHeadStickyTop) */
     #boardStats{
-      gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;
+      gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      position:sticky;top:32px;z-index:6;background:var(--page);
+      padding-top:6px;padding-bottom:8px;
     }
     /* main-content 좌우 패딩을 없앴으니, 쉬는 상태(스크롤 안 한 상태)에서도 헤더와 맞춰 24px 여백이
        보이도록 양 끝에 빈 스페이서를 넣음 (gap이 8px라서 스페이서는 24-8=16px). 스크롤하면 스페이서가
@@ -419,8 +423,12 @@
     }
     .board-toolbar-backdrop.open{display:block;}
 
+    /* 모바일에서는 보드 자체를 화면 높이에 맞춰 고정하지 않고(내부 스크롤 X),
+       페이지 전체와 함께 자연스럽게 스크롤되게 함 — 필터바/컬럼 타이틀만 sticky로 고정되고
+       카드는 페이지 스크롤을 따라 그 아래로 흘러가는 것처럼 보이게 하기 위함
+       (adjustBoardHeight()도 모바일에서는 높이를 강제로 지정하지 않도록 JS에서 분기 처리함) */
     .board{
-      height:62vh;min-height:280px;
+      height:auto;min-height:200px;
       scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
       padding-left:24px;padding-right:24px;
       scroll-padding-left:24px;scroll-padding-right:24px;
@@ -2269,6 +2277,7 @@ document.getElementById('boardMonthNext').addEventListener('click', ()=>{
 
 buildBoardSkeleton();
 render();
+setTimeout(adjustColHeadStickyTop, 0);
 
 /* ===== 다크/라이트 테마 토글 ===== */
 const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -2330,15 +2339,38 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 function adjustBoardHeight(){
   const board = document.getElementById('board');
   if(!board || board.offsetParent === null) return;
+  adjustColHeadStickyTop();
+  if(window.innerWidth <= 640){
+    // 모바일에서는 보드 높이를 화면에 맞춰 강제로 지정하지 않음 — 필터바/컬럼 타이틀이
+    // sticky로 고정되고 카드는 페이지 스크롤을 따라 자연스럽게 흘러가야 하기 때문
+    board.style.height = '';
+    return;
+  }
+  board.style.height = '';
   const rect = board.getBoundingClientRect();
   // 아래쪽 여백 없이 화면 끝까지 보드가 채워지도록 함 (실제 스크롤 컨테이너는 main-content라
   // 전체 페이지 스크롤이 추가로 생기진 않음)
   const h = window.innerHeight - rect.top;
   board.style.height = Math.max(340, h) + 'px';
 }
+// 모바일에서 필터바(#boardStats)가 top:32px에 고정된 뒤, 컬럼 타이틀(.col-head-wrap)이
+// 필터바 바로 아래에 이어 붙어서 고정되도록 필터바의 실측 높이만큼 top 값을 계산해서 지정
+function adjustColHeadStickyTop(){
+  const heads = document.querySelectorAll('.col-head-wrap');
+  if(!heads.length) return;
+  if(window.innerWidth > 640){
+    heads.forEach(el=>{ el.style.top = ''; });
+    return;
+  }
+  const stats = document.getElementById('boardStats');
+  const top = stats && stats.offsetParent !== null ? (32 + stats.getBoundingClientRect().height) : 32;
+  heads.forEach(el=>{ el.style.top = top + 'px'; });
+}
 window.addEventListener('resize', adjustBoardHeight);
 window.addEventListener('load', adjustBoardHeight);
+window.addEventListener('resize', adjustColHeadStickyTop);
 setTimeout(adjustBoardHeight, 0);
+setTimeout(adjustColHeadStickyTop, 0);
 
 // 재택근무 캘린더/오른쪽 패널 모두 화면 높이에 맞춰서 각자 내부에서만 스크롤되게 함
 // (오른쪽 패널이 달력보다 길면 그만큼 메인 영역 전체가 늘어나서 페이지가 살짝 흔들리는 원인이 됐음)
