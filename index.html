@@ -236,7 +236,7 @@
     font-size:12px;font-weight:700;white-space:nowrap;
   }
   .assignee-badge-unassigned{
-    background:var(--badge-unassigned-bg);color:var(--badge-unassigned-fg);border:1px solid var(--badge-unassigned-border);
+    background:var(--badge-unassigned-bg);color:var(--badge-unassigned-fg);border:none;
     padding:0 10px;min-height:26px;box-sizing:border-box;
   }
   .assignee-avatar-photo{width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none;}
@@ -1821,7 +1821,7 @@ function cardHtml(t){
   const subtasks = t.subtasks || [];
   const subDone = subtasks.filter(s=>s.done).length;
   const dateStr = (t.start || t.end) ? `${fmtShort(t.start)} ~ ${fmtShort(t.end)} (${subDone}/${subtasks.length})` : '';
-  const shown = subtasks.slice(0,4);
+  const shown = subtasks;
   return `
   <div class="card" draggable="${window.innerWidth > 640 ? 'true' : 'false'}" data-id="${t.id}">
     <div class="card-actions">
@@ -1833,7 +1833,6 @@ function cardHtml(t){
     ${(t.subtasks||[]).length ? progressBarHtml(t) : ''}
     ${dateStr ? `<div class="meta-row"><span>${dateStr}</span></div>` : ''}
     ${shown.length ? `<ul class="subtask-list" draggable="false">${shown.map((s,i)=>subtaskRowHtml(s,i,t.id)).join('')}</ul>` : ''}
-    ${subtasks.length > 4 ? `<div class="subtask-more">+${subtasks.length-4}개 더보기 (수정에서 확인)</div>` : ''}
     ${(t.participants||[]).length ? `<div class="foot-row"><div class="assignee-row">${t.participants.slice(0,4).map(participantBadgeHtml).join('')}</div></div>` : ''}
     ${t.link ? `<a href="${escapeHtml(t.link)}" target="_blank" rel="noopener" class="link-row" onclick="event.stopPropagation()">🔗 <span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.link)}</span></a>` : ''}
   </div>`;
