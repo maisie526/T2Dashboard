@@ -430,7 +430,15 @@
     .board{
       height:auto;min-height:200px;
       overscroll-behavior-x:contain;
-      scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+      /* mandatory로 바꿨더니 카드 위에서 세로로 스크롤하는 제스처 자체를 board가
+         가로 스냅 제스처로 붙잡아버려서 페이지가 아예 안 움직이는 문제가 있었음
+         (iOS/모바일 브라우저에서 흔한 mandatory snap 부작용) → 세로 스크롤이 항상
+         되는 게 더 중요해서 proximity로 되돌림 (대신 애매한 위치에서 안 멈출 수 있음) */
+      scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+      /* 가로 스와이프와 세로 페이지 스크롤 제스처를 브라우저가 각각 올바른 방향으로
+         분기하도록 명시적으로 둘 다 허용 (board 자체엔 세로 스크롤할 내용이 없으니
+         세로 제스처는 자연스럽게 페이지 스크롤로 넘어감) */
+      touch-action:pan-x pan-y;
       padding-left:24px;padding-right:24px;
       scroll-padding-left:24px;scroll-padding-right:24px;
     }
@@ -2426,6 +2434,9 @@ function scheduleUpdateColHeadFixed(){
 const mainContentElForScroll = document.getElementById('mainContent');
 if(mainContentElForScroll) mainContentElForScroll.addEventListener('scroll', scheduleUpdateColHeadFixed);
 document.addEventListener('scroll', scheduleUpdateColHeadFixed, true);
+// 스크롤 이벤트만 믿으면 드래그하는 도중(관성 스크롤 전)에는 값이 갱신 안 돼서
+// 카드가 타이틀 뒤로 지나가는 것처럼 잠깐 보일 수 있어서 touchmove에서도 갱신
+document.addEventListener('touchmove', scheduleUpdateColHeadFixed, {passive:true, capture:true});
 setTimeout(adjustBoardHeight, 0);
 setTimeout(updateColHeadFixed, 0);
 // 필터바(#boardStats)는 필터 클릭/업무 추가삭제 등으로 innerHTML이 자주 다시 그려지는데,
