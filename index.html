@@ -514,9 +514,13 @@
          이미 위에서 고쳤으니 이제 mandatory로 바꿔도 안전함 → 항상 카드 중앙(또는 첫/마지막은
          24px 여백)에 딱 맞춰 멈추게 함 */
       scroll-snap-type:x mandatory;
-      scroll-padding-left:24px;scroll-padding-right:24px;
+      /* 오른쪽은 padding으로 여백을 주면 그 padding 자체가 스크롤 가능한 영역에 포함돼서
+         끝까지 스크롤해도 마지막 카드와 화면 우측 끝 사이에 항상 24px 틈이 남아있었음.
+         왼쪽은 시작 지점 여백이라 유지하고, 오른쪽만 0으로 없애서 마지막 카드가 실제
+         화면 끝까지 밀착되게 함 */
+      scroll-padding-left:24px;scroll-padding-right:0;
       touch-action:pan-x pan-y;
-      padding-left:24px;padding-right:24px;
+      padding-left:24px;padding-right:0;
     }
     .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:center;}
     /* 첫/마지막 카드는 중앙정렬 대신 각각 좌/우 24px 여백을 유지한 채 스냅되도록
@@ -530,7 +534,9 @@
     .col > .col-head-wrap{display:none;}
     #colHeadRow{
       display:flex;gap:14px;overflow:hidden;
-      padding-left:24px;padding-right:24px;padding-bottom:10px;
+      /* board와 scrollLeft를 그대로 복사해서 동기화하므로, 스크롤 가능한 전체 너비(콘텐츠+패딩)가
+         board와 정확히 일치해야 함 → 오른쪽 padding도 board와 동일하게 0으로 맞춤 */
+      padding-left:24px;padding-right:0;padding-bottom:10px;
     }
     #colHeadRow .col-head-wrap{flex:0 0 78vw;width:78vw;min-width:0;}
 
@@ -784,7 +790,17 @@
     width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
   }
   .subtask-edit-row .se-remove:hover{background:var(--bg-ghost-hover);}
-  .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;margin-top:6px;}
+  .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;}
+  /* 상세 내용 인풋 오른쪽 끝에 링크 삽입 버튼을 배치 - textarea와 버튼을 한 줄 flex로 묶음 */
+  .se-desc-wrap{display:flex;align-items:flex-start;gap:4px;margin-top:6px;}
+  .se-desc-wrap .se-desc{margin-top:0;flex:1;}
+  .se-link-btn{
+    flex:none;border:none;background:transparent;color:var(--muted);border-radius:6px;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+  }
+  .se-link-btn:hover{background:var(--bg-ghost-hover);}
+  .se-link-btn.has-value{color:#3b82f6;}
+  .se-link-input{width:100%;margin-top:6px;font-family:inherit;}
   .se-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;}
   .se-assignee-select{position:relative;}
   .se-assignee-toggle{font-size:12px;padding:4px 10px;border-radius:14px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -794,6 +810,9 @@
   .se-desc-toggle, .se-date-toggle{font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;padding:4px 2px;}
   /* 이미 추가된 상태(마감일/상세내용 삭제)일 땐 "추가" 색과 구분되게 삭제 톤으로 표시 */
   .se-desc-toggle.has-value, .se-date-toggle.has-value{color:#f87171;}
+  /* 링크가 걸린 서브태스크 제목: 밑줄 + 클릭 시 이동 */
+  .subtask-link{text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+  .subtask-link:hover{opacity:0.75;}
 
   /* toast */
   #toastContainer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
@@ -1191,14 +1210,14 @@
         </div>
         <input type="hidden" id="fPriority" value="normal">
       </div>
-    </div>
-    <div class="field">
-      <label>상태(컬럼)</label>
-      <div class="multiselect select-replace" id="fStatusSelect">
-        <button type="button" class="multiselect-toggle" id="fStatusToggle">Backlog</button>
-        <div class="multiselect-panel" id="fStatusPanel"></div>
+      <div class="field">
+        <label>상태(컬럼)</label>
+        <div class="multiselect select-replace" id="fStatusSelect">
+          <button type="button" class="multiselect-toggle" id="fStatusToggle">Backlog</button>
+          <div class="multiselect-panel" id="fStatusPanel"></div>
+        </div>
+        <input type="hidden" id="fStatus" value="backlog">
       </div>
-      <input type="hidden" id="fStatus" value="backlog">
     </div>
     <div class="field-row">
       <div class="field">
@@ -1237,7 +1256,7 @@
 </div>
 
 <div class="modal-bg" id="cardDetailModalBg">
-  <div class="modal" style="width:560px;">
+  <div class="modal" style="width:820px;">
     <div class="cd-header">
       <div class="cd-tags-row" id="cdTagsRow"></div>
       <button type="button" class="cd-close-btn" id="cardDetailCloseBtn" aria-label="닫기"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -1935,13 +1954,22 @@ function periodKey(dateStr, mode){
 }
 
 
+// 서브태스크에 링크가 있으면 제목에 밑줄을 넣고 클릭 시 바로 이동하도록 렌더링.
+// 카드/상세팝업/히스토리 세 곳에서 클래스만 다르게 재사용.
+function subtaskTitleHtml(s, cls){
+  const text = escapeHtml(s.text);
+  if(s.link && s.link.trim()){
+    return `<a href="${escapeHtml(s.link)}" target="_blank" rel="noopener" class="${cls} subtask-link" onclick="event.stopPropagation()">${text}</a>`;
+  }
+  return `<span class="${cls}">${text}</span>`;
+}
 function subtaskRowHtml(s, idx, taskId){
   return `
   <li class="subtask-row" data-idx="${idx}" data-task="${taskId}">
     <input type="checkbox" class="subtask-check" data-idx="${idx}" data-task="${taskId}" ${s.done ? 'checked' : ''}>
     <div class="subtask-main">
       <div class="subtask-top">
-        <span class="subtask-text ${s.done ? 'done' : ''}">${escapeHtml(s.text)}</span>
+        ${subtaskTitleHtml(s, `subtask-text ${s.done ? 'done' : ''}`)}
         ${s.date ? `<span class="subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       </div>
       ${s.desc ? `<div class="subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
@@ -2002,7 +2030,7 @@ function cardDetailBodyHtml(t){
         <li class="cd-subtask-item">
           <div class="cd-subtask-top">
             <input type="checkbox" class="cd-subtask-check" data-idx="${i}" ${s.done?'checked':''}>
-            <span class="cd-subtask-text ${s.done?'done':''}">${escapeHtml(s.text)}</span>
+            ${subtaskTitleHtml(s, `cd-subtask-text ${s.done?'done':''}`)}
             ${s.date ? `<span class="cd-subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
           </div>
           ${s.desc ? `<div class="cd-subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
@@ -2359,10 +2387,12 @@ function updateSeAssigneeToggleLabel(row){
   toggle.classList.toggle('has-value', assignees.length > 0);
 }
 function subtaskEditRowHtml(s){
-  s = s || {text:'', date:'', desc:'', done:false, assignees:[]};
+  s = s || {text:'', date:'', desc:'', done:false, assignees:[], link:''};
   const assignees = s.assignees || [];
-  const hasDesc = !!(s.desc && s.desc.trim());
   const hasDate = !!(s.date && s.date.trim());
+  const hasLink = !!(s.link && s.link.trim());
+  // 링크가 있으면 설명 텍스트 자체는 비어있어도 링크 버튼/입력을 계속 볼 수 있게 이 영역을 열어둠
+  const hasDesc = !!(s.desc && s.desc.trim()) || hasLink;
   const toggleLabel = assignees.length ? assignees.map(k=>displayName(k)).join(', ') : '+ 담당자 지정';
   return `
   <div class="subtask-edit-row" data-done="${s.done ? 'true' : 'false'}" data-assignees="${escapeHtml(JSON.stringify(assignees))}">
@@ -2371,14 +2401,18 @@ function subtaskEditRowHtml(s){
       <input type="text" class="se-date" placeholder="예: 8/15, TBD, EOD" value="${escapeHtml(s.date)}" style="${hasDate?'':'display:none;'}">
       <button type="button" class="se-remove" title="삭제">✕</button>
     </div>
-    <textarea class="se-desc" placeholder="세부 설명" rows="1" style="${hasDesc?'':'display:none;'}">${escapeHtml(s.desc)}</textarea>
+    <div class="se-desc-wrap" style="${hasDesc?'':'display:none;'}">
+      <textarea class="se-desc" placeholder="세부 설명" rows="1">${escapeHtml(s.desc)}</textarea>
+      <button type="button" class="se-link-btn ${hasLink?'has-value':''}" title="${hasLink?'링크 삭제':'링크 삽입'}">🔗</button>
+    </div>
+    <input type="text" class="se-link-input" placeholder="https://... 링크 입력" value="${escapeHtml(s.link||'')}" style="${hasLink?'':'display:none;'}">
     <div class="se-meta-row">
       <div class="se-assignee-select">
         <button type="button" class="se-assignee-toggle ${assignees.length?'has-value':''}">${escapeHtml(toggleLabel)}</button>
         <div class="se-assignee-panel"></div>
       </div>
       <button type="button" class="se-date-toggle ${hasDate?'has-value':''}">${hasDate?'마감일 삭제':'+ 마감일 지정'}</button>
-      <button type="button" class="se-desc-toggle ${hasDesc?'has-value':''}">${hasDesc?'상세 내용 삭제':'+ 상세 내용'}</button>
+      <button type="button" class="se-desc-toggle ${hasDesc && !hasLink ?'has-value':''}">${hasDesc?'상세 내용 삭제':'+ 상세 내용'}</button>
     </div>
   </div>`;
 }
@@ -2409,20 +2443,44 @@ subtaskEditor.addEventListener('click', e=>{
   }
   if(e.target.classList.contains('se-desc-toggle')){
     const row = e.target.closest('.subtask-edit-row');
+    const wrap = row.querySelector('.se-desc-wrap');
     const ta = row.querySelector('.se-desc');
-    const isVisible = ta.style.display !== 'none';
+    const linkInput = row.querySelector('.se-link-input');
+    const isVisible = wrap.style.display !== 'none';
     if(isVisible){
+      if(linkInput.value.trim()){
+        // 링크가 남아있으면 상세 내용 텍스트만 지우고, 링크 버튼/입력을 계속 쓸 수 있게 영역은 유지
+        ta.value = '';
+        autoGrowTextarea(ta);
+        toast('링크가 남아있어서 이 영역은 계속 보여요. 🔗 버튼으로 링크도 지울 수 있어요.');
+        return;
+      }
       // 이미 추가된 상세 내용을 다시 지우고 접을 수 있게 함
-      ta.value = '';
-      ta.style.display = 'none';
+      wrap.style.display = 'none';
       e.target.textContent = '+ 상세 내용';
       e.target.classList.remove('has-value');
     } else {
-      ta.style.display = '';
+      wrap.style.display = '';
       e.target.textContent = '상세 내용 삭제';
       e.target.classList.add('has-value');
       ta.focus();
       autoGrowTextarea(ta);
+    }
+    return;
+  }
+  if(e.target.classList.contains('se-link-btn')){
+    e.stopPropagation();
+    const row = e.target.closest('.subtask-edit-row');
+    const linkInput = row.querySelector('.se-link-input');
+    const isVisible = linkInput.style.display !== 'none';
+    if(isVisible){
+      linkInput.value = '';
+      linkInput.style.display = 'none';
+      e.target.classList.remove('has-value');
+      e.target.title = '링크 삽입';
+    } else {
+      linkInput.style.display = '';
+      linkInput.focus();
     }
     return;
   }
@@ -2443,6 +2501,14 @@ subtaskEditor.addEventListener('click', e=>{
       dateInput.focus();
     }
   }
+});
+subtaskEditor.addEventListener('input', e=>{
+  if(!e.target.classList.contains('se-link-input')) return;
+  const row = e.target.closest('.subtask-edit-row');
+  const btn = row.querySelector('.se-link-btn');
+  const has = e.target.value.trim().length > 0;
+  btn.classList.toggle('has-value', has);
+  btn.title = has ? '링크 삭제' : '링크 삽입';
 });
 subtaskEditor.addEventListener('change', e=>{
   if(!e.target.classList.contains('se-assignee-opt')) return;
@@ -2737,6 +2803,7 @@ function captureModalSnapshot(){
       text: row.querySelector('.se-text').value,
       date: row.querySelector('.se-date').value,
       desc: row.querySelector('.se-desc').value,
+      link: row.querySelector('.se-link-input').value,
       assignees: row.dataset.assignees
     }))
   });
@@ -2781,6 +2848,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
       text: row.querySelector('.se-text').value.trim(),
       date: row.querySelector('.se-date').value,
       desc: row.querySelector('.se-desc').value.trim(),
+      link: row.querySelector('.se-link-input').value.trim(),
       done: row.dataset.done === 'true',
       assignees: JSON.parse(row.dataset.assignees || '[]'),
     })).filter(s=>s.text),
@@ -3016,7 +3084,7 @@ function histSubtasksHtml(t){
   return `<div class="hist-subtasks">${subtasks.map(s=>`
     <div class="hist-subtask-row">
       <span>${s.done ? '✅' : '⬜'}</span>
-      <span class="hist-sub-text ${s.done?'done':''}">${escapeHtml(s.text)}</span>
+      ${subtaskTitleHtml(s, `hist-sub-text ${s.done?'done':''}`)}
       ${s.date ? `<span class="hist-sub-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       ${s.desc ? `<span class="hist-sub-desc">${escapeHtml(s.desc)}</span>` : ''}
     </div>`).join('')}</div>`;
