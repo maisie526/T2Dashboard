@@ -780,7 +780,7 @@
   }
   .subtask-edit-row .se-remove:hover{background:var(--bg-ghost-hover);}
   .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;margin-top:6px;}
-  .se-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .se-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;}
   .se-assignee-select{position:relative;}
   .se-assignee-toggle{font-size:12px;padding:4px 10px;border-radius:14px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .se-assignee-toggle.has-value{border-style:solid;border-color:var(--border);color:var(--fg-modal);background:var(--bg-ghost);}
@@ -2366,6 +2366,7 @@ function subtaskEditRowHtml(s){
       <input type="text" class="se-date" placeholder="예: 8/15, TBD, EOD" value="${escapeHtml(s.date)}" style="${hasDate?'':'display:none;'}">
       <button type="button" class="se-remove" title="삭제">✕</button>
     </div>
+    <textarea class="se-desc" placeholder="세부 설명" rows="1" style="${hasDesc?'':'display:none;'}">${escapeHtml(s.desc)}</textarea>
     <div class="se-meta-row">
       <div class="se-assignee-select">
         <button type="button" class="se-assignee-toggle ${assignees.length?'has-value':''}">${escapeHtml(toggleLabel)}</button>
@@ -2374,7 +2375,6 @@ function subtaskEditRowHtml(s){
       <button type="button" class="se-date-toggle ${hasDate?'has-value':''}">${hasDate?'마감일 삭제':'+ 마감일 지정'}</button>
       <button type="button" class="se-desc-toggle ${hasDesc?'has-value':''}">${hasDesc?'상세 내용 삭제':'+ 상세 내용'}</button>
     </div>
-    <textarea class="se-desc" placeholder="세부 설명" rows="1" style="${hasDesc?'':'display:none;'}">${escapeHtml(s.desc)}</textarea>
   </div>`;
 }
 function renderSubtaskEditor(list){
