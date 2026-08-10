@@ -830,8 +830,10 @@
   .board-cal-daycell .num.holiday{color:#ef4444;}
   .board-cal-holiday{display:block;font-size:9px;color:#ef4444;}
   /* 라인(border-left) 강조 대신, 업무 카드 고객사 뱃지처럼 배경색을 꽉 채운 형태로 표시 */
-  .board-cal-bar{color:#fff;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;line-height:18px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .board-cal-bar:hover{filter:brightness(1.1);}
+  /* 재택 캘린더에서 다른 사람 항목을 살짝 옅게(opacity:0.8) 하던 것과 같은 느낌으로,
+     원색 그대로면 눈이 아프다는 피드백이 있어서 배경색을 살짝 흐리게 처리 */
+  .board-cal-bar{color:#fff;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;line-height:18px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0.8;}
+  .board-cal-bar:hover{opacity:1;filter:brightness(1.1);}
   .board-stats{display:flex;gap:10px;flex-wrap:wrap;}
   /* PC: 필터 칩(board-stats, 왼쪽)과 검색/필터 툴바(toolbar, 오른쪽)를 한 줄에 나란히 놓고
      세로 중심(가로줄 기준)을 맞춤. 모바일에서는 미디어쿼리에서 다시 block으로 되돌림 */
