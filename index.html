@@ -312,7 +312,7 @@
   .modal-bg.open{display:flex;}
   .modal{background:var(--bg-modal);color:var(--fg-modal);border-radius:14px;padding:22px;width:460px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);}
   .modal h3{margin:0 0 14px;font-size:16px;}
-  .field{margin-bottom:11px;}
+  .field{margin-bottom:16px;}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700;}
   .field input, .field select, .field textarea{
     width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;
@@ -403,6 +403,8 @@
 
   /* ===== 모바일 대응 ===== */
   @media (max-width:640px){
+    /* 모바일에서는 팝업 자체가 화면 너비에 맞춰 좁아지므로 서브태스크는 2열이 아니라 1열로 */
+    #subtaskEditor{grid-template-columns:1fr;}
     /* 보드/필터 영역이 화면 좌우 끝까지 닿게 하려고 main-content 자체의 좌우 패딩을 없애고,
        대신 그게 필요한 요소(헤더, 각 탭 내용)에만 개별적으로 좌우 여백을 줌.
        (예전에 보드 쪽에만 음수 margin으로 파고들게 했더니 모바일에서 페이지 전체 레이아웃 너비
@@ -764,11 +766,14 @@
   input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.65);cursor:pointer;}
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 
+  /* 서브태스크가 늘어날수록 세로 스크롤이 너무 길어져서, 팝업을 넓힌 김에 2열로 배치.
+     (모바일은 팝업 자체가 화면 너비에 맞춰져서 좁으니 1열 유지) */
+  #subtaskEditor{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
   /* subtask editor in modal - 담당자/상세내용 등이 늘어나면서 서브태스크끼리 경계가
      흐릿한 줄 구분선만으로는 그룹핑이 잘 안 보여서, 각 서브태스크를 하나의 박스로 감쌈 */
   .subtask-edit-row{
     background:var(--bg-ghost);border:1px solid var(--border);border-radius:10px;
-    padding:12px;margin-bottom:10px;
+    padding:12px;margin-bottom:0;
   }
   .subtask-edit-row:last-child{margin-bottom:0;}
   .subtask-edit-top{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
@@ -1162,7 +1167,7 @@
 </div>
 
 <div class="modal-bg" id="modalBg">
-  <div class="modal">
+  <div class="modal" style="width:820px;">
     <h3 id="modalTitle">새 업무 생성</h3>
     <input type="hidden" id="editId">
     <div class="field">
