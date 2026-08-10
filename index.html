@@ -790,38 +790,34 @@
     font-size:12px;color:var(--muted);text-align:center;
   }
   .subtask-edit-top .se-date:focus{border-style:solid;color:var(--fg-modal);}
+  /* 자유 텍스트 입력은 그대로 두되, 이 버튼으로 실제 달력 팝업(네이티브 date picker)을
+     열어서 날짜를 고르면 자동으로 채워지게 함 (TBD/EOD 같은 자유 텍스트도 계속 가능) */
+  .subtask-edit-top .se-date-pick{
+    flex:none;border:none;background:transparent;color:var(--muted);border-radius:6px;
+    width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;
+  }
+  .subtask-edit-top .se-date-pick:hover{background:var(--bg-ghost-hover);}
   .subtask-edit-row .se-remove{
     flex:none;border:none;background:transparent;color:#f87171;border-radius:6px;
     width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
   }
   .subtask-edit-row .se-remove:hover{background:var(--bg-ghost-hover);}
-  .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;background:var(--bg-ghost);border:none;padding-right:30px;}
-  /* 링크 버튼을 별도 줄로 빼지 않고 설명 textarea 안쪽 우측 상단에 겹쳐서 배치 -
-     그만큼 줄 수가 줄어들어 카드 안이 덜 복잡해 보임 */
-  .se-desc-wrap{position:relative;margin-top:6px;}
-  .se-link-btn{
-    position:absolute;top:4px;right:4px;
-    flex:none;border:none;background:transparent;color:var(--muted);border-radius:6px;
-    width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
-  }
-  .se-link-btn:hover{background:var(--bg-ghost-hover);}
-  .se-link-btn.has-value{color:#3b82f6;}
+  .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;background:var(--bg-ghost);border:none;}
+  .se-desc-wrap{margin-top:6px;}
   .se-link-input{width:100%;margin-top:6px;font-family:inherit;}
   .se-meta-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;}
   .se-assignee-select{position:relative;}
-  .se-assignee-toggle{font-size:12px;padding:4px 10px;border-radius:14px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .se-assignee-toggle.has-value{border-style:solid;border-color:var(--border);color:var(--fg-modal);background:var(--bg-ghost);}
   .se-assignee-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:160px;max-height:200px;overflow-y:auto;background:var(--bg-modal);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:90;box-shadow:0 6px 18px rgba(0,0,0,0.3);}
   .se-assignee-panel.open{display:block;}
-  /* 마감일/상세내용 토글은 "마감일 삭제"류 텍스트 라벨 2개가 계속 눈에 밟혀서
-     아이콘 버튼으로 축소. 지정 안 된 상태는 흐리게, 지정되면 파란색으로만 구분 */
-  .se-meta-icon-btn{
-    flex:none;border:none;background:transparent;color:var(--muted);border-radius:6px;
-    width:26px;height:26px;display:flex;align-items:center;justify-content:center;
-    cursor:pointer;font-size:13px;opacity:0.55;
+  /* 담당자/마감일/상세내용 토글을 텍스트 라벨 대신 아이콘 버튼으로 통일 - 지정 안 된
+     상태는 흐린 회색, 지정되면 옅은 파란 배경 + 파란 아이콘으로 한눈에 구분되게 함 */
+  .se-icon-btn{
+    flex:none;border:none;background:var(--bg-ghost);color:var(--muted);border-radius:8px;
+    width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:14px;
   }
-  .se-meta-icon-btn:hover{background:var(--bg-ghost-hover);opacity:0.85;}
-  .se-meta-icon-btn.has-value{opacity:1;color:#3b82f6;}
+  .se-icon-btn:hover{background:var(--bg-ghost-hover);}
+  .se-icon-btn.has-value{background:rgba(59,130,246,0.15);color:#3b82f6;}
   /* 링크가 걸린 서브태스크 제목: 밑줄 + 클릭 시 이동 */
   .subtask-link{text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
   .subtask-link:hover{opacity:0.75;}
@@ -1198,7 +1194,7 @@
 </div>
 
 <div class="modal-bg" id="modalBg">
-  <div class="modal">
+  <div class="modal" style="width:560px;">
     <h3 id="modalTitle">새 업무 생성</h3>
     <input type="hidden" id="editId">
     <div class="field">
@@ -1268,7 +1264,7 @@
 </div>
 
 <div class="modal-bg" id="cardDetailModalBg">
-  <div class="modal" style="width:820px;">
+  <div class="modal" style="width:560px;">
     <div class="cd-header">
       <div class="cd-tags-row" id="cdTagsRow"></div>
       <button type="button" class="cd-close-btn" id="cardDetailCloseBtn" aria-label="닫기"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -2403,28 +2399,29 @@ function subtaskEditRowHtml(s){
   const assignees = s.assignees || [];
   const hasDate = !!(s.date && s.date.trim());
   const hasLink = !!(s.link && s.link.trim());
-  // 링크가 있으면 설명 텍스트 자체는 비어있어도 링크 버튼/입력을 계속 볼 수 있게 이 영역을 열어둠
-  const hasDesc = !!(s.desc && s.desc.trim()) || hasLink;
+  const hasDesc = !!(s.desc && s.desc.trim());
   const toggleLabel = assignees.length ? assignees.map(k=>displayName(k)).join(', ') : '+ 담당자 지정';
   return `
   <div class="subtask-edit-row" data-done="${s.done ? 'true' : 'false'}" data-assignees="${escapeHtml(JSON.stringify(assignees))}">
     <div class="subtask-edit-top">
       <input type="text" class="se-text" placeholder="작업명" value="${escapeHtml(s.text)}">
       <input type="text" class="se-date" placeholder="8/15, TBD" value="${escapeHtml(s.date)}" style="${hasDate?'':'display:none;'}">
+      <button type="button" class="se-date-pick" title="달력에서 선택" style="${hasDate?'':'display:none;'}">📅</button>
+      <input type="date" class="se-date-native" tabindex="-1" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
       <button type="button" class="se-remove" title="삭제">✕</button>
     </div>
     <div class="se-desc-wrap" style="${hasDesc?'':'display:none;'}">
       <textarea class="se-desc" placeholder="세부 설명" rows="1">${escapeHtml(s.desc)}</textarea>
-      <button type="button" class="se-link-btn ${hasLink?'has-value':''}" title="${hasLink?'링크 삭제':'링크 삽입'}">🔗</button>
     </div>
     <input type="text" class="se-link-input" placeholder="https://... 링크 입력" value="${escapeHtml(s.link||'')}" style="${hasLink?'':'display:none;'}">
     <div class="se-meta-row">
       <div class="se-assignee-select">
-        <button type="button" class="se-assignee-toggle ${assignees.length?'has-value':''}">${escapeHtml(toggleLabel)}</button>
+        <button type="button" class="se-icon-btn se-assignee-toggle ${assignees.length?'has-value':''}" title="${assignees.length ? escapeHtml(toggleLabel) : '담당자 지정'}">👤</button>
         <div class="se-assignee-panel"></div>
       </div>
-      <button type="button" class="se-meta-icon-btn se-date-toggle ${hasDate?'has-value':''}" title="${hasDate?'마감일 삭제':'마감일 지정'}">📅</button>
-      <button type="button" class="se-meta-icon-btn se-desc-toggle ${hasDesc && !hasLink ?'has-value':''}" title="${hasDesc?'상세 내용 삭제':'상세 내용 추가'}">📝</button>
+      <button type="button" class="se-icon-btn se-date-toggle ${hasDate?'has-value':''}" title="${hasDate?'마감일 삭제':'마감일 지정'}">📅</button>
+      <button type="button" class="se-icon-btn se-desc-toggle ${hasDesc?'has-value':''}" title="${hasDesc?'상세 내용 삭제':'상세 내용 추가'}">📝</button>
+      <button type="button" class="se-icon-btn se-link-btn ${hasLink?'has-value':''}" title="${hasLink?'링크 삭제':'링크 삽입'}">🔗</button>
     </div>
   </div>`;
 }
@@ -2457,17 +2454,10 @@ subtaskEditor.addEventListener('click', e=>{
     const row = e.target.closest('.subtask-edit-row');
     const wrap = row.querySelector('.se-desc-wrap');
     const ta = row.querySelector('.se-desc');
-    const linkInput = row.querySelector('.se-link-input');
     const isVisible = wrap.style.display !== 'none';
     if(isVisible){
-      if(linkInput.value.trim()){
-        // 링크가 남아있으면 상세 내용 텍스트만 지우고, 링크 버튼/입력을 계속 쓸 수 있게 영역은 유지
-        ta.value = '';
-        autoGrowTextarea(ta);
-        toast('링크가 남아있어서 이 영역은 계속 보여요. 🔗 버튼으로 링크도 지울 수 있어요.');
-        return;
-      }
       // 이미 추가된 상세 내용을 다시 지우고 접을 수 있게 함
+      ta.value = '';
       wrap.style.display = 'none';
       e.target.title = '상세 내용 추가';
       e.target.classList.remove('has-value');
@@ -2496,18 +2486,35 @@ subtaskEditor.addEventListener('click', e=>{
     }
     return;
   }
+  if(e.target.classList.contains('se-date-pick')){
+    e.stopPropagation();
+    const row = e.target.closest('.subtask-edit-row');
+    const native = row.querySelector('.se-date-native');
+    const textInput = row.querySelector('.se-date');
+    // 이미 YYYY-MM-DD 형식으로 입력돼 있으면 달력을 그 날짜로 열어줌
+    native.value = /^\d{4}-\d{2}-\d{2}$/.test(textInput.value.trim()) ? textInput.value.trim() : '';
+    if(native.showPicker){
+      try{ native.showPicker(); }catch(err){ native.focus(); }
+    } else {
+      native.focus();
+    }
+    return;
+  }
   if(e.target.classList.contains('se-date-toggle')){
     const row = e.target.closest('.subtask-edit-row');
     const dateInput = row.querySelector('.se-date');
+    const pickBtn = row.querySelector('.se-date-pick');
     const isVisible = dateInput.style.display !== 'none';
     if(isVisible){
       // 이미 지정한 마감일을 다시 지우고 접을 수 있게 함
       dateInput.value = '';
       dateInput.style.display = 'none';
+      pickBtn.style.display = 'none';
       e.target.title = '마감일 지정';
       e.target.classList.remove('has-value');
     } else {
       dateInput.style.display = '';
+      pickBtn.style.display = '';
       e.target.title = '마감일 삭제';
       e.target.classList.add('has-value');
       dateInput.focus();
@@ -2523,6 +2530,11 @@ subtaskEditor.addEventListener('input', e=>{
   btn.title = has ? '링크 삭제' : '링크 삽입';
 });
 subtaskEditor.addEventListener('change', e=>{
+  if(e.target.classList.contains('se-date-native')){
+    const row = e.target.closest('.subtask-edit-row');
+    if(e.target.value) row.querySelector('.se-date').value = e.target.value;
+    return;
+  }
   if(!e.target.classList.contains('se-assignee-opt')) return;
   const row = e.target.closest('.subtask-edit-row');
   let assignees = JSON.parse(row.dataset.assignees || '[]');
