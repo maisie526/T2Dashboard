@@ -342,9 +342,13 @@
   /* 담당자 드롭다운: 이름이 많아지면 세로 스크롤로 한눈에 안 보이던 걸 3열 그리드로 바꿔서
      한 화면에 다 보이게 함. 인원이 늘어나면 스크롤 대신 패널 높이 자체가 늘어나야 해서
      max-height/overflow-y를 이 패널에서만 풀어줌 */
-  #fAssigneePanel{max-height:none;overflow-y:visible;}
-  .multiselect-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 4px;}
-  .multiselect-grid .multiselect-option{padding:6px 4px;}
+  /* 토글 버튼(입력창)과 같은 너비로 고정(left:0;right:0)돼있으면 3열 그리드 칸이 좁아져서
+     "체크박스 + 이름"이 줄바꿈되거나 잘려 보임 → 너비를 토글에 맞추지 말고 내용물(3열 중
+     가장 넓은 이름 기준)만큼 넓어지도록 right 제약을 풀고 width:max-content로 변경.
+     각 열도 1fr(균등 분할) 대신 max-content로 바꿔서 이름 길이에 맞게 칸 너비가 정해지게 함 */
+  #fAssigneePanel{max-height:none;overflow-y:visible;right:auto;min-width:100%;width:max-content;max-width:min(360px, 80vw);}
+  .multiselect-grid{display:grid;grid-template-columns:repeat(3,max-content);gap:0 12px;}
+  .multiselect-grid .multiselect-option{padding:6px 4px;white-space:nowrap;}
   .multiselect-count{font-size:11px;font-weight:700;color:var(--muted);padding:2px 8px 6px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
   .hint{font-size:12px;color:var(--muted);margin-top:3px;}
