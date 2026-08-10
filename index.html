@@ -760,9 +760,13 @@
   input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.65);cursor:pointer;}
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 
-  /* subtask editor in modal */
-  .subtask-edit-row{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);}
-  .subtask-edit-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  /* subtask editor in modal - 담당자/상세내용 등이 늘어나면서 서브태스크끼리 경계가
+     흐릿한 줄 구분선만으로는 그룹핑이 잘 안 보여서, 각 서브태스크를 하나의 박스로 감쌈 */
+  .subtask-edit-row{
+    background:var(--bg-ghost);border:1px solid var(--border);border-radius:10px;
+    padding:12px;margin-bottom:10px;
+  }
+  .subtask-edit-row:last-child{margin-bottom:0;}
   .subtask-edit-top{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
   .subtask-edit-top .se-text{flex:3;min-width:0;}
   .subtask-edit-top .se-date{flex:1;min-width:110px;}
@@ -779,6 +783,8 @@
   .se-assignee-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:160px;max-height:200px;overflow-y:auto;background:var(--bg-modal);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:90;box-shadow:0 6px 18px rgba(0,0,0,0.3);}
   .se-assignee-panel.open{display:block;}
   .se-desc-toggle, .se-date-toggle{font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;padding:4px 2px;}
+  /* 이미 추가된 상태(마감일/상세내용 삭제)일 땐 "추가" 색과 구분되게 삭제 톤으로 표시 */
+  .se-desc-toggle.has-value, .se-date-toggle.has-value{color:#f87171;}
 
   /* toast */
   #toastContainer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
@@ -2349,8 +2355,8 @@ function subtaskEditRowHtml(s){
         <button type="button" class="se-assignee-toggle ${assignees.length?'has-value':''}">${escapeHtml(toggleLabel)}</button>
         <div class="se-assignee-panel"></div>
       </div>
-      <button type="button" class="se-date-toggle" style="${hasDate?'display:none;':''}">+ 마감일 지정</button>
-      <button type="button" class="se-desc-toggle" style="${hasDesc?'display:none;':''}">+ 상세 내용</button>
+      <button type="button" class="se-date-toggle ${hasDate?'has-value':''}">${hasDate?'마감일 삭제':'+ 마감일 지정'}</button>
+      <button type="button" class="se-desc-toggle ${hasDesc?'has-value':''}">${hasDesc?'상세 내용 삭제':'+ 상세 내용'}</button>
     </div>
     <textarea class="se-desc" placeholder="세부 설명" rows="1" style="${hasDesc?'':'display:none;'}">${escapeHtml(s.desc)}</textarea>
   </div>`;
@@ -2383,18 +2389,38 @@ subtaskEditor.addEventListener('click', e=>{
   if(e.target.classList.contains('se-desc-toggle')){
     const row = e.target.closest('.subtask-edit-row');
     const ta = row.querySelector('.se-desc');
-    ta.style.display = '';
-    e.target.style.display = 'none';
-    ta.focus();
-    autoGrowTextarea(ta);
+    const isVisible = ta.style.display !== 'none';
+    if(isVisible){
+      // 이미 추가된 상세 내용을 다시 지우고 접을 수 있게 함
+      ta.value = '';
+      ta.style.display = 'none';
+      e.target.textContent = '+ 상세 내용';
+      e.target.classList.remove('has-value');
+    } else {
+      ta.style.display = '';
+      e.target.textContent = '상세 내용 삭제';
+      e.target.classList.add('has-value');
+      ta.focus();
+      autoGrowTextarea(ta);
+    }
     return;
   }
   if(e.target.classList.contains('se-date-toggle')){
     const row = e.target.closest('.subtask-edit-row');
     const dateInput = row.querySelector('.se-date');
-    dateInput.style.display = '';
-    e.target.style.display = 'none';
-    dateInput.focus();
+    const isVisible = dateInput.style.display !== 'none';
+    if(isVisible){
+      // 이미 지정한 마감일을 다시 지우고 접을 수 있게 함
+      dateInput.value = '';
+      dateInput.style.display = 'none';
+      e.target.textContent = '+ 마감일 지정';
+      e.target.classList.remove('has-value');
+    } else {
+      dateInput.style.display = '';
+      e.target.textContent = '마감일 삭제';
+      e.target.classList.add('has-value');
+      dateInput.focus();
+    }
   }
 });
 subtaskEditor.addEventListener('change', e=>{
