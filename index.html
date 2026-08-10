@@ -1056,7 +1056,7 @@
         </div>
         <div class="wfh-field wfh-field-grow">
           <label id="wfhNoteLabel">오늘 할 일 (출근 시)</label>
-          <textarea id="wfhNote" placeholder="예: 8월 캠페인 배너 시안 작업"></textarea>
+          <textarea id="wfhNote"></textarea>
         </div>
         <div class="wfh-actions">
           <button class="btn" id="wfhClockInBtn">출근 체크인</button>
@@ -1146,11 +1146,11 @@
     </div>
     <div class="field">
       <label>한글 이름</label>
-      <input type="text" id="personNameKo" placeholder="예: 나연">
+      <input type="text" id="personNameKo">
     </div>
     <div class="field">
       <label>영문 이름</label>
-      <input type="text" id="personNameEn" placeholder="예: Nayeon">
+      <input type="text" id="personNameEn">
     </div>
     <div id="personNameErrorMsg" style="display:none;color:#dc2626;font-size:12px;margin:-4px 0 10px;font-weight:700;">한글 또는 영문 이름 중 하나는 꼭 입력해주세요.</div>
     <div class="field field-checkbox" id="personActiveField" style="display:none;">
@@ -1179,11 +1179,11 @@
       </div>
       <div class="field">
         <label>한글 이름</label>
-        <input type="text" id="whoAmINameKo" placeholder="예: 나연">
+        <input type="text" id="whoAmINameKo">
       </div>
       <div class="field">
         <label>영문 이름</label>
-        <input type="text" id="whoAmINameEn" placeholder="예: Nayeon">
+        <input type="text" id="whoAmINameEn">
       </div>
       <div id="whoAmINameErrorMsg" style="display:none;color:#dc2626;font-size:12px;margin:-4px 0 10px;font-weight:700;">한글 또는 영문 이름 중 하나는 꼭 입력해주세요.</div>
       <div class="modal-actions">
@@ -1199,7 +1199,7 @@
     <input type="hidden" id="editId">
     <div class="field">
       <label>제목</label>
-      <input type="text" id="fTitle" placeholder="예: 8월 홈페이지 배너 교체">
+      <input type="text" id="fTitle">
     </div>
     <div class="field-row">
       <div class="field">
@@ -1253,7 +1253,7 @@
     </div>
     <div class="field">
       <label>관련 링크 (선택)</label>
-      <input type="text" id="fLink" placeholder="예: https://www.figma.com/design/...">
+      <input type="text" id="fLink">
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="modalDelBtn" style="color:#dc2626;display:none;margin-right:auto;">삭제</button>
@@ -2441,13 +2441,18 @@ function renderSubtaskEditor(list){
   });
 }
 subtaskEditor.addEventListener('click', e=>{
-  if(e.target.classList.contains('se-remove')){
-    e.target.closest('.subtask-edit-row').remove();
+  // 버튼 안에 SVG 아이콘을 넣은 뒤로, 아이콘(자식 요소) 정중앙을 클릭하면 e.target이
+  // <svg>/<path>가 돼서 클래스 체크가 실패하고 버튼 여백(모서리)을 눌러야만 동작하는
+  // 문제가 있었음 → closest('button')으로 실제 버튼 요소를 항상 찾아서 사용
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  if(btn.classList.contains('se-remove')){
+    btn.closest('.subtask-edit-row').remove();
     return;
   }
-  if(e.target.classList.contains('se-assignee-toggle')){
+  if(btn.classList.contains('se-assignee-toggle')){
     e.stopPropagation();
-    const row = e.target.closest('.subtask-edit-row');
+    const row = btn.closest('.subtask-edit-row');
     const panel = row.querySelector('.se-assignee-panel');
     const willOpen = !panel.classList.contains('open');
     subtaskEditor.querySelectorAll('.se-assignee-panel.open').forEach(p=>{ if(p!==panel) p.classList.remove('open'); });
@@ -2458,8 +2463,8 @@ subtaskEditor.addEventListener('click', e=>{
     panel.classList.toggle('open', willOpen);
     return;
   }
-  if(e.target.classList.contains('se-desc-toggle')){
-    const row = e.target.closest('.subtask-edit-row');
+  if(btn.classList.contains('se-desc-toggle')){
+    const row = btn.closest('.subtask-edit-row');
     const wrap = row.querySelector('.se-desc-wrap');
     const ta = row.querySelector('.se-desc');
     const isVisible = wrap.style.display !== 'none';
@@ -2467,36 +2472,36 @@ subtaskEditor.addEventListener('click', e=>{
       // 이미 추가된 상세 내용을 다시 지우고 접을 수 있게 함
       ta.value = '';
       wrap.style.display = 'none';
-      e.target.title = '상세 내용 추가';
-      e.target.classList.remove('has-value');
+      btn.title = '상세 내용 추가';
+      btn.classList.remove('has-value');
     } else {
       wrap.style.display = '';
-      e.target.title = '상세 내용 삭제';
-      e.target.classList.add('has-value');
+      btn.title = '상세 내용 삭제';
+      btn.classList.add('has-value');
       ta.focus();
       autoGrowTextarea(ta);
     }
     return;
   }
-  if(e.target.classList.contains('se-link-btn')){
+  if(btn.classList.contains('se-link-btn')){
     e.stopPropagation();
-    const row = e.target.closest('.subtask-edit-row');
+    const row = btn.closest('.subtask-edit-row');
     const linkInput = row.querySelector('.se-link-input');
     const isVisible = linkInput.style.display !== 'none';
     if(isVisible){
       linkInput.value = '';
       linkInput.style.display = 'none';
-      e.target.classList.remove('has-value');
-      e.target.title = '링크 삽입';
+      btn.classList.remove('has-value');
+      btn.title = '링크 삽입';
     } else {
       linkInput.style.display = '';
       linkInput.focus();
     }
     return;
   }
-  if(e.target.classList.contains('se-date-pick')){
+  if(btn.classList.contains('se-date-pick')){
     e.stopPropagation();
-    const row = e.target.closest('.subtask-edit-row');
+    const row = btn.closest('.subtask-edit-row');
     const native = row.querySelector('.se-date-native');
     const textInput = row.querySelector('.se-date');
     // 이미 YYYY-MM-DD 형식으로 입력돼 있으면 달력을 그 날짜로 열어줌
@@ -2508,8 +2513,8 @@ subtaskEditor.addEventListener('click', e=>{
     }
     return;
   }
-  if(e.target.classList.contains('se-date-toggle')){
-    const row = e.target.closest('.subtask-edit-row');
+  if(btn.classList.contains('se-date-toggle')){
+    const row = btn.closest('.subtask-edit-row');
     const dateInput = row.querySelector('.se-date');
     const pickBtn = row.querySelector('.se-date-pick');
     const isVisible = dateInput.style.display !== 'none';
@@ -2518,13 +2523,13 @@ subtaskEditor.addEventListener('click', e=>{
       dateInput.value = '';
       dateInput.style.display = 'none';
       pickBtn.style.display = 'none';
-      e.target.title = '마감일 지정';
-      e.target.classList.remove('has-value');
+      btn.title = '마감일 지정';
+      btn.classList.remove('has-value');
     } else {
       dateInput.style.display = '';
       pickBtn.style.display = '';
-      e.target.title = '마감일 삭제';
-      e.target.classList.add('has-value');
+      btn.title = '마감일 삭제';
+      btn.classList.add('has-value');
       dateInput.focus();
     }
   }
