@@ -1820,10 +1820,20 @@ let boardViewMode = 'cards'; // 'cards' | 'calendar'
 function boardMonthPrefix(){
   return `${boardViewDate.getFullYear()}-${String(boardViewDate.getMonth()+1).padStart(2,'0')}`;
 }
+// 예전엔 "마감일(없으면 시작일) 하나"만 보고 그 달에만 보여줬는데, 그러면
+// 1) 마감일 없이 지난달부터 계속 진행 중인 상시 업무가 시작월에서만 보이고 그 다음 달엔
+//    안 보이고, 2) 여러 달에 걸친 업무(예: 7월 시작~9월 마감)도 마감월에서만 보이는 문제가
+//    있었음. 시작일~마감일 구간이 보고 있는 달과 겹치는지로 바꿔서 두 경우 다 해결.
+// 마감일이 없으면 "아직 안 끝난 상시 업무"로 보고 미래 방향으로는 무제한 겹치는 것으로 취급.
 function matchesBoardMonth(t){
-  const ref = t.end || t.start;
-  if(!ref) return true;
-  return ref.startsWith(boardMonthPrefix());
+  if(!t.start && !t.end) return true;
+  const monthStart = boardMonthPrefix() + '-01';
+  const y = boardViewDate.getFullYear(), m = boardViewDate.getMonth();
+  const next = new Date(y, m+1, 1);
+  const nextMonthStart = `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-01`;
+  const start = t.start || '0000-01-01';
+  const end = t.end || '9999-12-31';
+  return start < nextMonthStart && end >= monthStart;
 }
 function renderMonthLabel(){
   document.getElementById('monthLabel').textContent = (boardViewDate.getMonth()+1) + '월';
@@ -2047,12 +2057,12 @@ function render(){
     const cntEl = document.getElementById('cnt-'+status);
     if(cntEl) cntEl.textContent = items.length;
     const wrap = document.getElementById('colwrap-'+status);
-    if(wrap) wrap.style.display = items.length ? '' : 'none';
+    if(wrap) wrap.style.display = '';
     // 모바일 전용 컬럼 타이틀 줄(colHeadRow)도 동일하게 맞춰줌
     const cntElM = document.getElementById('cnt-m-'+status);
     if(cntElM) cntElM.textContent = items.length;
     const wrapM = document.getElementById('colwrap-m-'+status);
-    if(wrapM) wrapM.style.display = items.length ? '' : 'none';
+    if(wrapM) wrapM.style.display = '';
     body.innerHTML = items.map(cardHtml).join('');
   });
   const emptyMsg = document.getElementById('boardEmptyMsg');
@@ -2094,11 +2104,14 @@ function renderBoardCalendarView(filtered){
   const gridEnd = new Date(y, m, daysInMonth + trailing);
   // 날짜별로 쪼개지 않고, 업무 하나당 시작~끝 구간 정보만 그대로 들고 있다가
   // 각 주(행)를 그릴 때 그 주와 겹치는 구간만큼만 막대를 잘라서 그림
+  // 마감일이 없는 업무는 "아직 안 끝난 상시 업무"라서, 끝난 날짜를 시작일과 같게 잡아버리면
+  // (예전 방식) 시작월에만 하루짜리 막대로 보이고 그 다음 달엔 아예 안 보이는 문제가 있었음.
+  // 마감일이 없으면 지금 보고 있는 달의 끝까지는 계속 이어지는 것으로 보고 막대를 그림
   const items = filtered
     .filter(t=> t.start || t.end)
     .map(t=>{
       const s = new Date((t.start||t.end)+'T00:00:00');
-      const e = new Date((t.end||t.start)+'T00:00:00');
+      const e = t.end ? new Date(t.end+'T00:00:00') : new Date(gridEnd);
       return {t, s, e};
     })
     .filter(({s,e})=> !isNaN(s) && !isNaN(e) && e>=s && e>=gridStart && s<=gridEnd)
