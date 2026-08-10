@@ -218,6 +218,10 @@
   .card-title{font-size:14px;font-weight:700;line-height:1.4;margin-bottom:8px;}
   .meta-row{font-size:13px;color:var(--fg);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;}
   .meta-row b{color:var(--text);font-weight:700;}
+  .meta-date{font-weight:700;color:var(--fg);}
+  /* 진행률(완료/전체 서브태스크 개수)은 날짜 구간(M/D ~ M/D)과 똑같이 "숫자/숫자" 형태라
+     붙어있으면 날짜처럼 보일 수 있어서, 흐린 색+작은 글씨+체크 아이콘으로 확실히 구분함 */
+  .meta-progress{font-weight:600;color:var(--muted);font-size:12px;flex:none;white-space:nowrap;}
   .subtask-list{list-style:none;margin:0 0 8px;padding:0;}
   .subtask-row{display:flex;align-items:flex-start;gap:6px;padding:3px 0;cursor:pointer;position:relative;}
   .subtask-row input[type=checkbox]{margin-top:2px;flex:none;cursor:pointer;}
@@ -1941,7 +1945,14 @@ function subtaskRowHtml(s, idx, taskId){
 function cardHtml(t){
   const subtasks = t.subtasks || [];
   const subDone = subtasks.filter(s=>s.done).length;
-  const dateStr = (t.start || t.end) ? `${fmtShort(t.start)} ~ ${fmtShort(t.end)} (${subDone}/${subtasks.length})` : '';
+  // 마감일이 없어서 "8/5 ~ "처럼 물결표가 대롱대롱 남는 경우, 바로 옆에 붙는 진행률
+  // 숫자(0/1)와 시각적으로 구분이 잘 안 돼서 날짜처럼 보이는 문제가 있었음.
+  // 날짜 구간과 진행률을 서로 다른 스타일(굵기/색)로 나누고, 진행률엔 체크 아이콘을 붙여서
+  // "이건 날짜가 아니라 완료 개수"라는 걸 바로 알 수 있게 함
+  const dateRangeStr = (t.start || t.end)
+    ? (t.end ? `${fmtShort(t.start)} ~ ${fmtShort(t.end)}` : `${fmtShort(t.start)} ~`)
+    : '';
+  const subtaskCountStr = subtasks.length ? `${subDone}/${subtasks.length}` : '';
   const shown = subtasks;
   return `
   <div class="card" draggable="${window.innerWidth > 640 ? 'true' : 'false'}" data-id="${t.id}">
@@ -1951,7 +1962,10 @@ function cardHtml(t){
     ${t.client ? `<div class="client-row"><span class="client-badge" style="background:${hashColor(t.client)}">${escapeHtml(t.client)}</span></div>` : ''}
     <div class="card-title">${escapeHtml(t.title)}</div>
     ${(t.subtasks||[]).length ? progressBarHtml(t) : ''}
-    ${dateStr ? `<div class="meta-row"><span>${dateStr}</span></div>` : ''}
+    ${(dateRangeStr || subtaskCountStr) ? `<div class="meta-row">
+      <span class="meta-date">${dateRangeStr}</span>
+      ${subtaskCountStr ? `<span class="meta-progress">✓ ${subtaskCountStr}</span>` : ''}
+    </div>` : ''}
     ${shown.length ? `<ul class="subtask-list" draggable="false">${shown.map((s,i)=>subtaskRowHtml(s,i,t.id)).join('')}</ul>` : ''}
     ${(t.participants||[]).length ? `<div class="foot-row"><div class="assignee-row">${t.participants.slice(0,4).map(participantBadgeHtml).join('')}</div></div>` : ''}
     ${t.link ? `<a href="${escapeHtml(t.link)}" target="_blank" rel="noopener" class="link-row" onclick="event.stopPropagation()">🔗 <span style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.link)}</span></a>` : ''}
