@@ -120,6 +120,10 @@
     padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg-input);color:var(--fg);
   }
   .toolbar input::placeholder{color:#6b7080;}
+  /* 네이티브 select를 커스텀 드롭다운(.multiselect)으로 교체하면서, 원래 select가
+     내용 길이만큼 자동으로 잡던 너비를 흉내내기 위해 최소 너비를 지정 (flex 컨테이너
+     안에서 width:100%인 토글 버튼이 부모 크기에 안정적으로 맞춰지도록 flex:none도 지정) */
+  .toolbar .multiselect{flex:none;min-width:140px;}
   .board-filter-toggle-btn{display:none;} /* 모바일 화면에서만 "8월" 옆에 아이콘 버튼으로 노출 */
 
   .layout{display:flex;gap:18px;align-items:flex-start;}
@@ -236,8 +240,13 @@
     font-size:12px;font-weight:700;white-space:nowrap;
   }
   .assignee-badge-unassigned{
-    background:var(--badge-unassigned-bg);color:var(--badge-unassigned-fg);border:none;
-    padding:0 10px;min-height:26px;box-sizing:border-box;
+    background:transparent;color:var(--badge-unassigned-fg);
+    border:1.5px dashed var(--badge-unassigned-border);
+    padding:2px 10px 2px 2px;min-height:26px;box-sizing:border-box;gap:6px;
+  }
+  .assignee-avatar-unassigned{
+    width:20px;height:20px;border-radius:50%;background:var(--badge-unassigned-bg);
+    color:var(--badge-unassigned-fg);display:flex;align-items:center;justify-content:center;flex:none;
   }
   .assignee-avatar-photo{width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none;}
   .assignee-avatar-fallback{
@@ -307,7 +316,9 @@
   }
   .field textarea{resize:vertical;min-height:56px;}
   .field-row{display:flex;gap:10px;}
-  .field-row .field{flex:1;}
+  /* min-width:0이 없으면 담당자 토글 버튼 안 선택된 이름 텍스트(줄바꿈 없음)가 flex item의
+     최소 너비로 잡혀서, 이름이 길어질수록 옆 필드(마감일 등)를 밀어내는 문제가 있었음 */
+  .field-row .field{flex:1;min-width:0;}
   .field-checkbox{display:flex;align-items:center;gap:8px;}
   .field-checkbox input[type="checkbox"]{width:auto;flex:none;padding:0;}
   .field-checkbox label{margin:0;font-size:13px;color:var(--fg-modal);font-weight:600;}
@@ -328,6 +339,13 @@
   .multiselect-option input{flex:none;width:auto;}
   .multiselect-section-title{font-size:11px;font-weight:800;color:var(--muted);padding:8px 8px 4px;margin-top:2px;border-top:1px solid var(--border);}
   .multiselect-section-title:first-child{margin-top:0;border-top:none;}
+  /* 담당자 드롭다운: 이름이 많아지면 세로 스크롤로 한눈에 안 보이던 걸 3열 그리드로 바꿔서
+     한 화면에 다 보이게 함. 인원이 늘어나면 스크롤 대신 패널 높이 자체가 늘어나야 해서
+     max-height/overflow-y를 이 패널에서만 풀어줌 */
+  #fAssigneePanel{max-height:none;overflow-y:visible;}
+  .multiselect-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 4px;}
+  .multiselect-grid .multiselect-option{padding:6px 4px;}
+  .multiselect-count{font-size:11px;font-weight:700;color:var(--muted);padding:2px 8px 6px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
   .hint{font-size:12px;color:var(--muted);margin-top:3px;}
 
@@ -463,6 +481,7 @@
     }
     .toolbar.open{display:flex;}
     .toolbar input, .toolbar select{width:100%;}
+    .toolbar .multiselect{width:100%;min-width:0;}
     .board-toolbar-backdrop{
       display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:205;
     }
@@ -743,7 +762,11 @@
   .subtask-edit-top{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
   .subtask-edit-top .se-text{flex:3;min-width:0;}
   .subtask-edit-top .se-date{flex:1;min-width:110px;}
-  .subtask-edit-row .se-remove{flex:none;border:none;background:#fee2e2;color:#b91c1c;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:12px;}
+  .subtask-edit-row .se-remove{
+    flex:none;border:none;background:transparent;color:#f87171;border-radius:6px;
+    width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
+  }
+  .subtask-edit-row .se-remove:hover{background:var(--bg-ghost-hover);}
   .subtask-edit-row .se-desc{width:100%;resize:none;overflow:hidden;min-height:36px;font-family:inherit;margin-top:6px;}
   .se-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .se-assignee-select{position:relative;}
@@ -751,7 +774,7 @@
   .se-assignee-toggle.has-value{border-style:solid;border-color:var(--border);color:var(--fg-modal);background:var(--bg-ghost);}
   .se-assignee-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:160px;max-height:200px;overflow-y:auto;background:var(--bg-modal);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:90;box-shadow:0 6px 18px rgba(0,0,0,0.3);}
   .se-assignee-panel.open{display:block;}
-  .se-desc-toggle{font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;padding:4px 2px;}
+  .se-desc-toggle, .se-date-toggle{font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;padding:4px 2px;}
 
   /* toast */
   #toastContainer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
@@ -864,8 +887,16 @@
     <div class="board-toolbar-backdrop" id="boardToolbarBackdrop"></div>
     <div class="toolbar" id="boardToolbar">
       <input type="text" id="searchInput" placeholder="업무/고객사 검색...">
-      <select id="clientFilter"><option value="">전체 고객사</option></select>
-      <select id="assigneeFilter"><option value="">전체 담당자</option></select>
+      <div class="multiselect select-replace" id="clientFilterSelect">
+        <button type="button" class="multiselect-toggle" id="clientFilterToggle">전체 고객사</button>
+        <div class="multiselect-panel" id="clientFilterPanel"></div>
+      </div>
+      <input type="hidden" id="clientFilter">
+      <div class="multiselect select-replace" id="assigneeFilterSelect">
+        <button type="button" class="multiselect-toggle" id="assigneeFilterToggle">전체 담당자</button>
+        <div class="multiselect-panel" id="assigneeFilterPanel"></div>
+      </div>
+      <input type="hidden" id="assigneeFilter">
       <button class="btn-ghost btn" id="resetBtn">초기화</button>
       <button type="button" class="board-view-toggle-btn board-view-toggle-btn-desktop" id="boardViewToggleBtnDesktop" title="캘린더뷰로 보기" aria-label="보기 전환"></button>
     </div>
@@ -1133,26 +1164,20 @@
       </div>
       <div class="field">
         <label>우선순위</label>
-        <select id="fPriority">
-          <option value="urgent">긴급</option>
-          <option value="high">중요</option>
-          <option value="normal" selected>보통</option>
-          <option value="low">낮음</option>
-        </select>
+        <div class="multiselect select-replace" id="fPrioritySelect">
+          <button type="button" class="multiselect-toggle" id="fPriorityToggle">보통</button>
+          <div class="multiselect-panel" id="fPriorityPanel"></div>
+        </div>
+        <input type="hidden" id="fPriority" value="normal">
       </div>
     </div>
     <div class="field">
       <label>상태(컬럼)</label>
-      <select id="fStatus">
-        <option value="backlog">Backlog</option>
-        <option value="todo">To Do</option>
-        <option value="progress">In Progress</option>
-        <option value="teamreview">Team Review</option>
-        <option value="pmkreview">PMK Review</option>
-        <option value="onhold">On Hold</option>
-        <option value="done">Done</option>
-        <option value="history">History</option>
-      </select>
+      <div class="multiselect select-replace" id="fStatusSelect">
+        <button type="button" class="multiselect-toggle" id="fStatusToggle">Backlog</button>
+        <div class="multiselect-panel" id="fStatusPanel"></div>
+      </div>
+      <input type="hidden" id="fStatus" value="backlog">
     </div>
     <div class="field-row">
       <div class="field">
@@ -1361,7 +1386,7 @@ function smallInitial(name){ return (name||'?').trim().slice(0,1); }
 // 카드에 표시할 담당자 뱃지: 로스터에 등록된 사진/영문이름을 우선 사용, 없으면 저장된 이름 그대로
 function participantBadgeHtml(name){
   if(name === '미정'){
-    return `<span class="assignee-badge assignee-badge-unassigned" title="담당자 미정"><span>담당자 미정</span></span>`;
+    return `<span class="assignee-badge assignee-badge-unassigned" title="담당자 미정"><span class="assignee-avatar-unassigned"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z"/></svg></span><span>미정</span></span>`;
   }
   const person = roster.find(rp=>personKey(rp)===name);
   const label = person ? displayNameOf(person) : name;
@@ -1378,6 +1403,13 @@ function fmtShort(dateStr){
   if(!dateStr) return '';
   const d = new Date(dateStr+'T00:00:00');
   return `${d.getMonth()+1}/${d.getDate()}`;
+}
+// 서브태스크 마감일은 "TBD", "EOD", "8월"처럼 자유 텍스트도 허용해서, 진짜 YYYY-MM-DD
+// 형식일 때만 fmtShort로 M/D로 바꾸고 아니면 입력한 텍스트를 그대로 보여줌
+function fmtSubtaskDate(dateStr){
+  if(!dateStr) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return fmtShort(dateStr);
+  return dateStr;
 }
 
 function toast(msg, type){
@@ -1766,14 +1798,19 @@ function taskAssigneeList(t){
 }
 
 function populateFilters(){
-  const clientSel = document.getElementById('clientFilter');
-  const asSel = document.getElementById('assigneeFilter');
-  const curC = clientSel.value, curA = asSel.value;
+  const curC = document.getElementById('clientFilter').value;
+  const curA = document.getElementById('assigneeFilter').value;
   const clients = [...new Set(tasks.map(t=>t.client).filter(Boolean))].sort();
   const names = [...new Set(tasks.flatMap(taskAssigneeList))].sort();
-  clientSel.innerHTML = '<option value="">전체 고객사</option>' + clients.map(c=>`<option value="${c}">${c}</option>`).join('');
-  asSel.innerHTML = '<option value="">전체 담당자</option>' + names.map(n=>`<option value="${n}">${n}</option>`).join('');
-  clientSel.value = curC; asSel.value = curA;
+  clientFilterOptions = [{value:'', label:'전체 고객사'}, ...clients.map(c=>({value:c, label:c}))];
+  assigneeFilterOptions = [{value:'', label:'전체 담당자'}, ...names.map(n=>({value:n, label:n}))];
+  // 값 자체는 그대로 유지하고, 목록이 바뀌어 더 이상 유효하지 않은 값이면 라벨만 "전체 X"로 되돌림
+  const clientStillValid = clientFilterOptions.some(o=>o.value===curC);
+  const asStillValid = assigneeFilterOptions.some(o=>o.value===curA);
+  document.getElementById('clientFilterToggle').textContent = clientStillValid ? (clientFilterOptions.find(o=>o.value===curC).label) : '전체 고객사';
+  document.getElementById('assigneeFilterToggle').textContent = asStillValid ? (assigneeFilterOptions.find(o=>o.value===curA).label) : '전체 담당자';
+  if(!clientStillValid) document.getElementById('clientFilter').value = '';
+  if(!asStillValid) document.getElementById('assigneeFilter').value = '';
 }
 
 let statFilter = null; // null | 'progress' | 'overdue' | 'doneThisMonth'
@@ -1874,7 +1911,7 @@ function subtaskRowHtml(s, idx, taskId){
     <div class="subtask-main">
       <div class="subtask-top">
         <span class="subtask-text ${s.done ? 'done' : ''}">${escapeHtml(s.text)}</span>
-        ${s.date ? `<span class="subtask-date">${fmtShort(s.date)}</span>` : ''}
+        ${s.date ? `<span class="subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       </div>
       ${s.desc ? `<div class="subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
     </div>
@@ -1925,7 +1962,7 @@ function cardDetailBodyHtml(t){
           <div class="cd-subtask-top">
             <input type="checkbox" class="cd-subtask-check" data-idx="${i}" ${s.done?'checked':''}>
             <span class="cd-subtask-text ${s.done?'done':''}">${escapeHtml(s.text)}</span>
-            ${s.date ? `<span class="cd-subtask-date">${fmtShort(s.date)}</span>` : ''}
+            ${s.date ? `<span class="cd-subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
           </div>
           ${s.desc ? `<div class="cd-subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
           ${(s.assignees && s.assignees.length) ? `<div class="cd-subtask-assignees">${s.assignees.map(participantBadgeHtml).join('')}</div>` : ''}
@@ -2281,12 +2318,13 @@ function subtaskEditRowHtml(s){
   s = s || {text:'', date:'', desc:'', done:false, assignees:[]};
   const assignees = s.assignees || [];
   const hasDesc = !!(s.desc && s.desc.trim());
+  const hasDate = !!(s.date && s.date.trim());
   const toggleLabel = assignees.length ? assignees.map(k=>displayName(k)).join(', ') : '+ 담당자 지정';
   return `
   <div class="subtask-edit-row" data-done="${s.done ? 'true' : 'false'}" data-assignees="${escapeHtml(JSON.stringify(assignees))}">
     <div class="subtask-edit-top">
       <input type="text" class="se-text" placeholder="작업명" value="${escapeHtml(s.text)}">
-      <input type="date" class="se-date" value="${s.date||''}">
+      <input type="text" class="se-date" placeholder="예: 8/15, TBD, EOD" value="${escapeHtml(s.date)}" style="${hasDate?'':'display:none;'}">
       <button type="button" class="se-remove" title="삭제">✕</button>
     </div>
     <div class="se-meta-row">
@@ -2294,6 +2332,7 @@ function subtaskEditRowHtml(s){
         <button type="button" class="se-assignee-toggle ${assignees.length?'has-value':''}">${escapeHtml(toggleLabel)}</button>
         <div class="se-assignee-panel"></div>
       </div>
+      <button type="button" class="se-date-toggle" style="${hasDate?'display:none;':''}">+ 마감일 지정</button>
       <button type="button" class="se-desc-toggle" style="${hasDesc?'display:none;':''}">+ 상세 내용</button>
     </div>
     <textarea class="se-desc" placeholder="세부 설명" rows="1" style="${hasDesc?'':'display:none;'}">${escapeHtml(s.desc)}</textarea>
@@ -2331,6 +2370,14 @@ subtaskEditor.addEventListener('click', e=>{
     e.target.style.display = 'none';
     ta.focus();
     autoGrowTextarea(ta);
+    return;
+  }
+  if(e.target.classList.contains('se-date-toggle')){
+    const row = e.target.closest('.subtask-edit-row');
+    const dateInput = row.querySelector('.se-date');
+    dateInput.style.display = '';
+    e.target.style.display = 'none';
+    dateInput.focus();
   }
 });
 subtaskEditor.addEventListener('change', e=>{
@@ -2369,17 +2416,20 @@ function renderAssigneePanel(){
     const checked = fAssigneeSelected.includes(key);
     return `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${escapeHtml(key)}" ${checked?'checked':''}><span>${escapeHtml(label)}</span></label>`;
   };
+  const byName = (a,b)=>displayNameOf(a).localeCompare(displayNameOf(b), 'ko');
   const unassignedChecked = fAssigneeSelected.includes(UNASSIGNED_KEY);
-  let html = `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${UNASSIGNED_KEY}" ${unassignedChecked?'checked':''}><span>미정</span></label>`;
+  const selectedCount = fAssigneeSelected.filter(v=>v!==UNASSIGNED_KEY).length;
+  const countHtml = `<div class="multiselect-count">${selectedCount > 0 ? `${selectedCount}명 선택됨` : '선택된 담당자 없음'}</div>`;
+  let html = countHtml + `<label class="multiselect-option"><input type="checkbox" class="fa-opt" value="${UNASSIGNED_KEY}" ${unassignedChecked?'checked':''}><span>미정</span></label>`;
   if(!roster.length){
     panel.innerHTML = html + '<div class="empty-hint" style="padding:6px;">등록된 인원이 없어요.</div>';
     return;
   }
-  const currentPeople = roster.filter(p=>p.active !== false);
-  const formerPeople = roster.filter(p=>p.active === false);
-  html += `<div class="multiselect-section-title">현재 인원</div>` + currentPeople.map(optionHtml).join('');
+  const currentPeople = roster.filter(p=>p.active !== false).sort(byName);
+  const formerPeople = roster.filter(p=>p.active === false).sort(byName);
+  html += `<div class="multiselect-section-title">현재 인원</div><div class="multiselect-grid">` + currentPeople.map(optionHtml).join('') + `</div>`;
   if(formerPeople.length){
-    html += `<div class="multiselect-section-title">이전 직원</div>` + formerPeople.map(optionHtml).join('');
+    html += `<div class="multiselect-section-title">이전 직원</div><div class="multiselect-grid">` + formerPeople.map(optionHtml).join('') + `</div>`;
   }
   panel.innerHTML = html;
 }
@@ -2494,6 +2544,79 @@ document.addEventListener('click', (e)=>{
   if(cs && !cs.contains(e.target)) document.getElementById('fClientPanel').classList.remove('open');
 });
 
+// ===== 네이티브 select를 앱 디자인에 맞는 커스텀 드롭다운(.multiselect)으로 교체 =====
+// 값은 기존 select와 같은 id의 hidden input에 그대로 저장해서, 값을 읽고 쓰는 다른 코드는
+// 수정 없이 그대로 동작함(.value 그대로 사용). 토글 버튼 라벨만 값이 바뀔 때마다 같이 갱신.
+function simpleSelectPanelHtml(options, current){
+  return options.map(o=>`<div class="multiselect-option simple-opt" data-value="${escapeHtml(o.value)}" style="${o.value===current?'font-weight:700;':''}">${escapeHtml(o.label)}${o.value===current?' ✓':''}</div>`).join('');
+}
+function wireSimpleSelect(selectId, toggleId, panelId, options, defaultValue, onChange){
+  function setValue(value, opts){
+    const list = opts || options;
+    const opt = list.find(o=>o.value===value) || list[0];
+    document.getElementById(selectId).value = opt ? opt.value : '';
+    document.getElementById(toggleId).textContent = opt ? opt.label : defaultValue;
+    if(onChange) onChange(opt ? opt.value : '');
+  }
+  document.getElementById(toggleId).addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const panel = document.getElementById(panelId);
+    const willOpen = !panel.classList.contains('open');
+    if(willOpen) panel.innerHTML = simpleSelectPanelHtml(options, document.getElementById(selectId).value);
+    panel.classList.toggle('open', willOpen);
+  });
+  document.getElementById(panelId).addEventListener('click', (e)=>{
+    const opt = e.target.closest('.simple-opt');
+    if(!opt) return;
+    setValue(opt.dataset.value);
+    document.getElementById(panelId).classList.remove('open');
+  });
+  document.addEventListener('click', (e)=>{
+    const wrap = document.getElementById(selectId+'Select');
+    if(wrap && !wrap.contains(e.target)) document.getElementById(panelId).classList.remove('open');
+  });
+  return setValue;
+}
+const PRIORITY_OPTIONS = [
+  {value:'urgent', label:'긴급'},
+  {value:'high', label:'중요'},
+  {value:'normal', label:'보통'},
+  {value:'low', label:'낮음'},
+];
+const setPriorityValue = wireSimpleSelect('fPriority','fPriorityToggle','fPriorityPanel', PRIORITY_OPTIONS, '보통');
+const STATUS_OPTIONS = COLUMNS.map(c=>({value:c.id, label:c.label}));
+const setStatusValue = wireSimpleSelect('fStatus','fStatusToggle','fStatusPanel', STATUS_OPTIONS, 'Backlog');
+
+// 보드 필터(고객사/담당자)는 옵션 목록이 데이터에 따라 매번 바뀌어서(populateFilters()가
+// 매번 새 배열을 만들어 넣음) wireSimpleSelect의 고정 배열 클로저 방식 대신 별도로 구현.
+// 패널을 열 때마다 최신 배열(clientFilterOptions/assigneeFilterOptions)로 다시 그림
+let clientFilterOptions = [{value:'', label:'전체 고객사'}];
+let assigneeFilterOptions = [{value:'', label:'전체 담당자'}];
+function wireFilterSelect(selectId, toggleId, panelId, getOptions, defaultLabel){
+  document.getElementById(toggleId).addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const panel = document.getElementById(panelId);
+    const willOpen = !panel.classList.contains('open');
+    if(willOpen) panel.innerHTML = simpleSelectPanelHtml(getOptions(), document.getElementById(selectId).value);
+    panel.classList.toggle('open', willOpen);
+  });
+  document.getElementById(panelId).addEventListener('click', (e)=>{
+    const opt = e.target.closest('.simple-opt');
+    if(!opt) return;
+    const found = getOptions().find(o=>o.value===opt.dataset.value);
+    document.getElementById(selectId).value = found ? found.value : '';
+    document.getElementById(toggleId).textContent = found ? found.label : defaultLabel;
+    document.getElementById(panelId).classList.remove('open');
+    render();
+  });
+  document.addEventListener('click', (e)=>{
+    const wrap = document.getElementById(selectId+'Select');
+    if(wrap && !wrap.contains(e.target)) document.getElementById(panelId).classList.remove('open');
+  });
+}
+wireFilterSelect('clientFilter','clientFilterToggle','clientFilterPanel', ()=>clientFilterOptions, '전체 고객사');
+wireFilterSelect('assigneeFilter','assigneeFilterToggle','assigneeFilterPanel', ()=>assigneeFilterOptions, '전체 담당자');
+
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
   document.getElementById('modalDelBtn').style.display = id ? '' : 'none';
@@ -2502,8 +2625,8 @@ function openModal(id, presetStatus){
     document.getElementById('modalTitle').textContent = '업무 수정';
     document.getElementById('fTitle').value = t.title;
     setClientValue(t.client || '');
-    document.getElementById('fPriority').value = t.priority;
-    document.getElementById('fStatus').value = t.status;
+    setPriorityValue(t.priority);
+    setStatusValue(t.status);
     fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : [UNASSIGNED_KEY]);
     updateAssigneeToggleLabel();
     document.getElementById('fStart').value = t.start || '';
@@ -2514,8 +2637,8 @@ function openModal(id, presetStatus){
     document.getElementById('modalTitle').textContent = '새 업무 생성';
     document.getElementById('fTitle').value = '';
     setClientValue('');
-    document.getElementById('fPriority').value = 'normal';
-    document.getElementById('fStatus').value = presetStatus || 'backlog';
+    setPriorityValue('normal');
+    setStatusValue(presetStatus || 'backlog');
     fAssigneeSelected = [UNASSIGNED_KEY];
     updateAssigneeToggleLabel();
     document.getElementById('fStart').value = '';
@@ -2525,17 +2648,48 @@ function openModal(id, presetStatus){
   }
   document.getElementById('fAssigneePanel').classList.remove('open');
   document.getElementById('fClientPanel').classList.remove('open');
+  document.getElementById('fPriorityPanel').classList.remove('open');
+  document.getElementById('fStatusPanel').classList.remove('open');
   modalBg.classList.add('open');
   // 모달이 열리기 전(display:none)엔 scrollHeight가 정확히 안 잡히므로 연 다음 다시 계산
   setTimeout(()=>{
     subtaskEditor.querySelectorAll('.se-desc').forEach(ta=>autoGrowTextarea(ta));
   }, 0);
+  // 취소 눌렀을 때 "내용을 입력했는데 실수로 닫히는" 걸 막기 위해, 열린 시점의 값을
+  // 스냅샷으로 남겨뒀다가 취소 시점에 비교해서 달라졌으면 한 번 더 확인
+  modalSnapshot = captureModalSnapshot();
 }
+function captureModalSnapshot(){
+  return JSON.stringify({
+    title: document.getElementById('fTitle').value,
+    client: document.getElementById('fClient').value,
+    priority: document.getElementById('fPriority').value,
+    status: document.getElementById('fStatus').value,
+    assignees: [...fAssigneeSelected].sort(),
+    start: document.getElementById('fStart').value,
+    end: document.getElementById('fEnd').value,
+    link: document.getElementById('fLink').value,
+    subtasks: [...subtaskEditor.querySelectorAll('.subtask-edit-row')].map(row=>({
+      text: row.querySelector('.se-text').value,
+      date: row.querySelector('.se-date').value,
+      desc: row.querySelector('.se-desc').value,
+      assignees: row.dataset.assignees
+    }))
+  });
+}
+let modalSnapshot = null;
 function closeModal(){ modalBg.classList.remove('open'); }
+function tryCloseModal(){
+  if(modalSnapshot !== null && captureModalSnapshot() !== modalSnapshot){
+    if(!confirm('작성 중인 내용이 있어요. 취소할까요?')) return;
+  }
+  closeModal();
+}
 
 document.getElementById('boardAddBtn').addEventListener('click', ()=>openModal(null,'backlog'));
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-modalBg.addEventListener('click', e=>{ if(e.target===modalBg) closeModal(); });
+document.getElementById('cancelBtn').addEventListener('click', tryCloseModal);
+// 실수로 배경(바깥 영역)을 눌러서 작성 중이던 내용이 날아가는 걸 막기 위해, 이 모달은
+// 바깥 클릭으로는 닫히지 않게 하고 취소/저장 버튼으로만 닫히게 함
 document.getElementById('modalDelBtn').addEventListener('click', ()=>{
   const id = Number(document.getElementById('editId').value);
   if(!id) return;
@@ -2584,14 +2738,18 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   saveTasksLocal(); fbSetItem('tasks', t.id, t); closeModal(); render();
 });
 
-['searchInput','clientFilter','assigneeFilter'].forEach(id=>{
+// clientFilter/assigneeFilter는 이제 hidden input이라 커스텀 드롭다운(wireFilterSelect)
+// 쪽에서 옵션을 고를 때 직접 render()를 호출함 - 여긴 실시간 검색창만 남김
+['searchInput'].forEach(id=>{
   document.getElementById(id).addEventListener('input', render);
   document.getElementById(id).addEventListener('change', render);
 });
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('searchInput').value = '';
   document.getElementById('clientFilter').value = '';
+  document.getElementById('clientFilterToggle').textContent = '전체 고객사';
   document.getElementById('assigneeFilter').value = '';
+  document.getElementById('assigneeFilterToggle').textContent = '전체 담당자';
   render();
 });
 
@@ -2795,7 +2953,7 @@ function histSubtasksHtml(t){
     <div class="hist-subtask-row">
       <span>${s.done ? '✅' : '⬜'}</span>
       <span class="hist-sub-text ${s.done?'done':''}">${escapeHtml(s.text)}</span>
-      ${s.date ? `<span class="hist-sub-date">${fmtShort(s.date)}</span>` : ''}
+      ${s.date ? `<span class="hist-sub-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       ${s.desc ? `<span class="hist-sub-desc">${escapeHtml(s.desc)}</span>` : ''}
     </div>`).join('')}</div>`;
 }
