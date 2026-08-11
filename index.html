@@ -720,15 +720,18 @@
   .cal-entry.mine{opacity:1;}
   .cal-entry:not(.mine){opacity:0.8;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
-  /* 이름/업무유형(재택 등) 둘 다 공간이 부족하면 각자 필요한 만큼 ...으로 줄어들게 함
-     (한쪽만 고정폭으로 두지 않고 flex:1로 같이 줄어들도록) */
+  /* 이름/업무유형(재택 등) 둘 다 flex:1로 반반씩 나눴더니, 이름 쪽(cal-entry-main)엔
+     출퇴근 dot(고정폭)까지 같이 들어있어서 그 안에서 또 나눠 먹다 보니 이름이 먼저,
+     훨씬 심하게 줄어드는 문제가 있었음 → 업무유형 텍스트는 원래 필요한 만큼만(flex-basis:auto)
+     차지하고 그보다 더는 안 늘어나게(flex-grow:0) 하고, 이름 쪽이 남는 공간을 전부 가져가게(flex:1)
+     바꿈. 그래도 화면이 정말 좁아지면 업무유형 쪽도 flex-shrink:1 + max-width로 같이 줄어들며 ...처리됨 */
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
   .cal-dot{width:6px;height:6px;border-radius:50%;background:transparent;border:1.3px solid var(--muted);flex:none;}
   .cal-dot.in.done{background:var(--pill-in-fg);border-color:var(--pill-in-fg);}
   .cal-dot.out.done{background:var(--pill-out-fg);border-color:var(--pill-out-fg);}
-  .cal-entry-tag{font-size:12px;font-weight:400;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
+  .cal-entry-tag{font-size:12px;font-weight:400;flex:0 1 auto;max-width:44%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
   .cal-entry.type-wfh .cal-entry-tag{color:var(--type-wfh-fg);}
   .cal-entry.type-annual .cal-entry-tag{color:var(--type-annual-fg);}
   .cal-entry.type-half .cal-entry-tag{color:var(--type-half-fg);}
