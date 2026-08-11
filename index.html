@@ -747,13 +747,12 @@
   .cal-cell.dim{opacity:.4;}
   .cal-cell.dim:hover{opacity:.65;}
 
-  .whoami{display:flex;align-items:center;gap:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:5px 14px 5px 5px;cursor:pointer;}
+  .whoami{display:flex;align-items:center;gap:8px;height:44px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:4px 14px 4px 4px;cursor:pointer;box-sizing:border-box;}
   .whoami:hover{border-color:#3b82f6;}
-  .whoami .avatar-photo{width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none;}
-  .whoami .avatar-fallback{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex:none;}
-  .whoami .who-text{display:flex;flex-direction:column;line-height:1.25;}
+  .whoami .avatar-photo{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none;}
+  .whoami .avatar-fallback{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex:none;}
   .whoami .who-name{font-size:12.5px;font-weight:700;color:var(--fg);}
-  .whoami .who-switch{font-size:12px;color:var(--muted);}
+  .whoami .who-switch{font-size:12px;color:var(--muted);margin-left:auto;padding-left:8px;flex:none;}
 
   .people-grid{display:flex;flex-wrap:wrap;gap:14px;}
   .people-section-title{font-size:13px;font-weight:800;color:var(--muted);margin:22px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
@@ -1803,9 +1802,9 @@ function renderWhoAmI(){
   if(!el) return;
   const u = getCurrentUser();
   if(!u){
-    el.innerHTML = `<span class="who-text"><span class="who-name">로그인 안 함</span><span class="who-switch">클릭해서 본인 선택</span></span>`;
+    el.innerHTML = `<span class="who-name">로그인 안 함</span><span class="who-switch">클릭해서 본인 선택</span>`;
   } else {
-    el.innerHTML = `${personAvatarHtml(u)}<span class="who-text"><span class="who-name">${escapeHtml(displayNameOf(u))}</span><span class="who-switch">전환하기</span></span>`;
+    el.innerHTML = `${personAvatarHtml(u)}<span class="who-name">${escapeHtml(displayNameOf(u))}</span><span class="who-switch">전환하기</span>`;
   }
   el.onclick = openWhoAmI;
 }
