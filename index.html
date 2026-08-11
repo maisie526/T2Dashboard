@@ -41,6 +41,7 @@
     --type-half-bg:rgba(251,146,60,0.38); --type-half-fg:#fdba74;
     --type-wfh-bg-mine:rgba(139,92,246,0.7); --type-annual-bg-mine:rgba(217,119,6,0.7); --type-half-bg-mine:rgba(234,88,12,0.65);
     --shadow: 0 3px 10px rgba(0,0,0,0.28);
+    --scrollbar-thumb: rgba(255,255,255,0.25);
     color-scheme: dark;
   }
   html[data-theme="light"]{
@@ -69,6 +70,7 @@
     --type-annual-bg:#fef1c7; --type-annual-fg:#92400e;
     --type-half-bg:#ffe7d6; --type-half-fg:#c2410c;
     --type-wfh-bg-mine:#a78bfa; --type-annual-bg-mine:#fbbf24; --type-half-bg-mine:#fb923c;
+    --scrollbar-thumb: rgba(0,0,0,0.2);
     color-scheme: light;
   }
   *{box-sizing:border-box;}
@@ -174,7 +176,7 @@
   .board::-webkit-scrollbar{display:none;width:0;height:0;}
   /* position:fixed라서 board(스크롤 컨테이너) 안이 아니라 항상 뷰포트 기준 절대좌표로 그려짐.
      top/right/bottom/left는 전부 JS(updateBoardScrollbars)가 매번 픽셀로 직접 계산해서 넣어줌 */
-  .board-scrollbar{position:fixed;background:var(--border);border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500;}
+  .board-scrollbar{position:fixed;background:var(--scrollbar-thumb);border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500;}
   .board-scrollbar.visible{opacity:1;}
   .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
   /* col-head는 둥근 모서리 알약 모양이라 배경색이 모서리 바깥 네 귀퉁이는 칠하지 않음.
