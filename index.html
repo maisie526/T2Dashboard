@@ -167,7 +167,7 @@
      그 패딩 안쪽까지 파고들게 하되(높이는 JS에서 그만큼 더 늘려줌), margin이 음수인 만큼
      레이아웃 흐름상 차지하는 공간은 원래와 똑같이 상쇄돼서 페이지에 새로운 스크롤이
      생기지는 않음 (모바일은 이 방식 자체를 안 써서 아래 미디어쿼리에서 0으로 되돌림) */
-  #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;}
+  #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;padding-bottom:48px;}
   /* 기본 스크롤바는 두께(8px)만큼 컨텐츠 영역을 실제로 줄여서 48px 여백 위에 8px가 더 생겨
      보였음. 기본 스크롤바는 아예 숨기고, 대신 JS(updateBoardScrollbars)가 board의 실제 화면
      좌표(getBoundingClientRect)를 계산해서 position:fixed로 화면 위에 직접 그려줌
@@ -220,7 +220,6 @@
   .hist-subtasks{display:flex;flex-direction:column;gap:5px;}
   .hist-subtask-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--fg);}
   .hist-sub-text.done{color:#6b7280;text-decoration:line-through;}
-  .hist-sub-date{color:var(--muted);font-size:12px;}
   .hist-sub-desc{color:var(--muted);font-size:12px;font-style:italic;}
   .hist-no-sub{color:#6b7280;font-size:12px;}
 
@@ -256,7 +255,6 @@
   .subtask-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
   .subtask-text{font-size:12px;color:var(--text);line-height:1.5;}
   .subtask-text.done{color:var(--card-muted);text-decoration:line-through;}
-  .subtask-date{font-size:12px;color:var(--card-muted);white-space:nowrap;flex:none;}
   .subtask-desc{
     display:none;position:absolute;left:0;right:0;top:100%;margin-top:3px;
     font-size:12px;color:#e5e7eb;line-height:1.5;background:#1f2430;border-radius:8px;
@@ -320,7 +318,6 @@
   .cd-subtask-top input[type=checkbox]{flex:none;cursor:pointer;margin:0;}
   .cd-subtask-text{font-size:13.5px;color:var(--fg-modal);flex:1;min-width:0;}
   .cd-subtask-text.done{color:var(--muted);text-decoration:line-through;}
-  .cd-subtask-date{font-size:12px;color:var(--muted);white-space:nowrap;flex:none;}
   .cd-subtask-desc{font-size:12.5px;color:var(--muted);margin-top:3px;padding-left:22px;}
   .cd-subtask-assignees{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;padding-left:22px;}
   .req-comment-list{list-style:none;margin:0 0 12px;padding:0;}
@@ -491,6 +488,7 @@
     }
     #boardStats{
       gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      margin-bottom:24px;
     }
     /* main-content 좌우 패딩을 없앴으니, 쉬는 상태(스크롤 안 한 상태)에서도 헤더와 맞춰 24px 여백이
        보이도록 양 끝에 빈 스페이서를 넣음 (gap이 8px라서 스페이서는 24-8=16px). 스크롤하면 스페이서가
@@ -580,7 +578,7 @@
       display:flex;gap:14px;overflow:hidden;
       /* board와 scrollLeft를 그대로 복사해서 동기화하므로, 스크롤 가능한 전체 너비(콘텐츠+패딩)가
          board와 정확히 일치해야 함 → 오른쪽 padding도 board와 동일하게 24px로 맞춤 */
-      padding-left:24px;padding-right:24px;padding-bottom:10px;
+      padding-left:24px;padding-right:24px;padding-bottom:12px;
     }
     #colHeadRow .col-head-wrap{flex:0 0 78vw;width:78vw;min-width:0;}
 
@@ -588,7 +586,6 @@
     .field-row{flex-direction:column;gap:0;}
     .subtask-edit-top{flex-wrap:wrap;}
     .subtask-edit-top .se-text{flex:1 1 100%;}
-    .subtask-edit-top .se-date{flex:1 1 auto;}
 
     .wfh-table-wrap{padding:10px;}
     .wfh-table{font-size:12px;}
@@ -782,6 +779,17 @@
 
   .photo-preview{width:72px;height:72px;border-radius:50%;margin:0 auto;background:#f3f4f7;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#9ca3af;overflow:hidden;}
   .photo-preview img{width:100%;height:100%;object-fit:cover;}
+  /* 사진 크롭 조정 UI - 드래그로 위치, 슬라이더로 확대/축소를 바꿀 수 있게 함.
+     img는 position:absolute로 두고 JS가 매번 width/height/transform을 직접 계산해서 넣어줌 */
+  .crop-viewport{
+    width:240px;height:240px;max-width:100%;border-radius:50%;overflow:hidden;position:relative;
+    margin:4px auto 14px;background:#11131a;cursor:grab;touch-action:none;
+  }
+  .crop-viewport.dragging{cursor:grabbing;}
+  .crop-viewport img{position:absolute;top:0;left:0;max-width:none;user-select:none;pointer-events:none;}
+  .crop-zoom-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .crop-zoom-row input[type=range]{flex:1;}
+  .crop-zoom-icon{font-size:15px;color:var(--muted);flex:none;width:14px;text-align:center;}
   .who-add-toggle{margin-top:14px;}
 
   .roster{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
@@ -843,21 +851,6 @@
   .subtask-edit-row:last-child{margin-bottom:0;}
   .subtask-edit-top{display:flex;gap:6px;align-items:center;margin-bottom:5px;}
   .subtask-edit-top .se-text{flex:1;min-width:0;}
-  /* 날짜는 별도 박스 인풋 대신 담당자 뱃지와 톤을 맞춘 점선 칩으로 축소해서
-     제목 입력창과 나란히 있어도 시각적으로 무겁지 않게 함 (직접 타이핑은 그대로 가능) */
-  .subtask-edit-top .se-date{
-    flex:none;width:76px;min-width:0;background:transparent;
-    border:1px dashed var(--border);border-radius:14px;padding:4px 8px;
-    font-size:12px;color:var(--muted);text-align:center;
-  }
-  .subtask-edit-top .se-date:focus{border-style:solid;color:var(--fg-modal);}
-  /* 자유 텍스트 입력은 그대로 두되, 이 버튼으로 실제 달력 팝업(네이티브 date picker)을
-     열어서 날짜를 고르면 자동으로 채워지게 함 (TBD/EOD 같은 자유 텍스트도 계속 가능) */
-  .subtask-edit-top .se-date-pick{
-    flex:none;border:none;background:transparent;color:var(--muted);border-radius:6px;
-    width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;
-  }
-  .subtask-edit-top .se-date-pick:hover{background:var(--bg-ghost-hover);}
   .subtask-edit-row .se-remove{
     flex:none;border:none;background:transparent;color:#f87171;border-radius:6px;
     width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;
@@ -1256,6 +1249,25 @@
   </div>
 </div>
 
+<div class="modal-bg" id="cropModalBg">
+  <div class="modal" style="width:320px;text-align:center;">
+    <h3>사진 위치 조정</h3>
+    <div class="crop-viewport" id="cropViewport">
+      <img id="cropImg" draggable="false" alt="">
+    </div>
+    <div class="crop-zoom-row">
+      <span class="crop-zoom-icon">−</span>
+      <input type="range" id="cropZoomRange" min="100" max="300" value="100">
+      <span class="crop-zoom-icon">+</span>
+    </div>
+    <div class="hint">드래그로 위치를, 슬라이더로 확대/축소를 조정하세요</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cropCancelBtn">취소</button>
+      <button class="btn" id="cropApplyBtn">적용</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modalBg">
   <div class="modal" style="width:560px;">
     <h3 id="modalTitle">새 업무 생성</h3>
@@ -1343,6 +1355,35 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
 <script>
+/* 텍스트 입력 중 '->'를 입력하면 자동으로 '→'로 바뀌게 하는 전역 기능.
+   document에 위임해서 모든 input/textarea에 공통 적용 (개별 요소마다 리스너를 안 달아도 됨).
+   selectionStart를 지원하지 않는 input 타입(number/date/email 등)은 건드리면 에러가 나서 제외함 */
+function isArrowAutoReplaceTarget(el){
+  if(!el) return false;
+  if(el.tagName === 'TEXTAREA') return true;
+  if(el.tagName === 'INPUT'){
+    const t = (el.type || 'text').toLowerCase();
+    return t === 'text' || t === 'search' || t === 'url' || t === 'tel';
+  }
+  return false;
+}
+document.addEventListener('input', function(e){
+  const el = e.target;
+  if(!isArrowAutoReplaceTarget(el)) return;
+  const pos = el.selectionStart;
+  if(pos === null || pos === undefined || pos !== el.selectionEnd) return;
+  if(pos < 2) return;
+  const val = el.value;
+  if(val.slice(pos - 2, pos) === '->'){
+    el.value = val.slice(0, pos - 2) + '→' + val.slice(pos);
+    const newPos = pos - 1;
+    el.setSelectionRange(newPos, newPos);
+    // 값이 바뀐 걸 다른 곳(자동 리사이즈, 글자수 표시 등)에서도 알 수 있게 input 이벤트를 다시 흘려보냄.
+    // 다음 실행에서는 '->' 패턴이 다시 안 걸리므로 무한루프 걱정은 없음
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+});
+
 /* ===== Firebase 실시간 공유 저장소 ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyBiz2VNY4GmE26-0Dknrcs5ZRtZDUIxIlQ",
@@ -1515,14 +1556,6 @@ function fmtShort(dateStr){
   const d = new Date(dateStr+'T00:00:00');
   return `${d.getMonth()+1}/${d.getDate()}`;
 }
-// 서브태스크 마감일은 "TBD", "EOD", "8월"처럼 자유 텍스트도 허용해서, 진짜 YYYY-MM-DD
-// 형식일 때만 fmtShort로 M/D로 바꾸고 아니면 입력한 텍스트를 그대로 보여줌
-function fmtSubtaskDate(dateStr){
-  if(!dateStr) return '';
-  if(/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return fmtShort(dateStr);
-  return dateStr;
-}
-
 function toast(msg, type){
   let c = document.getElementById('toastContainer');
   if(!c){
@@ -1569,6 +1602,109 @@ function compressImage(file, maxDim, quality){
     reader.readAsDataURL(file);
   });
 }
+
+/* 인물 사진 업로드 시 크롭 위치/확대를 직접 조정할 수 있게 하는 공용 크로퍼.
+   openCropper(file, onDone)를 호출하면 크롭 모달이 뜨고, '적용'을 누르면
+   onDone(dataUrl)이 잘라낸 정사각형 이미지로 호출됨. '취소'를 누르면 아무 일도 안 일어남 */
+const CROP_VIEWPORT_SIZE = 240;
+const CROP_OUTPUT_SIZE = 200;
+let cropState = null; // {naturalW, naturalH, baseScale, zoom, offsetX, offsetY, onDone}
+const cropModalBg = document.getElementById('cropModalBg');
+const cropViewport = document.getElementById('cropViewport');
+const cropImgEl = document.getElementById('cropImg');
+const cropZoomRange = document.getElementById('cropZoomRange');
+
+function currentCropScale(){ return cropState.baseScale * cropState.zoom; }
+function clampCropOffset(){
+  const scale = currentCropScale();
+  const dispW = cropState.naturalW * scale, dispH = cropState.naturalH * scale;
+  const minX = CROP_VIEWPORT_SIZE - dispW, minY = CROP_VIEWPORT_SIZE - dispH;
+  cropState.offsetX = Math.min(0, Math.max(minX, cropState.offsetX));
+  cropState.offsetY = Math.min(0, Math.max(minY, cropState.offsetY));
+}
+function applyCropTransform(){
+  if(!cropState) return;
+  const scale = currentCropScale();
+  clampCropOffset();
+  cropImgEl.style.width = (cropState.naturalW * scale) + 'px';
+  cropImgEl.style.height = (cropState.naturalH * scale) + 'px';
+  cropImgEl.style.transform = `translate(${cropState.offsetX}px, ${cropState.offsetY}px)`;
+}
+function openCropper(file, onDone){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const baseScale = Math.max(CROP_VIEWPORT_SIZE / img.width, CROP_VIEWPORT_SIZE / img.height);
+      cropState = { naturalW: img.width, naturalH: img.height, baseScale, zoom: 1, onDone };
+      cropState.offsetX = (CROP_VIEWPORT_SIZE - img.width * baseScale) / 2;
+      cropState.offsetY = (CROP_VIEWPORT_SIZE - img.height * baseScale) / 2;
+      cropImgEl.src = reader.result;
+      cropZoomRange.value = 100;
+      applyCropTransform();
+      cropModalBg.classList.add('open');
+    };
+    img.onerror = ()=>toast('이미지를 불러올 수 없어요.', 'warn');
+    img.src = reader.result;
+  };
+  reader.onerror = ()=>toast('파일을 읽을 수 없어요.', 'warn');
+  reader.readAsDataURL(file);
+}
+cropZoomRange.addEventListener('input', ()=>{
+  if(!cropState) return;
+  // 확대/축소해도 뷰포트 중앙이 가리키던 이미지 지점이 그대로 유지되도록 오프셋을 재계산
+  const oldScale = currentCropScale();
+  const centerImgX = (CROP_VIEWPORT_SIZE/2 - cropState.offsetX) / oldScale;
+  const centerImgY = (CROP_VIEWPORT_SIZE/2 - cropState.offsetY) / oldScale;
+  cropState.zoom = Number(cropZoomRange.value) / 100;
+  const newScale = currentCropScale();
+  cropState.offsetX = CROP_VIEWPORT_SIZE/2 - centerImgX * newScale;
+  cropState.offsetY = CROP_VIEWPORT_SIZE/2 - centerImgY * newScale;
+  applyCropTransform();
+});
+let cropDrag = null;
+function cropPointerPos(e){
+  if(e.touches && e.touches[0]) return {x:e.touches[0].clientX, y:e.touches[0].clientY};
+  return {x:e.clientX, y:e.clientY};
+}
+function cropDragStart(e){
+  if(!cropState) return;
+  const p = cropPointerPos(e);
+  cropDrag = {startX:p.x, startY:p.y, offX:cropState.offsetX, offY:cropState.offsetY};
+  cropViewport.classList.add('dragging');
+  e.preventDefault();
+}
+function cropDragMove(e){
+  if(!cropDrag || !cropState) return;
+  const p = cropPointerPos(e);
+  cropState.offsetX = cropDrag.offX + (p.x - cropDrag.startX);
+  cropState.offsetY = cropDrag.offY + (p.y - cropDrag.startY);
+  applyCropTransform();
+  e.preventDefault();
+}
+function cropDragEnd(){ cropDrag = null; cropViewport.classList.remove('dragging'); }
+cropViewport.addEventListener('mousedown', cropDragStart);
+window.addEventListener('mousemove', cropDragMove);
+window.addEventListener('mouseup', cropDragEnd);
+cropViewport.addEventListener('touchstart', cropDragStart, {passive:false});
+window.addEventListener('touchmove', cropDragMove, {passive:false});
+window.addEventListener('touchend', cropDragEnd);
+function closeCropper(){ cropModalBg.classList.remove('open'); cropState = null; }
+document.getElementById('cropCancelBtn').addEventListener('click', closeCropper);
+cropModalBg.addEventListener('click', e=>{ if(e.target===cropModalBg) closeCropper(); });
+document.getElementById('cropApplyBtn').addEventListener('click', ()=>{
+  if(!cropState) return;
+  const scale = currentCropScale();
+  const canvas = document.createElement('canvas');
+  canvas.width = CROP_OUTPUT_SIZE; canvas.height = CROP_OUTPUT_SIZE;
+  const sx = -cropState.offsetX / scale, sy = -cropState.offsetY / scale;
+  const sSize = CROP_VIEWPORT_SIZE / scale;
+  canvas.getContext('2d').drawImage(cropImgEl, sx, sy, sSize, sSize, 0, 0, CROP_OUTPUT_SIZE, CROP_OUTPUT_SIZE);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const onDone = cropState.onDone;
+  closeCropper();
+  if(onDone) onDone(dataUrl);
+});
 
 // textarea에 Ctrl+V로 이미지를 붙여넣으면(클로드 채팅창에 이미지 붙여넣듯) 자동으로 첨부되게
 // 하는 공용 헬퍼. getImages/setImages로 어떤 배열에 담을지만 넘겨주면 재사용 가능
@@ -1794,10 +1930,10 @@ personModalBg.addEventListener('click', e=>{ if(e.target===personModalBg) closeP
 document.getElementById('personPhotoInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
-  compressImage(file).then(dataUrl=>{
+  openCropper(file, (dataUrl)=>{
     personPhotoData = dataUrl;
     document.getElementById('personPhotoPreview').innerHTML = `<img src="${personPhotoData}">`;
-  }).catch(()=>{ toast('이미지를 처리하는 중 문제가 발생했어요.', 'warn'); });
+  });
 });
 ['personNameKo','personNameEn'].forEach(fid=>{
   document.getElementById(fid).addEventListener('input', ()=>{
@@ -1907,10 +2043,10 @@ document.getElementById('whoAmIShowAddBtn').addEventListener('click', ()=>{
 document.getElementById('whoAmIPhotoInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
-  compressImage(file).then(dataUrl=>{
+  openCropper(file, (dataUrl)=>{
     whoAmIPhotoData = dataUrl;
     document.getElementById('whoAmIPhotoPreview').innerHTML = `<img src="${whoAmIPhotoData}">`;
-  }).catch(()=>{ toast('이미지를 처리하는 중 문제가 발생했어요.', 'warn'); });
+  });
 });
 document.getElementById('whoAmIRegisterBtn').addEventListener('click', ()=>{
   const nameKo = document.getElementById('whoAmINameKo').value.trim();
@@ -2086,7 +2222,6 @@ function subtaskRowHtml(s, idx, taskId){
     <div class="subtask-main">
       <div class="subtask-top">
         ${subtaskTitleHtml(s, `subtask-text ${s.done ? 'done' : ''}`)}
-        ${s.date ? `<span class="subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       </div>
       ${s.desc ? `<div class="subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
     </div>
@@ -2147,7 +2282,6 @@ function cardDetailBodyHtml(t){
           <div class="cd-subtask-top">
             <input type="checkbox" class="cd-subtask-check" data-idx="${i}" ${s.done?'checked':''}>
             ${subtaskTitleHtml(s, `cd-subtask-text ${s.done?'done':''}`)}
-            ${s.date ? `<span class="cd-subtask-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
           </div>
           ${s.desc ? `<div class="cd-subtask-desc">${escapeHtml(s.desc)}</div>` : ''}
           ${(s.assignees && s.assignees.length) ? `<div class="cd-subtask-assignees">${s.assignees.map(participantBadgeHtml).join('')}</div>` : ''}
@@ -2513,7 +2647,6 @@ const ICON_SVG = {
 function subtaskEditRowHtml(s){
   s = s || {text:'', date:'', desc:'', done:false, assignees:[], link:''};
   const assignees = s.assignees || [];
-  const hasDate = !!(s.date && s.date.trim());
   const hasLink = !!(s.link && s.link.trim());
   const hasDesc = !!(s.desc && s.desc.trim());
   const toggleLabel = assignees.length ? assignees.map(k=>displayName(k)).join(', ') : '+ 담당자 지정';
@@ -2521,9 +2654,6 @@ function subtaskEditRowHtml(s){
   <div class="subtask-edit-row" data-done="${s.done ? 'true' : 'false'}" data-assignees="${escapeHtml(JSON.stringify(assignees))}">
     <div class="subtask-edit-top">
       <input type="text" class="se-text" placeholder="작업명" value="${escapeHtml(s.text)}">
-      <input type="text" class="se-date" placeholder="8/15, TBD" value="${escapeHtml(s.date)}" style="${hasDate?'':'display:none;'}">
-      <button type="button" class="se-date-pick" title="달력에서 선택" style="${hasDate?'':'display:none;'}">${ICON_SVG.calendar}</button>
-      <input type="date" class="se-date-native" tabindex="-1" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
       <button type="button" class="se-remove" title="삭제">✕</button>
     </div>
     <div class="se-desc-wrap" style="${hasDesc?'':'display:none;'}">
@@ -2535,7 +2665,6 @@ function subtaskEditRowHtml(s){
         <button type="button" class="se-icon-btn se-assignee-toggle ${assignees.length?'has-value':''}" title="${assignees.length ? escapeHtml(toggleLabel) : '담당자 지정'}">${ICON_SVG.user}</button>
         <div class="se-assignee-panel"></div>
       </div>
-      <button type="button" class="se-icon-btn se-date-toggle ${hasDate?'has-value':''}" title="${hasDate?'마감일 삭제':'마감일 지정'}">${ICON_SVG.calendar}</button>
       <button type="button" class="se-icon-btn se-desc-toggle ${hasDesc?'has-value':''}" title="${hasDesc?'상세 내용 삭제':'상세 내용 추가'}">${ICON_SVG.notes}</button>
       <button type="button" class="se-icon-btn se-link-btn ${hasLink?'has-value':''}" title="${hasLink?'링크 삭제':'링크 삽입'}">${ICON_SVG.link}</button>
     </div>
@@ -2607,40 +2736,6 @@ subtaskEditor.addEventListener('click', e=>{
     }
     return;
   }
-  if(btn.classList.contains('se-date-pick')){
-    e.stopPropagation();
-    const row = btn.closest('.subtask-edit-row');
-    const native = row.querySelector('.se-date-native');
-    const textInput = row.querySelector('.se-date');
-    // 이미 YYYY-MM-DD 형식으로 입력돼 있으면 달력을 그 날짜로 열어줌
-    native.value = /^\d{4}-\d{2}-\d{2}$/.test(textInput.value.trim()) ? textInput.value.trim() : '';
-    if(native.showPicker){
-      try{ native.showPicker(); }catch(err){ native.focus(); }
-    } else {
-      native.focus();
-    }
-    return;
-  }
-  if(btn.classList.contains('se-date-toggle')){
-    const row = btn.closest('.subtask-edit-row');
-    const dateInput = row.querySelector('.se-date');
-    const pickBtn = row.querySelector('.se-date-pick');
-    const isVisible = dateInput.style.display !== 'none';
-    if(isVisible){
-      // 이미 지정한 마감일을 다시 지우고 접을 수 있게 함
-      dateInput.value = '';
-      dateInput.style.display = 'none';
-      pickBtn.style.display = 'none';
-      btn.title = '마감일 지정';
-      btn.classList.remove('has-value');
-    } else {
-      dateInput.style.display = '';
-      pickBtn.style.display = '';
-      btn.title = '마감일 삭제';
-      btn.classList.add('has-value');
-      dateInput.focus();
-    }
-  }
 });
 subtaskEditor.addEventListener('input', e=>{
   if(!e.target.classList.contains('se-link-input')) return;
@@ -2651,11 +2746,6 @@ subtaskEditor.addEventListener('input', e=>{
   btn.title = has ? '링크 삭제' : '링크 삽입';
 });
 subtaskEditor.addEventListener('change', e=>{
-  if(e.target.classList.contains('se-date-native')){
-    const row = e.target.closest('.subtask-edit-row');
-    if(e.target.value) row.querySelector('.se-date').value = e.target.value;
-    return;
-  }
   if(!e.target.classList.contains('se-assignee-opt')) return;
   const row = e.target.closest('.subtask-edit-row');
   let assignees = JSON.parse(row.dataset.assignees || '[]');
@@ -2946,7 +3036,6 @@ function captureModalSnapshot(){
     link: document.getElementById('fLink').value,
     subtasks: [...subtaskEditor.querySelectorAll('.subtask-edit-row')].map(row=>({
       text: row.querySelector('.se-text').value,
-      date: row.querySelector('.se-date').value,
       desc: row.querySelector('.se-desc').value,
       link: row.querySelector('.se-link-input').value,
       assignees: row.dataset.assignees
@@ -2991,7 +3080,6 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     end: document.getElementById('fEnd').value,
     subtasks: [...subtaskEditor.querySelectorAll('.subtask-edit-row')].map(row=>({
       text: row.querySelector('.se-text').value.trim(),
-      date: row.querySelector('.se-date').value,
       desc: row.querySelector('.se-desc').value.trim(),
       link: row.querySelector('.se-link-input').value.trim(),
       done: row.dataset.done === 'true',
@@ -3118,6 +3206,22 @@ function updateBoardScrollbars(){
 
 render();
 setTimeout(syncColHeadRowScroll, 0);
+
+// 모바일에서 보드에 처음 들어오면 가로 스크롤이 항상 맨 왼쪽(Backlog)부터 시작되는데,
+// Backlog는 보통 비어있어서 첫 화면에 빈 컬럼만 보임 → 실제 카드가 있는 첫 컬럼이
+// 화면 중앙(스냅 위치)에 오도록 페이지 진입 시 한 번만 스크롤해줌(이후 사용자가 넘기면 그대로 둠)
+function scrollBoardToFirstNonEmptyColumnMobile(){
+  if(window.innerWidth > 640) return;
+  const target = COLUMNS.find(c=>{
+    const body = document.getElementById('col-'+c.id);
+    return body && body.children.length > 0;
+  });
+  if(!target) return;
+  const wrap = document.getElementById('colwrap-'+target.id);
+  if(!wrap) return;
+  wrap.scrollIntoView({inline:'center', block:'nearest'});
+}
+setTimeout(scrollBoardToFirstNonEmptyColumnMobile, 0);
 
 /* ===== 다크/라이트 테마 토글 ===== */
 const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -3308,7 +3412,6 @@ function histSubtasksHtml(t){
     <div class="hist-subtask-row">
       <span>${s.done ? '✅' : '⬜'}</span>
       ${subtaskTitleHtml(s, `hist-sub-text ${s.done?'done':''}`)}
-      ${s.date ? `<span class="hist-sub-date">${escapeHtml(fmtSubtaskDate(s.date))}</span>` : ''}
       ${s.desc ? `<span class="hist-sub-desc">${escapeHtml(s.desc)}</span>` : ''}
     </div>`).join('')}</div>`;
 }
