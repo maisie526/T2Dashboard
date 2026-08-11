@@ -409,8 +409,9 @@
   .mini-cal-actions button:hover{background:var(--bg-ghost-hover);color:var(--fg-modal);}
   .mini-cal-actions .mini-cal-today{color:#3b82f6;}
   .date-select-checks{display:flex;gap:14px;padding:6px 2px 2px;border-top:1px solid var(--border);margin-top:2px;}
-  .date-select-check{display:flex;align-items:center;font-size:13px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
-  .date-select-check input[type="checkbox"]{width:auto;flex:none;cursor:pointer;margin:0 8px 0 0;}
+  .date-select-check{display:flex;align-items:center;font-size:13px;line-height:14px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
+  .date-select-check input[type="checkbox"]{width:14px;height:14px;flex:none;cursor:pointer;margin:0 6px 0 0;vertical-align:middle;}
+  .date-select-check span{display:inline-block;line-height:14px;}
   .date-select-check input[type="checkbox"]:disabled ~ span{opacity:.5;}
   /* 날짜 팝업은 담당자/고객사 드롭다운과 달리 목록이 아니라 달력이라 내용 길이가 고정적이므로,
      토글 버튼 너비를 그대로 따라가거나(너무 좁아 보임) 스크롤이 생기는(220px 제한) 대신
