@@ -355,6 +355,18 @@
   .modal-bg.open{display:flex;}
   .modal{background:var(--bg-modal);color:var(--fg-modal);border-radius:14px;padding:22px;width:460px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);}
   .modal h3{margin:0 0 14px;font-size:16px;}
+  /* 업무 등록/수정 팝업은 내용이 길어 스크롤이 생기는데, 제목과 하단 버튼(삭제/취소/저장)까지
+     같이 스크롤돼서 사라지면 불편함 → 팝업 자체가 스크롤 컨테이너인 점을 이용해 제목/버튼줄을
+     sticky로 고정함. 음수 마진으로 모달 패딩 바깥까지 밀어낸 뒤 패딩을 다시 줘서, 옆으로
+     스크롤되는 내용이 뒤로 비치지 않게 배경을 꽉 채움(#board 좌우 48px 여백에 썼던 것과 같은 방식) */
+  #modalBg .modal h3{
+    position:sticky;top:0;z-index:6;margin:-22px -22px 16px;padding:22px 22px 14px;
+    background:var(--bg-modal);border-bottom:1px solid var(--border);
+  }
+  #modalBg .modal-actions{
+    position:sticky;bottom:0;z-index:6;margin:16px -22px -22px;padding:14px 22px;
+    background:var(--bg-modal);border-top:1px solid var(--border);
+  }
   .field{margin-bottom:16px;}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700;}
   .field input, .field select, .field textarea{
@@ -375,16 +387,34 @@
   .field-checkbox-inline{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
   .field-checkbox-inline input[type="checkbox"]{width:auto;flex:none;padding:0;cursor:pointer;}
   .field-checkbox-inline label{margin:0;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
-  #fEnd:disabled,#fStart:disabled{opacity:.5;cursor:not-allowed;}
   /* 시작일/마감일 커스텀 날짜 선택 팝업 - 기존 .multiselect 드롭다운과 같은 틀을 써서
-     "한 번에 하나만 열림" 로직도 그대로 같이 적용됨. 팝업 안에 네이티브 날짜 입력 +
-     TBD(미정)/EOD(당일 자정) 체크박스를 넣어서 날짜 대신 상태만 표시할 수 있게 함 */
-  .date-select-panel input[type="date"]{
-    width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:6px;
-    font-size:13px;font-family:inherit;background:var(--bg-input);color:var(--fg-modal);margin-bottom:8px;
+     "한 번에 하나만 열림" 로직도 그대로 같이 적용됨. 네이티브 date input(클릭 두 번 필요 -
+     팝업 열기 + 자체 캘린더 열기)을 쓰는 대신, 팝업을 열자마자 바로 날짜를 고를 수 있는
+     자체 달력을 넣고 그 아래 TBD(미정)/EOD(당일 자정) 체크박스를 붙임 */
+  .mini-cal{padding:2px 2px 8px;}
+  .mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .mini-cal-title{font-size:13px;font-weight:800;color:var(--fg-modal);}
+  .mini-cal-nav{display:flex;gap:2px;}
+  .mini-cal-nav-btn{
+    width:22px;height:22px;border:none;border-radius:6px;background:transparent;color:var(--muted);
+    font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
   }
-  .date-select-panel input[type="date"]:disabled{opacity:.5;cursor:not-allowed;}
-  .date-select-checks{display:flex;gap:14px;padding:2px;}
+  .mini-cal-nav-btn:hover{background:var(--bg-ghost-hover);color:var(--fg-modal);}
+  .mini-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:2px;}
+  .mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .mini-cal-day{
+    width:100%;aspect-ratio:1;border:none;border-radius:6px;background:transparent;color:var(--fg-modal);
+    font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .mini-cal-day:hover{background:var(--bg-ghost-hover);}
+  .mini-cal-day.dim{color:var(--muted);opacity:.45;}
+  .mini-cal-day.today{font-weight:800;color:#3b82f6;}
+  .mini-cal-day.selected{background:#3b82f6;color:#fff;font-weight:800;}
+  .mini-cal-actions{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
+  .mini-cal-actions button{background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;padding:4px 6px;border-radius:6px;}
+  .mini-cal-actions button:hover{background:var(--bg-ghost-hover);color:var(--fg-modal);}
+  .mini-cal-actions .mini-cal-today{color:#3b82f6;}
+  .date-select-checks{display:flex;gap:14px;padding:6px 2px 2px;border-top:1px solid var(--border);margin-top:2px;}
   .date-select-check{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
   .date-select-check input[type="checkbox"]{width:auto;flex:none;cursor:pointer;margin:0;}
   .date-select-check input[type="checkbox"]:disabled ~ span{opacity:.5;}
@@ -607,6 +637,8 @@
     #colHeadRow .col-head-wrap{flex:0 0 78vw;width:78vw;min-width:0;}
 
     .modal{width:94vw;padding:16px;}
+    #modalBg .modal h3{margin:-16px -16px 14px;padding:16px 16px 12px;}
+    #modalBg .modal-actions{margin:14px -16px -16px;padding:12px 16px;}
     .field-row{flex-direction:column;gap:0;}
     .subtask-edit-top{flex-wrap:wrap;}
     .subtask-edit-top .se-text{flex:1 1 100%;}
@@ -1342,7 +1374,24 @@
           <div class="multiselect" id="fStartSelect">
             <button type="button" class="multiselect-toggle" id="fStartToggle">날짜 선택</button>
             <div class="multiselect-panel date-select-panel" id="fStartPanel">
-              <input type="date" id="fStart">
+              <input type="hidden" id="fStart">
+              <div class="mini-cal" id="fStartCal">
+                <div class="mini-cal-head">
+                  <span class="mini-cal-title"></span>
+                  <div class="mini-cal-nav">
+                    <button type="button" class="mini-cal-nav-btn" data-dir="-1" title="이전 달">‹</button>
+                    <button type="button" class="mini-cal-nav-btn" data-dir="1" title="다음 달">›</button>
+                  </div>
+                </div>
+                <div class="mini-cal-weekdays">
+                  <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="mini-cal-grid"></div>
+                <div class="mini-cal-actions">
+                  <button type="button" class="mini-cal-clear">삭제</button>
+                  <button type="button" class="mini-cal-today">오늘</button>
+                </div>
+              </div>
               <div class="date-select-checks">
                 <label class="date-select-check"><input type="checkbox" id="fStartTBD"><span>TBD</span></label>
               </div>
@@ -1360,7 +1409,24 @@
           <div class="multiselect" id="fEndSelect">
             <button type="button" class="multiselect-toggle" id="fEndToggle">날짜 선택</button>
             <div class="multiselect-panel date-select-panel" id="fEndPanel">
-              <input type="date" id="fEnd">
+              <input type="hidden" id="fEnd">
+              <div class="mini-cal" id="fEndCal">
+                <div class="mini-cal-head">
+                  <span class="mini-cal-title"></span>
+                  <div class="mini-cal-nav">
+                    <button type="button" class="mini-cal-nav-btn" data-dir="-1" title="이전 달">‹</button>
+                    <button type="button" class="mini-cal-nav-btn" data-dir="1" title="다음 달">›</button>
+                  </div>
+                </div>
+                <div class="mini-cal-weekdays">
+                  <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                </div>
+                <div class="mini-cal-grid"></div>
+                <div class="mini-cal-actions">
+                  <button type="button" class="mini-cal-clear">삭제</button>
+                  <button type="button" class="mini-cal-today">오늘</button>
+                </div>
+              </div>
               <div class="date-select-checks">
                 <label class="date-select-check"><input type="checkbox" id="fEndTBD"><span>TBD</span></label>
                 <label class="date-select-check"><input type="checkbox" id="fEndEOD"><span>EOD</span></label>
@@ -3098,12 +3164,13 @@ wireFilterSelect('assigneeFilter','assigneeFilterToggle','assigneeFilterPanel', 
 // 시작일/마감일을 커스텀 드롭다운 팝업(날짜 입력 + TBD/EOD 체크박스)으로 감쌈.
 // 다른 .multiselect 드롭다운들과 같은 틀을 쓰기 때문에 "한 번에 하나만 열림" 로직에도
 // 자동으로 같이 걸림 - 열고 닫는 것만 별도로 처리
-function wireDateSelect(toggleId, panelId, wrapId){
+function wireDateSelect(fieldId, toggleId, panelId, wrapId){
   document.getElementById(toggleId).addEventListener('click', (e)=>{
     e.stopPropagation();
     const panel = document.getElementById(panelId);
     const willOpen = !panel.classList.contains('open');
     closeAllDropdownPanels(panel);
+    if(willOpen){ resetMiniCalView(fieldId); renderMiniCal(fieldId); }
     panel.classList.toggle('open', willOpen);
   });
   document.addEventListener('click', (e)=>{
@@ -3111,24 +3178,94 @@ function wireDateSelect(toggleId, panelId, wrapId){
     if(wrap && !wrap.contains(e.target)) document.getElementById(panelId).classList.remove('open');
   });
 }
-wireDateSelect('fStartToggle','fStartPanel','fStartSelect');
-wireDateSelect('fEndToggle','fEndPanel','fEndSelect');
 
-// 시작일: 날짜 또는 TBD(미정) 둘 중 하나만 가능 - TBD를 체크하면 날짜 입력을 비우고 잠금
+// 자체 미니 달력 - 네이티브 date input은 팝업을 연 다음 그 안에서 또 한 번 자체 캘린더를
+// 열어야 하는 클릭이 하나 더 필요해서, 팝업을 열자마자 바로 날짜를 고를 수 있게 직접 그림.
+// 시작일/마감일 두 필드가 각자 독립적으로 "지금 보고 있는 달"을 기억해야 해서 필드 id를
+// 키로 하는 상태 객체(miniCalView)를 둠
+const miniCalView = {};
+function resetMiniCalView(fieldId){
+  const dateInput = document.getElementById(fieldId);
+  const base = dateInput.value ? new Date(dateInput.value+'T00:00:00') : new Date();
+  miniCalView[fieldId] = {y: base.getFullYear(), m: base.getMonth()};
+}
+function renderMiniCal(fieldId){
+  const dateInput = document.getElementById(fieldId);
+  const container = document.getElementById(fieldId+'Cal');
+  if(!container) return;
+  if(!miniCalView[fieldId]) resetMiniCalView(fieldId);
+  const {y, m} = miniCalView[fieldId];
+  container.querySelector('.mini-cal-title').textContent = `${y}년 ${m+1}월`;
+  const startWeekday = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const totalCells = startWeekday + daysInMonth;
+  const cellCount = totalCells + (7 - (totalCells % 7)) % 7;
+  const today = todayStr();
+  const selected = dateInput.value;
+  let html = '';
+  for(let i=0;i<cellCount;i++){
+    const dayNum = i - startWeekday + 1;
+    const cell = new Date(y, m, dayNum);
+    const dim = dayNum < 1 || dayNum > daysInMonth;
+    const iso = `${cell.getFullYear()}-${String(cell.getMonth()+1).padStart(2,'0')}-${String(cell.getDate()).padStart(2,'0')}`;
+    const isToday = iso === today;
+    const isSelected = !!selected && iso === selected;
+    html += `<button type="button" class="mini-cal-day${dim?' dim':''}${isToday?' today':''}${isSelected?' selected':''}" data-date="${iso}">${cell.getDate()}</button>`;
+  }
+  container.querySelector('.mini-cal-grid').innerHTML = html;
+}
+function wireMiniCalInteractions(fieldId, panelId, onPick, onClear){
+  document.getElementById(fieldId+'Cal').addEventListener('click', (e)=>{
+    const navBtn = e.target.closest('.mini-cal-nav-btn');
+    if(navBtn){
+      e.stopPropagation();
+      const v = miniCalView[fieldId];
+      let m = v.m + Number(navBtn.dataset.dir), y = v.y;
+      if(m < 0){ m = 11; y -= 1; } else if(m > 11){ m = 0; y += 1; }
+      miniCalView[fieldId] = {y, m};
+      renderMiniCal(fieldId);
+      return;
+    }
+    const dayBtn = e.target.closest('.mini-cal-day');
+    if(dayBtn){
+      e.stopPropagation();
+      onPick(dayBtn.dataset.date);
+      document.getElementById(panelId).classList.remove('open');
+      return;
+    }
+    if(e.target.closest('.mini-cal-clear')){
+      e.stopPropagation();
+      onClear();
+      document.getElementById(panelId).classList.remove('open');
+      return;
+    }
+    if(e.target.closest('.mini-cal-today')){
+      e.stopPropagation();
+      onPick(todayStr());
+      document.getElementById(panelId).classList.remove('open');
+      return;
+    }
+  });
+}
+wireDateSelect('fStart','fStartToggle','fStartPanel','fStartSelect');
+wireDateSelect('fEnd','fEndToggle','fEndPanel','fEndSelect');
+
+// 시작일: 날짜 또는 TBD(미정) 둘 중 하나만 가능 - TBD를 체크하면 날짜를 비우고 달력을 잠금
 function applyStartFieldState(tbd, dateVal){
   const tbdCb = document.getElementById('fStartTBD');
   const dateInput = document.getElementById('fStart');
   tbdCb.checked = tbd;
-  dateInput.disabled = tbd;
   dateInput.value = tbd ? '' : (dateVal || '');
   document.getElementById('fStartToggle').textContent = tbd ? 'TBD' : (dateInput.value ? fmtShort(dateInput.value) : '날짜 선택');
+  renderMiniCal('fStart');
 }
 document.getElementById('fStartTBD').addEventListener('change', (e)=>{
   applyStartFieldState(e.target.checked, document.getElementById('fStart').value);
 });
-document.getElementById('fStart').addEventListener('change', (e)=>{
-  applyStartFieldState(false, e.target.value);
-});
+wireMiniCalInteractions('fStart', 'fStartPanel',
+  (dateStr)=> applyStartFieldState(false, dateStr),
+  ()=> applyStartFieldState(false, '')
+);
 
 // 마감일: 날짜, 상시, TBD(미정) 셋 중 하나만 가능(서로 배타적). EOD(당일 자정)는 날짜에
 // 덧붙는 태그라 날짜가 있을 때만 의미 있고, 상시/TBD와는 같이 쓸 수 없음(둘 다 날짜가 없으므로)
@@ -3141,7 +3278,6 @@ function applyEndFieldState(ongoing, tbd, eod, dateVal){
   ongoingCb.checked = ongoing;
   tbdCb.checked = tbd;
   eodCb.checked = lockDate ? false : eod;
-  dateInput.disabled = lockDate;
   dateInput.value = lockDate ? '' : (dateVal || '');
   tbdCb.disabled = ongoing;
   eodCb.disabled = lockDate;
@@ -3150,6 +3286,7 @@ function applyEndFieldState(ongoing, tbd, eod, dateVal){
   else if(tbd){ toggle.textContent = 'TBD'; }
   else if(dateInput.value){ toggle.textContent = eodCb.checked ? `${fmtShort(dateInput.value)}(EOD)` : fmtShort(dateInput.value); }
   else { toggle.textContent = eodCb.checked ? 'EOD' : '날짜 선택'; }
+  renderMiniCal('fEnd');
 }
 function setOngoingChecked(checked){
   applyEndFieldState(checked, false, document.getElementById('fEndEOD').checked, document.getElementById('fEnd').value);
@@ -3163,9 +3300,10 @@ document.getElementById('fEndTBD').addEventListener('change', (e)=>{
 document.getElementById('fEndEOD').addEventListener('change', (e)=>{
   applyEndFieldState(false, false, e.target.checked, document.getElementById('fEnd').value);
 });
-document.getElementById('fEnd').addEventListener('change', (e)=>{
-  applyEndFieldState(false, false, document.getElementById('fEndEOD').checked, e.target.value);
-});
+wireMiniCalInteractions('fEnd', 'fEndPanel',
+  (dateStr)=> applyEndFieldState(false, false, document.getElementById('fEndEOD').checked, dateStr),
+  ()=> applyEndFieldState(false, false, false, '')
+);
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
   document.getElementById('modalDelBtn').style.display = id ? '' : 'none';
