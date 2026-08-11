@@ -381,12 +381,6 @@
   .field-checkbox{display:flex;align-items:center;gap:8px;}
   .field-checkbox input[type="checkbox"]{width:auto;flex:none;padding:0;}
   .field-checkbox label{margin:0;font-size:13px;color:var(--fg-modal);font-weight:600;}
-  /* 마감일 라벨 옆에 붙는 "상시" 체크박스 - 체크하면 마감일 없이 계속 진행 중인 업무로 표시됨 */
-  .field-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .field .field-label-row label{margin-bottom:4px;}
-  .field-checkbox-inline{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
-  .field-checkbox-inline input[type="checkbox"]{width:auto;flex:none;padding:0;cursor:pointer;}
-  .field-checkbox-inline label{margin:0;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
   /* 시작일/마감일 커스텀 날짜 선택 팝업 - 기존 .multiselect 드롭다운과 같은 틀을 써서
      "한 번에 하나만 열림" 로직도 그대로 같이 적용됨. 네이티브 date input(클릭 두 번 필요 -
      팝업 열기 + 자체 캘린더 열기)을 쓰는 대신, 팝업을 열자마자 바로 날짜를 고를 수 있는
@@ -415,13 +409,17 @@
   .mini-cal-actions button:hover{background:var(--bg-ghost-hover);color:var(--fg-modal);}
   .mini-cal-actions .mini-cal-today{color:#3b82f6;}
   .date-select-checks{display:flex;gap:14px;padding:6px 2px 2px;border-top:1px solid var(--border);margin-top:2px;}
-  .date-select-check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
+  .date-select-check{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
   .date-select-check input[type="checkbox"]{width:auto;flex:none;cursor:pointer;margin:0;}
   .date-select-check input[type="checkbox"]:disabled ~ span{opacity:.5;}
   /* 날짜 팝업은 담당자/고객사 드롭다운과 달리 목록이 아니라 달력이라 내용 길이가 고정적이므로,
      토글 버튼 너비를 그대로 따라가거나(너무 좁아 보임) 스크롤이 생기는(220px 제한) 대신
      달력 내용에 딱 맞는 너비로 고정하고 스크롤 자체를 없앰 */
-  .multiselect-panel.date-select-panel{left:0;right:auto;width:224px;max-height:none;overflow:visible;}
+  /* position:absolute로 두면 (달력이 커서) 팝업이 모달 아래로 삐져나갈 때 모달 자체의
+     스크롤 가능 영역에 그만큼이 포함돼서 모달에 스크롤이 생겨버림. position:fixed로 바꿔서
+     모달 레이아웃과 완전히 분리하고, 정확한 위치는 열 때마다 JS(positionDatePanel)가
+     토글 버튼의 화면 좌표를 계산해서 top/left로 직접 넣어줌(보드 스크롤바 때 쓴 방식과 동일) */
+  .multiselect-panel.date-select-panel{position:fixed;left:auto;right:auto;top:auto;width:224px;max-height:none;overflow:visible;}
   .multiselect{position:relative;}
   .multiselect-toggle{
     width:100%;text-align:left;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
@@ -1403,13 +1401,7 @@
           </div>
         </div>
         <div class="field">
-          <div class="field-label-row">
-            <label>마감일</label>
-            <span class="field-checkbox-inline">
-              <input type="checkbox" id="fOngoing">
-              <label for="fOngoing">상시</label>
-            </span>
-          </div>
+          <label>마감일</label>
           <div class="multiselect" id="fEndSelect">
             <button type="button" class="multiselect-toggle" id="fEndToggle">날짜 선택</button>
             <div class="multiselect-panel date-select-panel" id="fEndPanel">
@@ -2375,13 +2367,12 @@ function subtaskRowHtml(s, idx, taskId){
 }
 
 // 시작일/마감일 표시 문자열을 카드/상세팝업에서 공통으로 쓰기 위한 헬퍼.
-// 상시/TBD/EOD 플래그를 전부 여기서 한 번에 처리해서 여러 곳에 같은 로직이 흩어지지 않게 함
+// TBD/EOD 플래그를 전부 여기서 한 번에 처리해서 여러 곳에 같은 로직이 흩어지지 않게 함
 function startDisplayStr(t){
   if(t.startTBD) return 'TBD';
   return t.start ? fmtShort(t.start) : '';
 }
 function endDisplayStr(t){
-  if(t.ongoing) return '상시';
   if(t.endTBD) return 'TBD';
   if(t.end) return t.endEOD ? `${fmtShort(t.end)}(EOD)` : fmtShort(t.end);
   return '';
@@ -3168,13 +3159,45 @@ wireFilterSelect('assigneeFilter','assigneeFilterToggle','assigneeFilterPanel', 
 // 시작일/마감일을 커스텀 드롭다운 팝업(날짜 입력 + TBD/EOD 체크박스)으로 감쌈.
 // 다른 .multiselect 드롭다운들과 같은 틀을 쓰기 때문에 "한 번에 하나만 열림" 로직에도
 // 자동으로 같이 걸림 - 열고 닫는 것만 별도로 처리
+// position:fixed라서 모달 스크롤과 무관하게 항상 화면 절대좌표로 그려짐. 열 때마다 토글
+// 버튼의 실제 화면 위치(getBoundingClientRect)를 기준으로 top/left를 직접 계산해 넣어주고,
+// 아래쪽 공간이 부족하면(모달 하단 근처) 위로 뒤집어서 화면 밖으로 나가지 않게 함
+function positionDatePanel(toggleId, panelId){
+  const btn = document.getElementById(toggleId);
+  const panel = document.getElementById(panelId);
+  const rect = btn.getBoundingClientRect();
+  const panelWidth = 224, estHeight = 320;
+  const spaceBelow = window.innerHeight - rect.bottom, spaceAbove = rect.top;
+  panel.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - panelWidth - 8)) + 'px';
+  if(spaceBelow < estHeight && spaceAbove > spaceBelow){
+    panel.style.top = '';
+    panel.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+  } else {
+    panel.style.bottom = '';
+    panel.style.top = (rect.bottom + 4) + 'px';
+  }
+}
+function repositionOpenDatePanels(){
+  if(document.getElementById('fStartPanel').classList.contains('open')) positionDatePanel('fStartToggle','fStartPanel');
+  if(document.getElementById('fEndPanel').classList.contains('open')) positionDatePanel('fEndToggle','fEndPanel');
+}
+window.addEventListener('resize', repositionOpenDatePanels);
+// 모달 자체를 스크롤할 때도(토글 버튼이 화면상 움직이므로) 팝업이 같이 따라오게 함
+(function(){
+  const modalEl = document.querySelector('#modalBg .modal');
+  if(modalEl) modalEl.addEventListener('scroll', repositionOpenDatePanels, {passive:true});
+})();
 function wireDateSelect(fieldId, toggleId, panelId, wrapId){
   document.getElementById(toggleId).addEventListener('click', (e)=>{
     e.stopPropagation();
     const panel = document.getElementById(panelId);
     const willOpen = !panel.classList.contains('open');
     closeAllDropdownPanels(panel);
-    if(willOpen){ resetMiniCalView(fieldId); renderMiniCal(fieldId); }
+    if(willOpen){
+      resetMiniCalView(fieldId);
+      renderMiniCal(fieldId);
+      positionDatePanel(toggleId, panelId);
+    }
     panel.classList.toggle('open', willOpen);
   });
   document.addEventListener('click', (e)=>{
@@ -3271,42 +3294,31 @@ wireMiniCalInteractions('fStart', 'fStartPanel',
   ()=> applyStartFieldState(false, '')
 );
 
-// 마감일: 날짜, 상시, TBD(미정) 셋 중 하나만 가능(서로 배타적). EOD(당일 자정)는 날짜에
-// 덧붙는 태그라 날짜가 있을 때만 의미 있고, 상시/TBD와는 같이 쓸 수 없음(둘 다 날짜가 없으므로)
-function applyEndFieldState(ongoing, tbd, eod, dateVal){
-  const ongoingCb = document.getElementById('fOngoing');
+// 마감일: 날짜 또는 TBD(미정) 둘 중 하나만 가능(서로 배타적). EOD(당일 자정)는 날짜에
+// 덧붙는 태그라 날짜가 있을 때만 의미 있고, TBD와는 같이 쓸 수 없음(TBD는 날짜가 없으므로)
+function applyEndFieldState(tbd, eod, dateVal){
   const tbdCb = document.getElementById('fEndTBD');
   const eodCb = document.getElementById('fEndEOD');
   const dateInput = document.getElementById('fEnd');
-  const lockDate = ongoing || tbd;
-  ongoingCb.checked = ongoing;
   tbdCb.checked = tbd;
-  eodCb.checked = lockDate ? false : eod;
-  dateInput.value = lockDate ? '' : (dateVal || '');
-  tbdCb.disabled = ongoing;
-  eodCb.disabled = lockDate;
+  eodCb.checked = tbd ? false : eod;
+  dateInput.value = tbd ? '' : (dateVal || '');
+  eodCb.disabled = tbd;
   const toggle = document.getElementById('fEndToggle');
-  if(ongoing){ toggle.textContent = '상시'; }
-  else if(tbd){ toggle.textContent = 'TBD'; }
+  if(tbd){ toggle.textContent = 'TBD'; }
   else if(dateInput.value){ toggle.textContent = eodCb.checked ? `${fmtShort(dateInput.value)}(EOD)` : fmtShort(dateInput.value); }
   else { toggle.textContent = eodCb.checked ? 'EOD' : '날짜 선택'; }
   renderMiniCal('fEnd');
 }
-function setOngoingChecked(checked){
-  applyEndFieldState(checked, false, document.getElementById('fEndEOD').checked, document.getElementById('fEnd').value);
-}
-document.getElementById('fOngoing').addEventListener('change', (e)=>{
-  setOngoingChecked(e.target.checked);
-});
 document.getElementById('fEndTBD').addEventListener('change', (e)=>{
-  applyEndFieldState(false, e.target.checked, document.getElementById('fEndEOD').checked, document.getElementById('fEnd').value);
+  applyEndFieldState(e.target.checked, document.getElementById('fEndEOD').checked, document.getElementById('fEnd').value);
 });
 document.getElementById('fEndEOD').addEventListener('change', (e)=>{
-  applyEndFieldState(false, false, e.target.checked, document.getElementById('fEnd').value);
+  applyEndFieldState(false, e.target.checked, document.getElementById('fEnd').value);
 });
 wireMiniCalInteractions('fEnd', 'fEndPanel',
-  (dateStr)=> applyEndFieldState(false, false, document.getElementById('fEndEOD').checked, dateStr),
-  ()=> applyEndFieldState(false, false, false, '')
+  (dateStr)=> applyEndFieldState(false, document.getElementById('fEndEOD').checked, dateStr),
+  ()=> applyEndFieldState(false, false, '')
 );
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
@@ -3321,7 +3333,7 @@ function openModal(id, presetStatus){
     fAssigneeSelected = (t.participants && t.participants.length) ? [...t.participants] : (t.assignee ? [t.assignee] : [UNASSIGNED_KEY]);
     updateAssigneeToggleLabel();
     applyStartFieldState(!!t.startTBD, t.start || '');
-    applyEndFieldState(!!t.ongoing, !!t.endTBD, !!t.endEOD, t.end || '');
+    applyEndFieldState(!!t.endTBD, !!t.endEOD, t.end || '');
     renderSubtaskEditor(t.subtasks);
     document.getElementById('fLink').value = t.link || '';
   } else {
@@ -3333,7 +3345,7 @@ function openModal(id, presetStatus){
     fAssigneeSelected = [UNASSIGNED_KEY];
     updateAssigneeToggleLabel();
     applyStartFieldState(false, '');
-    applyEndFieldState(false, false, false, '');
+    applyEndFieldState(false, false, '');
     renderSubtaskEditor([]);
     document.getElementById('fLink').value = '';
   }
@@ -3361,7 +3373,6 @@ function captureModalSnapshot(){
     assignees: [...fAssigneeSelected].sort(),
     start: document.getElementById('fStart').value,
     end: document.getElementById('fEnd').value,
-    ongoing: document.getElementById('fOngoing').checked,
     startTBD: document.getElementById('fStartTBD').checked,
     endTBD: document.getElementById('fEndTBD').checked,
     endEOD: document.getElementById('fEndEOD').checked,
@@ -3409,8 +3420,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     status: document.getElementById('fStatus').value,
     assignee: fAssigneeSelected.join(', '),
     start: document.getElementById('fStart').value,
-    end: document.getElementById('fOngoing').checked ? '' : document.getElementById('fEnd').value,
-    ongoing: document.getElementById('fOngoing').checked,
+    end: document.getElementById('fEnd').value,
     startTBD: document.getElementById('fStartTBD').checked,
     endTBD: document.getElementById('fEndTBD').checked,
     endEOD: document.getElementById('fEndEOD').checked,
