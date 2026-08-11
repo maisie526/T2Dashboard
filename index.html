@@ -151,7 +151,6 @@
     display:flex;gap:14px;overflow-x:auto;overflow-y:auto;flex:1;
     overscroll-behavior:contain;
     height:calc(100vh - 260px);height:calc(100dvh - 260px);min-height:340px;
-    position:relative;scrollbar-width:none;
   }
   /* PC/태블릿에서 창이 좁아 가로 스크롤이 생기면, main-content의 48px 좌우 패딩 때문에
      스크롤로 일부만 보이는 카드가 화면 끝에 닿지 못하고 항상 48px 못 미쳐 멈춰 보였음.
@@ -167,16 +166,16 @@
      레이아웃 흐름상 차지하는 공간은 원래와 똑같이 상쇄돼서 페이지에 새로운 스크롤이
      생기지는 않음 (모바일은 이 방식 자체를 안 써서 아래 미디어쿼리에서 0으로 되돌림) */
   #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;}
-  /* 브라우저 기본 스크롤바는 자기 두께(약 8px)만큼 컨텐츠 영역을 실제로 줄여버려서, 48px로
-     맞춰둔 우측/하단 여백 안쪽에 그만큼 여백이 더 생겨 보였음(48px가 아니라 48+8px처럼 보임).
-     기본 스크롤바를 아예 숨기고(공간을 전혀 차지하지 않게), 대신 JS(updateBoardScrollbars)가
-     위치/크기를 계산해서 그려주는 반투명 스크롤바를 컨텐츠 위에 겹쳐(position:absolute) 띄움
-     → 컨텐츠는 48px 경계까지 꽉 차고, 스크롤바는 그 위에 떠 있는 것처럼 보임 */
+  /* 기본 스크롤바는 두께(8px)만큼 컨텐츠 영역을 실제로 줄여서 48px 여백 위에 8px가 더 생겨
+     보였음. 기본 스크롤바는 아예 숨기고, 대신 JS(updateBoardScrollbars)가 board의 실제 화면
+     좌표(getBoundingClientRect)를 계산해서 position:fixed로 화면 위에 직접 그려줌
+     (board 안쪽에 넣어서 스크롤 컨테이너에 상대 위치시켰던 이전 방식은 스크롤 중 위치가
+     어긋나는 버그가 있었음 → fixed로 바꿔서 항상 절대 좌표로 명확하게 그림) */
   .board::-webkit-scrollbar{display:none;width:0;height:0;}
-  .board-scrollbar{position:absolute;background:var(--border);border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:6;}
-  .board.scrolling .board-scrollbar{opacity:1;}
-  .board-scrollbar-v{right:3px;width:6px;}
-  .board-scrollbar-h{bottom:3px;height:6px;}
+  /* position:fixed라서 board(스크롤 컨테이너) 안이 아니라 항상 뷰포트 기준 절대좌표로 그려짐.
+     top/right/bottom/left는 전부 JS(updateBoardScrollbars)가 매번 픽셀로 직접 계산해서 넣어줌 */
+  .board-scrollbar{position:fixed;background:var(--border);border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500;}
+  .board-scrollbar.visible{opacity:1;}
   .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
   /* col-head는 둥근 모서리 알약 모양이라 배경색이 모서리 바깥 네 귀퉁이는 칠하지 않음.
      그 부분에 스크롤되는 카드가 살짝 비쳐 보이는 문제가 있어서, 각지고 불투명한 배경을 가진
@@ -3066,33 +3065,39 @@ document.getElementById('boardMonthNext').addEventListener('click', ()=>{
 
 buildBoardSkeleton();
 
-/* board의 브라우저 기본 스크롤바를 숨기는 대신(위 CSS 참고), 실제 스크롤 위치/비율에 맞춰
-   반투명 막대(.board-scrollbar-v/h)를 직접 그려서 컨텐츠 위에 겹쳐 보이게 함.
-   board.innerHTML은 buildBoardSkeleton() 한 번만 갈아엎으므로(이후엔 컬럼 안쪽만 갱신됨)
-   이 두 막대는 계속 살아있음 */
+/* board의 브라우저 기본 스크롤바를 숨기는 대신(위 CSS 참고), 실제 스크롤 비율에 맞춰
+   반투명 막대를 document.body에 position:fixed로 직접 그려서 화면 위에 겹쳐 보이게 함.
+   board 안쪽에 position:absolute로 넣었던 이전 버전은 스크롤 도중 위치가 실제 스크롤과
+   안 맞아 화면 중간에 떠 보이는 버그가 있었음 → fixed + getBoundingClientRect()로
+   매번 board의 실제 화면 좌표를 다시 재서 절대 픽셀로 그리는 방식으로 바꿈 */
 function updateBoardScrollbars(){
   const board = document.getElementById('board');
-  if(!board) return;
+  if(!board || board.offsetParent === null) return;
   let v = document.getElementById('boardScrollbarV');
   let h = document.getElementById('boardScrollbarH');
-  if(!v){ v = document.createElement('div'); v.id='boardScrollbarV'; v.className='board-scrollbar board-scrollbar-v'; board.appendChild(v); }
-  if(!h){ h = document.createElement('div'); h.id='boardScrollbarH'; h.className='board-scrollbar board-scrollbar-h'; board.appendChild(h); }
-  const trackH = board.clientHeight - 6;
+  if(!v){ v = document.createElement('div'); v.id='boardScrollbarV'; v.className='board-scrollbar'; document.body.appendChild(v); }
+  if(!h){ h = document.createElement('div'); h.id='boardScrollbarH'; h.className='board-scrollbar'; document.body.appendChild(h); }
+  const rect = board.getBoundingClientRect();
+  const trackH = rect.height - 6;
   if(board.scrollHeight > board.clientHeight + 1 && trackH > 0){
     const thumbH = Math.max(24, trackH * board.clientHeight / board.scrollHeight);
     const top = (trackH - thumbH) * (board.scrollTop / (board.scrollHeight - board.clientHeight));
+    v.style.width = '6px';
     v.style.height = thumbH + 'px';
-    v.style.top = (3 + top) + 'px';
+    v.style.left = (rect.right - 9) + 'px';
+    v.style.top = (rect.top + 3 + top) + 'px';
     v.style.display = '';
   } else {
     v.style.display = 'none';
   }
-  const trackW = board.clientWidth - 6;
+  const trackW = rect.width - 6;
   if(board.scrollWidth > board.clientWidth + 1 && trackW > 0){
     const thumbW = Math.max(24, trackW * board.clientWidth / board.scrollWidth);
     const left = (trackW - thumbW) * (board.scrollLeft / (board.scrollWidth - board.clientWidth));
+    h.style.height = '6px';
     h.style.width = thumbW + 'px';
-    h.style.left = (3 + left) + 'px';
+    h.style.top = (rect.bottom - 9) + 'px';
+    h.style.left = (rect.left + 3 + left) + 'px';
     h.style.display = '';
   } else {
     h.style.display = 'none';
@@ -3101,10 +3106,9 @@ function updateBoardScrollbars(){
 (function(){
   const board = document.getElementById('board');
   if(!board) return;
-  board.addEventListener('scroll', updateBoardScrollbars);
   window.addEventListener('resize', updateBoardScrollbars);
-  // 카드가 추가/삭제/필터링되어 컬럼 안쪽 내용물이 바뀌면 스크롤 가능한 전체 높이(scrollHeight)도
-  // 바뀌므로, render()를 일일이 수정하지 않고 DOM 변화를 감지해서 자동으로 다시 계산함
+  // 카드가 추가/삭제/필터링되어 컬럼 안쪽 내용물이 바뀌면 스크롤 가능한 전체 높이도 바뀌므로,
+  // render()를 일일이 수정하지 않고 DOM 변화를 감지해서 자동으로 다시 계산함
   const mo = new MutationObserver(()=>updateBoardScrollbars());
   mo.observe(board, {childList:true, subtree:true});
   setTimeout(updateBoardScrollbars, 0);
@@ -3217,7 +3221,21 @@ setTimeout(syncColHeadRowScroll, 0);
     if(!el || !el.matches || !el.matches('.board, .backlog-body')) return;
     el.classList.add('scrolling');
     clearTimeout(hideTimers.get(el));
-    hideTimers.set(el, setTimeout(()=>el.classList.remove('scrolling'), 900));
+    hideTimers.set(el, setTimeout(()=>{
+      el.classList.remove('scrolling');
+      if(el.id === 'board'){
+        const v = document.getElementById('boardScrollbarV'), h = document.getElementById('boardScrollbarH');
+        if(v) v.classList.remove('visible');
+        if(h) h.classList.remove('visible');
+      }
+    }, 900));
+    // board는 스크롤할 때마다 실제 화면 좌표를 다시 재서 막대 위치/보임 상태를 갱신함
+    if(el.id === 'board' && typeof updateBoardScrollbars === 'function'){
+      updateBoardScrollbars();
+      const v = document.getElementById('boardScrollbarV'), h = document.getElementById('boardScrollbarH');
+      if(v) v.classList.add('visible');
+      if(h) h.classList.add('visible');
+    }
   }, true);
 })();
 // (예전엔 #colHeadRow를 #boardStats 바로 아래에 붙이려고 top 값을 "32 + 필터바 실측 높이"로
