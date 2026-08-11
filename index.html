@@ -385,7 +385,10 @@
      "한 번에 하나만 열림" 로직도 그대로 같이 적용됨. 네이티브 date input(클릭 두 번 필요 -
      팝업 열기 + 자체 캘린더 열기)을 쓰는 대신, 팝업을 열자마자 바로 날짜를 고를 수 있는
      자체 달력을 넣고 그 아래 TBD(미정)/EOD(당일 자정) 체크박스를 붙임 */
-  .mini-cal{padding:2px 2px 8px;}
+  .mini-cal{padding:2px 2px 8px;transition:opacity .15s;}
+  /* TBD 체크 시 날짜가 의미 없어지므로, 달력을 살짝 흐리게 하고 클릭도 막아서 비활성화된 느낌을 줌 */
+  .mini-cal.tbd-disabled .mini-cal-weekdays,
+  .mini-cal.tbd-disabled .mini-cal-grid{opacity:.4;pointer-events:none;}
   .mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
   .mini-cal-title{font-size:13px;font-weight:800;color:var(--fg-modal);}
   .mini-cal-nav{display:flex;gap:2px;}
@@ -404,10 +407,6 @@
   .mini-cal-day.dim{color:var(--muted);opacity:.45;}
   .mini-cal-day.today{font-weight:800;color:#3b82f6;}
   .mini-cal-day.selected{background:#3b82f6;color:#fff;font-weight:800;}
-  .mini-cal-actions{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
-  .mini-cal-actions button{background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;padding:4px 6px;border-radius:6px;}
-  .mini-cal-actions button:hover{background:var(--bg-ghost-hover);color:var(--fg-modal);}
-  .mini-cal-actions .mini-cal-today{color:#3b82f6;}
   .date-select-checks{display:flex;gap:14px;padding:6px 2px 2px;border-top:1px solid var(--border);margin-top:2px;}
   .date-select-check{display:flex;align-items:center;font-size:13px;line-height:14px;color:var(--fg-modal);font-weight:600;cursor:pointer;}
   .date-select-check input[type="checkbox"]{width:14px;height:14px;flex:none;cursor:pointer;margin:0 6px 0 0;vertical-align:middle;}
@@ -1390,10 +1389,6 @@
                   <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
                 </div>
                 <div class="mini-cal-grid"></div>
-                <div class="mini-cal-actions">
-                  <button type="button" class="mini-cal-clear">삭제</button>
-                  <button type="button" class="mini-cal-today">오늘</button>
-                </div>
               </div>
               <div class="date-select-checks">
                 <label class="date-select-check"><input type="checkbox" id="fStartTBD"><span>TBD</span></label>
@@ -1419,10 +1414,6 @@
                   <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
                 </div>
                 <div class="mini-cal-grid"></div>
-                <div class="mini-cal-actions">
-                  <button type="button" class="mini-cal-clear">삭제</button>
-                  <button type="button" class="mini-cal-today">오늘</button>
-                </div>
               </div>
               <div class="date-select-checks">
                 <label class="date-select-check"><input type="checkbox" id="fEndTBD"><span>TBD</span></label>
@@ -3242,7 +3233,7 @@ function renderMiniCal(fieldId){
   }
   container.querySelector('.mini-cal-grid').innerHTML = html;
 }
-function wireMiniCalInteractions(fieldId, panelId, onPick, onClear){
+function wireMiniCalInteractions(fieldId, panelId, onPick){
   document.getElementById(fieldId+'Cal').addEventListener('click', (e)=>{
     const navBtn = e.target.closest('.mini-cal-nav-btn');
     if(navBtn){
@@ -3260,16 +3251,6 @@ function wireMiniCalInteractions(fieldId, panelId, onPick, onClear){
       onPick(dayBtn.dataset.date);
       return;
     }
-    if(e.target.closest('.mini-cal-clear')){
-      e.stopPropagation();
-      onClear();
-      return;
-    }
-    if(e.target.closest('.mini-cal-today')){
-      e.stopPropagation();
-      onPick(todayStr());
-      return;
-    }
   });
 }
 wireDateSelect('fStart','fStartToggle','fStartPanel','fStartSelect');
@@ -3282,14 +3263,14 @@ function applyStartFieldState(tbd, dateVal){
   tbdCb.checked = tbd;
   dateInput.value = tbd ? '' : (dateVal || '');
   document.getElementById('fStartToggle').textContent = tbd ? 'TBD' : (dateInput.value ? fmtShort(dateInput.value) : '날짜 선택');
+  document.getElementById('fStartCal').classList.toggle('tbd-disabled', tbd);
   renderMiniCal('fStart');
 }
 document.getElementById('fStartTBD').addEventListener('change', (e)=>{
   applyStartFieldState(e.target.checked, document.getElementById('fStart').value);
 });
 wireMiniCalInteractions('fStart', 'fStartPanel',
-  (dateStr)=> applyStartFieldState(false, dateStr),
-  ()=> applyStartFieldState(false, '')
+  (dateStr)=> applyStartFieldState(false, dateStr)
 );
 
 // 마감일: 날짜 또는 TBD(미정) 둘 중 하나만 가능(서로 배타적). EOD(당일 자정)는 날짜에
@@ -3306,6 +3287,7 @@ function applyEndFieldState(tbd, eod, dateVal){
   if(tbd){ toggle.textContent = 'TBD'; }
   else if(dateInput.value){ toggle.textContent = eodCb.checked ? `${fmtShort(dateInput.value)}(EOD)` : fmtShort(dateInput.value); }
   else { toggle.textContent = eodCb.checked ? 'EOD' : '날짜 선택'; }
+  document.getElementById('fEndCal').classList.toggle('tbd-disabled', tbd);
   renderMiniCal('fEnd');
 }
 document.getElementById('fEndTBD').addEventListener('change', (e)=>{
@@ -3315,8 +3297,7 @@ document.getElementById('fEndEOD').addEventListener('change', (e)=>{
   applyEndFieldState(false, e.target.checked, document.getElementById('fEnd').value);
 });
 wireMiniCalInteractions('fEnd', 'fEndPanel',
-  (dateStr)=> applyEndFieldState(false, document.getElementById('fEndEOD').checked, dateStr),
-  ()=> applyEndFieldState(false, false, '')
+  (dateStr)=> applyEndFieldState(false, document.getElementById('fEndEOD').checked, dateStr)
 );
 function openModal(id, presetStatus){
   document.getElementById('editId').value = id || '';
