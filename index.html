@@ -3626,7 +3626,23 @@ function renderCalendar(){
     });
   });
   updateQuotaInfo();
+  fitCalEntryTags();
 }
+// overflow:hidden만으로 글자를 자르면 픽셀 경계에서 글자가 반쯤 잘려 보일 수 있음(...표시도
+// 안 쓰기로 했으니 더 티가 남). 그래서 실제 안 들어가는 만큼 "글자 단위"로 통째로 하나씩
+// 지워가며 다시 측정해서, 항상 온전한 글자만 보이고 안 들어가는 글자는 아예 안 보이게 함
+function fitCalEntryTags(){
+  document.querySelectorAll('.cal-entry-tag').forEach(el=>{
+    if(el.dataset.full === undefined) el.dataset.full = el.textContent;
+    let text = el.dataset.full;
+    el.textContent = text;
+    while(text.length > 0 && el.scrollWidth > el.clientWidth){
+      text = text.slice(0, -1);
+      el.textContent = text;
+    }
+  });
+}
+window.addEventListener('resize', fitCalEntryTags);
 
 function updateQuotaInfo(){
   const el = document.getElementById('wfhQuotaInfo');
