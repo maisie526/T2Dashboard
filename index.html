@@ -135,7 +135,10 @@
   .backlog-panel .count{background:#e2e4ea;color:#4b5563;font-size:12px;padding:2px 9px;border-radius:20px;font-weight:700;}
   .backlog-body{overflow-y:auto;flex:1;padding-right:2px;}
   .backlog-body::-webkit-scrollbar{width:6px;}
-  .backlog-body::-webkit-scrollbar-thumb{background:#d1d4db;border-radius:6px;}
+  /* 스크롤 안 할 땐 안 보이다가, 스크롤하는 동안(JS가 .scrolling 클래스를 붙여줌)만
+     잠깐 나타나고 멈추면 다시 사라지게 함 - 항상 떠 있는 스크롤바가 거슬린다는 피드백 반영 */
+  .backlog-body::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;transition:background .3s;}
+  .backlog-body.scrolling::-webkit-scrollbar-thumb{background:#d1d4db;}
   .add-mini{width:100%;margin-top:8px;padding:8px;border:1px dashed #c7cad2;border-radius:8px;background:transparent;color:#6b7280;font-size:12.5px;cursor:pointer;}
   .add-mini:hover{background:#e9eaef;}
 
@@ -156,9 +159,17 @@
      같은 정지 상태에서는 다른 요소들과 48px로 정렬되고, 그 사이 스크롤이 진행되는 도중에
      카드가 화면 밖으로 빠져나가는 순간에는 그 48px 패딩까지 함께 스크롤되어 실제 화면
      끝(0)까지 닿을 수 있게 됨 (margin과 달리 padding은 스크롤 범위에 포함되기 때문) */
-  #board{margin-left:-48px;margin-right:-48px;padding-left:48px;padding-right:48px;}
+  /* 아래쪽도 같은 문제 - JS(adjustBoardHeight)가 board 높이를 잴 때 main-content의
+     48px 하단 패딩만큼 미리 빼고 계산해서, 스크롤해서 잘려 보이는 마지막 카드가 항상
+     화면 진짜 끝보다 48px 위에서 멈췄음. margin-bottom을 음수로 줘서 board 박스 자체는
+     그 패딩 안쪽까지 파고들게 하되(높이는 JS에서 그만큼 더 늘려줌), margin이 음수인 만큼
+     레이아웃 흐름상 차지하는 공간은 원래와 똑같이 상쇄돼서 페이지에 새로운 스크롤이
+     생기지는 않음 (모바일은 이 방식 자체를 안 써서 아래 미디어쿼리에서 0으로 되돌림) */
+  #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;}
   .board::-webkit-scrollbar{height:8px;width:8px;}
-  .board::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+  /* 보드도 마찬가지로 스크롤 중에만 스크롤바가 보였다가 멈추면 사라지게 함 */
+  .board::-webkit-scrollbar-thumb{background:transparent;border-radius:6px;transition:background .3s;}
+  .board.scrolling::-webkit-scrollbar-thumb{background:var(--border);}
   .col{flex:0 0 224px;width:224px;min-width:0;display:flex;flex-direction:column;}
   /* col-head는 둥근 모서리 알약 모양이라 배경색이 모서리 바깥 네 귀퉁이는 칠하지 않음.
      그 부분에 스크롤되는 카드가 살짝 비쳐 보이는 문제가 있어서, 각지고 불투명한 배경을 가진
@@ -313,6 +324,20 @@
   .req-comment-text{font-size:13px;color:var(--fg-modal);white-space:pre-line;line-height:1.5;}
   .req-comment-form{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
   .req-comment-form textarea{width:100%;resize:vertical;min-height:50px;font-family:inherit;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--fg-modal);font-size:13px;}
+  /* 의견함 작성/댓글란에 Ctrl+V로 붙여넣은 이미지 미리보기 - 클로드에 이미지 붙여넣을 때처럼
+     작성 중엔 작은 썸네일로 보여주고 x로 낱개 삭제 가능하게 함 */
+  .req-image-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+  .req-image-preview{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .req-image-thumb{position:relative;width:56px;height:56px;border-radius:6px;overflow:hidden;border:1px solid var(--border);flex:none;}
+  .req-image-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .req-image-thumb .req-image-remove{
+    position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;
+    background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:10px;line-height:16px;
+    text-align:center;cursor:pointer;padding:0;
+  }
+  /* 저장된 의견/댓글에 첨부된 이미지를 보여줄 때 (읽기 전용) */
+  .req-display-images{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .req-display-images img{width:76px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
   .cd-link{font-size:13px;color:#3b82f6;word-break:break-all;}
 
   /* modal */
@@ -534,7 +559,7 @@
        모바일 미디어쿼리 안의 .board 규칙보다 우선 적용돼버림)은 모바일의 24px padding 기반
        방식과 겹치면 카드가 이중으로 밀려나므로 모바일에서는 전부 0으로 되돌리고,
        실제 padding-left는 바로 위 .board 규칙의 24px이 적용되게 함 */
-    #board{margin-left:0;margin-right:0;padding-left:24px;padding-right:0;}
+    #board{margin-left:0;margin-right:0;margin-bottom:0;padding-left:24px;padding-right:0;}
     .col{flex:0 0 78vw;width:78vw;min-width:0;scroll-snap-align:center;}
     /* 첫/마지막 카드는 중앙정렬 대신 각각 좌/우 24px 여백을 유지한 채 스냅되도록
        start/end 정렬 사용 (board의 scroll-padding-left/right 24px과 맞물려 정확히 24px에서 스냅됨) */
@@ -606,7 +631,7 @@
 
   /* wfh view */
   .wfh-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;margin-bottom:18px;}
-  @media (max-width:900px){
+  @media (max-width:1200px){
     .wfh-grid{grid-template-columns:1fr;}
   }
   .wfh-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;}
@@ -682,16 +707,15 @@
   .cal-entry.mine{opacity:1;}
   .cal-entry:not(.mine){opacity:0.8;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
-  /* 화면이 좁아져서 이름과 타입(재택/반차 등)이 한 줄에 다 안 들어갈 땐, 타입은 이미 배경색으로도
-     구분되니까 이름 쪽이 잘리지 않고 타입 라벨이 먼저 줄어들도록 우선순위를 둠 (이전엔 반대라
-     "재택"이 "재"처럼 한 글자만 남고 이름이 밀려나는 문제가 있었음) */
-  .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:none;}
-  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* 이름이 길어 한 줄에 다 안 들어가면 이름 쪽을 ...으로 줄임 (타입은 배경색으로도 구분되니
+     항상 그대로 두고, 이름만 필요한 만큼 줄어들게 함) */
+  .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;flex:1;min-width:0;}
+  .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
   .cal-dot{width:6px;height:6px;border-radius:50%;background:transparent;border:1.3px solid var(--muted);flex:none;}
   .cal-dot.in.done{background:var(--pill-in-fg);border-color:var(--pill-in-fg);}
   .cal-dot.out.done{background:var(--pill-out-fg);border-color:var(--pill-out-fg);}
-  .cal-entry-tag{font-size:12px;font-weight:400;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
+  .cal-entry-tag{font-size:12px;font-weight:400;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
   .cal-entry.type-wfh .cal-entry-tag{color:var(--type-wfh-fg);}
   .cal-entry.type-annual .cal-entry-tag{color:var(--type-annual-fg);}
   .cal-entry.type-half .cal-entry-tag{color:var(--type-half-fg);}
@@ -1129,6 +1153,8 @@
     <div class="field">
       <label>내용</label>
       <textarea id="reqText" placeholder="필요한 기능이나 문의사항을 적어주세요" style="min-height:90px;"></textarea>
+      <div class="req-image-hint">스크린샷 등 이미지를 복사해서 붙여넣기(Ctrl+V)할 수 있어요</div>
+      <div class="req-image-preview" id="reqImagePreview"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="reqCancelBtn">취소</button>
@@ -1519,6 +1545,51 @@ function compressImage(file, maxDim, quality){
     reader.onerror = ()=>reject(new Error('파일을 읽을 수 없어요.'));
     reader.readAsDataURL(file);
   });
+}
+
+// textarea에 Ctrl+V로 이미지를 붙여넣으면(클로드 채팅창에 이미지 붙여넣듯) 자동으로 첨부되게
+// 하는 공용 헬퍼. getImages/setImages로 어떤 배열에 담을지만 넘겨주면 재사용 가능
+// (의견함 작성란, 댓글란 둘 다 이걸로 처리)
+function wireImagePaste(textareaId, previewId, getImages, setImages){
+  const ta = document.getElementById(textareaId);
+  const preview = document.getElementById(previewId);
+  if(!ta || !preview) return ()=>{};
+  function renderPreview(){
+    const imgs = getImages();
+    preview.innerHTML = imgs.map((src, i)=>`
+      <div class="req-image-thumb">
+        <img src="${src}">
+        <button type="button" class="req-image-remove" data-idx="${i}" title="삭제">✕</button>
+      </div>`).join('');
+  }
+  preview.addEventListener('click', e=>{
+    const btn = e.target.closest('.req-image-remove');
+    if(!btn) return;
+    const imgs = getImages();
+    imgs.splice(Number(btn.dataset.idx), 1);
+    setImages(imgs);
+    renderPreview();
+  });
+  ta.addEventListener('paste', e=>{
+    const items = e.clipboardData && e.clipboardData.items;
+    if(!items) return;
+    let hadImage = false;
+    for(const item of items){
+      if(item.kind === 'file' && item.type && item.type.startsWith('image/')){
+        hadImage = true;
+        const file = item.getAsFile();
+        if(!file) continue;
+        compressImage(file, 900, 0.75).then(dataUrl=>{
+          const imgs = getImages();
+          imgs.push(dataUrl);
+          setImages(imgs);
+          renderPreview();
+        }).catch(()=>toast('이미지를 붙여넣는 데 실패했어요.', 'warn'));
+      }
+    }
+    if(hadImage) e.preventDefault();
+  });
+  return renderPreview;
 }
 
 function loadRoster(){
@@ -3043,11 +3114,12 @@ function adjustBoardHeight(){
   }
   board.style.height = '';
   const rect = board.getBoundingClientRect();
-  // main-content 자체에도 아래쪽 padding이 있어서, 그걸 안 빼고 화면 끝까지 채우면
-  // board + main-content의 padding-bottom만큼 항상 스크롤이 생겨버림 → 그만큼 빼줌
-  const mc = document.getElementById('mainContent');
-  const mcPadBottom = mc ? (parseFloat(getComputedStyle(mc).paddingBottom) || 0) : 0;
-  const h = window.innerHeight - rect.top - mcPadBottom;
+  // 예전엔 여기서 main-content의 하단 padding만큼 빼서 그 패딩 안으로는 절대 안 들어가게
+  // 했었는데, 그러면 스크롤로 잘려 보이는 마지막 카드가 화면 진짜 끝(48px 못 미쳐)까지
+  // 안 닿는 문제가 있었음. 이제는 CSS에서 #board에 margin-bottom:-48px를 줘서 그만큼을
+  // 레이아웃 흐름상 다시 상쇄해주므로, 여기선 그냥 화면 끝까지 꽉 채우면 됨
+  // (페이지에 여분 스크롤이 새로 생기지 않음)
+  const h = window.innerHeight - rect.top;
   board.style.height = Math.max(340, h) + 'px';
 }
 // 모바일 컬럼 타이틀 고정 방식: 처음엔 board 안의 .col-head-wrap을 position:sticky, 그다음
@@ -3067,6 +3139,19 @@ window.addEventListener('resize', syncColHeadRowScroll);
 })();
 setTimeout(adjustBoardHeight, 0);
 setTimeout(syncColHeadRowScroll, 0);
+
+// 스크롤바가 평소엔 안 보이다가 스크롤하는 동안만 잠깐 보이게 함(거슬린다는 피드백 반영).
+// scroll 이벤트는 버블링되지 않아서 document에 캡처 단계로 걸어 위임 처리
+(function(){
+  const hideTimers = new WeakMap();
+  document.addEventListener('scroll', (e)=>{
+    const el = e.target;
+    if(!el || !el.matches || !el.matches('.board, .backlog-body')) return;
+    el.classList.add('scrolling');
+    clearTimeout(hideTimers.get(el));
+    hideTimers.set(el, setTimeout(()=>el.classList.remove('scrolling'), 900));
+  }, true);
+})();
 // (예전엔 #colHeadRow를 #boardStats 바로 아래에 붙이려고 top 값을 "32 + 필터바 실측 높이"로
 // JS에서 계산해서 맞췄는데, 실측 타이밍이 어긋나면 그 사이에 배경 없는 빈 틈이 생겨서 카드가
 // 비쳐 보이는 문제가 있었음 → #boardStats와 #colHeadRow를 #boardStickyHeader 하나로 묶고
@@ -3989,6 +4074,9 @@ function loadRequests(){
 function saveRequestsLocal(){ localStorage.setItem(REQ_KEY, JSON.stringify(requests)); }
 let requests = loadRequests();
 function newReqId(){ return requests.length ? Math.max(...requests.map(r=>r.id))+1 : 1; }
+let reqPendingImages = [];
+let reqCommentPendingImages = [];
+const renderReqImagePreview = wireImagePaste('reqText', 'reqImagePreview', ()=>reqPendingImages, (imgs)=>{ reqPendingImages = imgs; });
 
 function renderRequestsView(){
   const body = document.getElementById('reqTableBody');
@@ -3999,7 +4087,7 @@ function renderRequestsView(){
     <tr data-id="${r.id}">
       <td>${r.date}</td>
       <td>${escapeHtml(r.author ? displayName(r.author) : '-')}</td>
-      <td class="req-open-detail" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 자세히 보기">${escapeHtml(r.text)}${(r.comments&&r.comments.length) ? ` <span style="color:var(--muted);font-size:12px;">💬 ${r.comments.length}</span>` : ''}</td>
+      <td class="req-open-detail" data-id="${r.id}" style="cursor:pointer;" title="클릭해서 자세히 보기">${escapeHtml(r.text)}${(r.comments&&r.comments.length) ? ` <span style="color:var(--muted);font-size:12px;">💬 ${r.comments.length}</span>` : ''}${(r.images&&r.images.length) ? ` <span style="color:var(--muted);font-size:12px;">🖼 ${r.images.length}</span>` : ''}</td>
       <td><button class="req-status-btn" data-id="${r.id}" style="border:none;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer;background:${r.done?'#1e3a2e':'#3a2f18'};color:${r.done?'#4ade80':'#facc15'};">${r.done?'✅ 적용 완료':'⏳ 적용 전'}</button></td>
       <td><button class="wfh-del req-del" data-id="${r.id}" title="삭제">✕</button></td>
     </tr>
@@ -4026,6 +4114,13 @@ function renderRequestsView(){
   });
 }
 
+// 저장된 이미지들을 읽기 전용으로 보여주는 공통 마크업 (클릭하면 원본 크기로 새 탭에서 열림)
+function reqDisplayImagesHtml(images){
+  if(!images || !images.length) return '';
+  return `<div class="req-display-images">${images.map(src=>
+    `<a href="${escapeHtml(src)}" target="_blank" rel="noopener"><img src="${escapeHtml(src)}"></a>`
+  ).join('')}</div>`;
+}
 function reqDetailBodyHtml(r){
   const comments = r.comments || [];
   return `
@@ -4039,6 +4134,7 @@ function reqDetailBodyHtml(r){
     <div class="cd-section">
       <div class="cd-section-title">내용</div>
       <div style="font-size:14px;color:var(--fg-modal);white-space:pre-line;line-height:1.6;">${escapeHtml(r.text)}</div>
+      ${reqDisplayImagesHtml(r.images)}
     </div>
     <div class="cd-section">
       <div class="cd-section-title">댓글 (${comments.length})</div>
@@ -4049,9 +4145,11 @@ function reqDetailBodyHtml(r){
             <span class="req-comment-date">${c.createdAt||''}</span>
           </div>
           <div class="req-comment-text">${escapeHtml(c.text)}</div>
+          ${reqDisplayImagesHtml(c.images)}
         </li>`).join('')}</ul>` : `<div class="empty-hint">아직 댓글이 없어요</div>`}
       <div class="req-comment-form">
-        <textarea id="reqCommentInput" placeholder="댓글을 남겨보세요" rows="2"></textarea>
+        <textarea id="reqCommentInput" placeholder="댓글을 남겨보세요 (이미지 붙여넣기 가능)" rows="2"></textarea>
+        <div class="req-image-preview" id="reqCommentImagePreview"></div>
         <button class="btn" id="reqCommentSubmitBtn" style="align-self:flex-end;">댓글 등록</button>
       </div>
     </div>
@@ -4066,6 +4164,8 @@ function renderReqDetailBody(r){
     renderRequestsView();
     renderReqDetailBody(r);
   });
+  reqCommentPendingImages = [];
+  wireImagePaste('reqCommentInput', 'reqCommentImagePreview', ()=>reqCommentPendingImages, (imgs)=>{ reqCommentPendingImages = imgs; });
   document.getElementById('reqCommentSubmitBtn').addEventListener('click', ()=>{
     const ta = document.getElementById('reqCommentInput');
     const text = ta.value.trim();
@@ -4077,9 +4177,11 @@ function renderReqDetailBody(r){
       author: getCurrentUserName(),
       text,
       createdAt: todayStr(),
+      images: reqCommentPendingImages,
     };
     r.comments = [...comments, newComment];
     saveRequestsLocal(); fbSetItem('requests', r.id, r);
+    reqCommentPendingImages = [];
     renderReqDetailBody(r);
     renderRequestsView();
   });
@@ -4123,11 +4225,14 @@ function openReqModal(id){
     document.getElementById('reqModalTitle').textContent = '의견 수정';
     document.getElementById('reqDate').value = r.date;
     document.getElementById('reqText').value = r.text;
+    reqPendingImages = r.images ? [...r.images] : [];
   } else {
     document.getElementById('reqModalTitle').textContent = '새 의견 등록';
     document.getElementById('reqDate').value = todayStr();
     document.getElementById('reqText').value = '';
+    reqPendingImages = [];
   }
+  renderReqImagePreview();
   reqModalBg.classList.add('open');
 }
 function closeReqModal(){ reqModalBg.classList.remove('open'); }
@@ -4145,12 +4250,13 @@ document.getElementById('reqSaveBtn').addEventListener('click', ()=>{
   let r;
   if(id){
     r = requests.find(r=>r.id===Number(id));
-    Object.assign(r, {date, text});
+    Object.assign(r, {date, text, images: reqPendingImages});
   } else {
-    r = {id:newReqId(), date, text, author:getCurrentUserName(), done:false, comments:[]};
+    r = {id:newReqId(), date, text, author:getCurrentUserName(), done:false, comments:[], images: reqPendingImages};
     requests.push(r);
   }
   saveRequestsLocal(); fbSetItem('requests', r.id, r);
+  reqPendingImages = [];
   closeReqModal();
   renderRequestsView();
   toast('저장되었습니다.');
