@@ -633,6 +633,9 @@
   .wfh-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;margin-bottom:18px;}
   @media (max-width:1200px){
     .wfh-grid{grid-template-columns:1fr;}
+    /* 세로로 쌓이는 폭에서는 JS가 달력에 별도 스크롤/고정높이를 주지 않으므로(adjustWfhCalHeight 참고),
+       기본 overflow-y:auto/scrollbar-gutter:stable도 함께 꺼서 빈 스크롤 여백이 남지 않게 함 */
+    #wfhCalGrid{scrollbar-gutter:auto;overflow-y:visible;}
   }
   .wfh-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;}
   .wfh-panel h3{margin:0 0 12px;font-size:14.5px;}
@@ -657,7 +660,11 @@
   .wfh-cal-nav{display:flex;gap:6px;}
   .wfh-cal-nav button{background:var(--bg-ghost);border:1px solid var(--border);color:var(--fg);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;}
   .wfh-cal-nav button:hover{background:var(--bg-ghost-hover);}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow-y:auto;overflow-x:hidden;align-content:start;scrollbar-gutter:stable;}
+  /* grid-auto-rows를 auto(기본값)로 두면, 달력 전체 높이(JS가 픽셀로 고정)보다 내용이 더 필요한
+     달에는 행이 내용물 높이만큼 안 늘어나고 눌려서, 인원이 많은 날짜칸의 이름 칩이 카드 밖(다음 줄)으로
+     삐져나와 보이는 문제가 있었음 → min-content로 강제해서 각 행이 항상 그 칸의 실제 내용물 높이만큼만
+     차지하게 하고(눌리지 않게), 부족한 공간은 그리드 자체가 스크롤되어 해결하게 함 */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:min-content;align-items:start;gap:4px;overflow-y:auto;overflow-x:hidden;align-content:start;scrollbar-gutter:stable;}
   .cal-grid::-webkit-scrollbar{width:8px;}
   .cal-weekday{font-size:12px;color:var(--muted);text-align:center;padding:4px 0;font-weight:700;position:sticky;top:0;background:var(--panel);z-index:2;}
   .cal-cell{min-height:112px;border-radius:8px;background:var(--bg-input);padding:6px;cursor:pointer;border:1px solid transparent;}
@@ -3163,9 +3170,9 @@ function adjustWfhCalHeight(){
   const grid = document.getElementById('wfhCalGrid');
   const panel = document.querySelector('.wfh-panel');
   if(!grid || grid.offsetParent === null) return;
-  // 화면이 좁아져서 달력/기록 패널이 세로로 쌓이는 레이아웃에서는 달력에 별도 스크롤을 주지 않고
-  // 페이지 스크롤 하나로만 움직이게 함 (그래야 스크롤 두 개가 겹쳐 헷갈리지 않음)
-  if(window.innerWidth <= 900){
+  // 화면이 좁아져서 달력/기록 패널이 세로로 쌓이는 레이아웃(.wfh-grid가 1열로 바뀌는 지점)에서는
+  // 달력에 별도 스크롤/높이 제한을 주지 않고 내용이 다 보이게, 페이지 스크롤 하나로만 움직이게 함
+  if(window.innerWidth <= 1200){
     grid.style.height = '';
     if(panel){ panel.style.maxHeight = ''; panel.style.overflowY = ''; }
     return;
@@ -3173,13 +3180,12 @@ function adjustWfhCalHeight(){
   const calPanel = grid.closest('.wfh-cal');
   const calPadBottom = calPanel ? parseFloat(getComputedStyle(calPanel).paddingBottom) || 0 : 0;
   const calBorderBottom = calPanel ? parseFloat(getComputedStyle(calPanel).borderBottomWidth) || 0 : 0;
-  // 사이드 메뉴 맨 아래 테마 전환 버튼과 아래쪽이 같은 선에서 맞춰지도록 그 버튼의 y좌표를 기준으로 삼음.
-  // main-content 자체의 padding-bottom만큼도 빼줘야 그 여백까지 포함해서 화면 안에 딱 맞고,
-  // 안 빼면 그 padding만큼 항상 페이지 스크롤이 생겨버림
-  const toggleBtn = document.getElementById('themeToggleBtn');
+  // main-content의 아래쪽 48px 패딩 경계선에 딱 맞춰야 다른 요소들과 정렬이 맞음.
+  // (예전엔 사이드바 맨 아래 테마 전환 버튼의 y좌표를 기준으로 삼았는데, 사이드바 자체 패딩(20px)이
+  // main-content 패딩(48px)과 달라서 그 차이만큼 항상 여백이 조금 남는 문제가 있었음)
   const mcForCal = document.getElementById('mainContent');
   const mcCalPadBottom = mcForCal ? (parseFloat(getComputedStyle(mcForCal).paddingBottom) || 0) : 0;
-  const bottomLimit = (toggleBtn ? toggleBtn.getBoundingClientRect().bottom : window.innerHeight - 20) - mcCalPadBottom;
+  const bottomLimit = window.innerHeight - mcCalPadBottom;
 
   const gridRect = grid.getBoundingClientRect();
   const gridHeight = bottomLimit - gridRect.top - calPadBottom - calBorderBottom;
