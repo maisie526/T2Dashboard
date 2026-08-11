@@ -167,7 +167,7 @@
      그 패딩 안쪽까지 파고들게 하되(높이는 JS에서 그만큼 더 늘려줌), margin이 음수인 만큼
      레이아웃 흐름상 차지하는 공간은 원래와 똑같이 상쇄돼서 페이지에 새로운 스크롤이
      생기지는 않음 (모바일은 이 방식 자체를 안 써서 아래 미디어쿼리에서 0으로 되돌림) */
-  #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;padding-bottom:48px;}
+  #board{margin-left:-48px;margin-right:-48px;margin-bottom:-48px;padding-left:48px;padding-right:48px;}
   /* 기본 스크롤바는 두께(8px)만큼 컨텐츠 영역을 실제로 줄여서 48px 여백 위에 8px가 더 생겨
      보였음. 기본 스크롤바는 아예 숨기고, 대신 JS(updateBoardScrollbars)가 board의 실제 화면
      좌표(getBoundingClientRect)를 계산해서 position:fixed로 화면 위에 직접 그려줌
@@ -202,7 +202,10 @@
   .col-head-onhold{background:var(--col-onhold-bg);color:var(--col-onhold-fg);}
   .col-head-done{background:var(--col-done-bg);color:var(--col-done-fg);}
   .col-head-history{background:var(--col-history-bg);color:var(--col-history-fg);}
-  .col-body{min-height:40px;padding-right:2px;}
+  /* #board 컨테이너 자체의 padding-bottom으로 하단 여백을 주면 sticky인 .col-head-wrap과
+     함께 있을 때 일부 브라우저(사파리)에서 스크롤 가능 영역 계산에 반영이 안 되는 경우가 있어서,
+     대신 스크롤되는 실제 콘텐츠인 각 컬럼의 카드 목록(.col-body) 쪽에 직접 여백을 줌 */
+  .col-body{min-height:40px;padding-right:2px;padding-bottom:48px;}
   .col-drop{padding-bottom:0;}
   .add-col-btn{
     width:100%;margin-top:6px;padding:8px;border:1px dashed #3a3f4d;border-radius:8px;
