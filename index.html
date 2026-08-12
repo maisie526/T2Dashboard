@@ -3881,7 +3881,7 @@ const TYPE_META = {
 // 반차는 오전/오후, 시간차는 시간 수까지 표시해줘야 해서 meta.label/short 그대로 쓰지 않고 이 헬퍼를 거침
 function entryShortLabel(p){
   const type = p.type || 'wfh';
-  if(type === 'half') return p.halfPeriod === 'pm' ? '오후반차' : '오전반차';
+  if(type === 'half') return p.halfPeriod === 'pm' ? '반차오후' : '반차오전';
   if(type === 'hourly') return `시간차 ${p.hours || 1}h`;
   return (TYPE_META[type] || TYPE_META.wfh).short;
 }
