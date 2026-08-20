@@ -734,6 +734,9 @@
   .cal-cell.empty{background:transparent;cursor:default;}
   .cal-cell.today{border-color:#3b82f6;background:var(--cal-today-bg);}
   .cal-cell.selected{border-color:#4ade80;background:var(--cal-selected-bg);}
+  /* 드래그해서 올려놓을 수 있는 날짜칸이라는 걸 보여줌 (다른 사람 항목을 끌 때는 애초에
+     dragstart가 안 걸리므로 이 상태가 뜰 일이 없음) */
+  .cal-cell.drag-over{outline:2px dashed #3b82f6;outline-offset:-2px;}
   .cal-cell-top{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;}
   .cal-cell-top .cal-date{margin-bottom:0;}
   .cal-date.sat{color:#3b82f6;}
@@ -781,6 +784,10 @@
   .cal-entry.mine{opacity:1;}
   .cal-entry:not(.mine){opacity:0.8;}
   .cal-entry.mine .cal-entry-name{font-weight:800;}
+  /* 내 항목만 끌어서 다른 날짜로 옮길 수 있음. 남의 항목은 draggable 자체가 안 걸려 있어서
+     cursor도 그냥 기본값으로 둠(끌 수 없다는 걸 커서로도 알려줌) */
+  .cal-entry.mine{cursor:grab;}
+  .cal-entry.mine.dragging{opacity:.35;cursor:grabbing;}
   .cal-entry-main{display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0;}
   .cal-entry-name{font-size:12px;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;min-width:0;}
   .cal-entry-dots{display:flex;align-items:center;gap:3px;flex:none;}
@@ -4011,7 +4018,7 @@ function renderCalendar(){
           <span class="cal-dot in ${p.clockIn ? 'done' : ''}"></span>
           <span class="cal-dot out ${p.clockOut ? 'done' : ''}"></span>
         </span>` : '';
-      return `<div class="cal-entry type-${type} ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${entryFullLabel(p)}">
+      return `<div class="cal-entry type-${type} ${isMine ? 'mine' : ''}" title="${escapeHtml(shownName)} · ${entryFullLabel(p)}" ${isMine ? `draggable="true" data-entry-id="${p.id}"` : ''}>
         <span class="cal-entry-main">
           <span class="cal-entry-name">${escapeHtml(shownName)}</span>
           ${dotsHtml}
@@ -4077,8 +4084,56 @@ function renderCalendar(){
       renderCalendar();
     });
   });
+  wireCalDrag(grid);
   updateQuotaInfo();
   fitCalEntryTags();
+}
+// 내 항목(cal-entry.mine)만 draggable이 걸려 있어서(HTML에서 이미 필터링됨) 여기서
+// 다시 person을 확인할 필요는 없지만, 혹시 모를 데이터 꼬임에 대비해 drop 시점에도 한 번 더 검증함.
+// 옮기려는 날짜에 그 사람 항목이 이미 있으면(findEntry가 person+date로 유일하다고 가정하는 곳이
+// 여러 군데라 - upsertEntry, findTodayEntry 등) 덮어써지지 않게 막고 안내만 띄움.
+function wireCalDrag(grid){
+  let draggingId = null;
+  grid.querySelectorAll('.cal-entry[draggable="true"]').forEach(chip=>{
+    chip.addEventListener('dragstart', (e)=>{
+      draggingId = chip.dataset.entryId;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggingId);
+      chip.classList.add('dragging');
+    });
+    chip.addEventListener('dragend', ()=>{
+      chip.classList.remove('dragging');
+      draggingId = null;
+      grid.querySelectorAll('.cal-cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
+    });
+  });
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
+    cell.addEventListener('dragover', (e)=>{
+      if(!draggingId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      cell.classList.add('drag-over');
+    });
+    cell.addEventListener('dragleave', ()=>{
+      cell.classList.remove('drag-over');
+    });
+    cell.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain');
+      const entry = wfhEntries.find(x=> String(x.id) === String(id));
+      if(!entry) return;
+      const me = getCurrentUserName();
+      if(!me || entry.person !== me){ toast('본인 항목만 옮길 수 있어요.', 'warn'); return; }
+      const newDate = cell.dataset.date;
+      if(entry.date === newDate) return;
+      if(findEntry(entry.person, newDate)){ toast('그 날짜엔 이미 등록된 항목이 있어요.', 'warn'); return; }
+      entry.date = newDate;
+      saveWfhLocal();
+      fbSetItem('wfh', entry.id, entry);
+      renderCalendar();
+    });
+  });
 }
 // overflow:hidden만으로 글자를 자르면 픽셀 경계에서 글자가 반쯤 잘려 보일 수 있음(...표시도
 // 안 쓰기로 했으니 더 티가 남). 그래서 실제 안 들어가는 만큼 "글자 단위"로 통째로 하나씩
